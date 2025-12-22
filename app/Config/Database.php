@@ -200,5 +200,8 @@ class Database extends Config
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
         }
+        else{
+            $this->defaultGroup = 'default';
+        }
     }
 }
