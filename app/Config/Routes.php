@@ -10,6 +10,7 @@ $routes->get('/', 'Home::index');
 //Authentication
 $routes->get('login', 'AuthController::loginView');
 $routes->post('login', 'AuthController::login');
+$routes->get('logout', 'AuthController::logout');
 $routes->post('register', 'AuthController::register');
 
 $routes->group('user', ['filter' => 'auth'], function($routes){

@@ -12,7 +12,7 @@ class Profile extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id', 'firstname', 'lastname', 'gender', 'birth'];
+    protected $allowedFields    = ['id', 'firstname', 'lastname', 'gender', 'birth', 'background'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -21,7 +21,7 @@ class Profile extends Model
     protected array $castHandlers = [];
 
     // Dates
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
@@ -30,9 +30,10 @@ class Profile extends Model
     // Validation
     protected $validationRules      = [
         'id' => 'required|max_length[36]',
-        'firstname' => 'required|min_length[3]',
-        'lastname' => 'required|min_length[3]',
+        'firstname' => 'required|min_length[1]',
+        'lastname' => 'required|min_length[1]',
         'birth' => 'required',
+        'background' => 'permit_empty|ext_in[avatar, gif, apng]|max_size[avatar,2048]'
     ];
     protected $validationMessages   = [];
     protected $skipValidation       = false;
@@ -51,10 +52,6 @@ class Profile extends Model
 
 
     //function
-    public function updateProfile($id, array $data){
-        return $this->update($id, $data);
-    }
-
     public function getProfile($id){
         return $this->select('profiles.*, users.email, users.avatar')
                     ->join('users', 'users.id = profiles.id')

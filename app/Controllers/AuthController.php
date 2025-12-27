@@ -18,11 +18,19 @@ class AuthController extends BaseController
         $this->profile = new Profile();
     }
 
+    public function loginView(){
+        // session()->destroy();
+        if (session()->get('logged_in'))
+            return redirect()->to('/user/profile');
+
+        return view('authentication');
+    }
+
     public function register(){
         $userData = [
             'email' => $this->request->getPost('email'),
             'password' => $this->request->getPost('password'),
-            'avatar' => $this->request->getPost('avatar'),
+            'avatar' => 'ICON/logo.png',
         ];
 
         $profileData = [
@@ -33,8 +41,14 @@ class AuthController extends BaseController
         ];
 
         $res = $this->user->createAccount($userData, $profileData);
-        if ($res['status'])
-            return redirect()->to('/login')->with('success', 'Sign up completed successfully');
+        if ($res['status']){
+            session()->set([
+                'user_id' => $res['id'],
+                'username' => $userData['email'],
+                'logged_in' => true,
+            ]);
+            return redirect()->to('user/profile')->with('success', 'Sign up completed successfully');
+        }
         else
             return redirect()->back()->withInput()->with('error', $res['message']);
     }
@@ -54,7 +68,12 @@ class AuthController extends BaseController
             'username' => $exist['password'],
             'logged_in' => true,
         ]);
-        return redirect()->to('/dashboard');
+        return redirect()->to('user/profile');
+    }
+
+    public function logout(){
+        session()->destroy();
+        return redirect()->to('/login');
     }
 
 }

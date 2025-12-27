@@ -13,7 +13,7 @@ class User extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id', 'email','password', 'avatar'];
+    protected $allowedFields    = ['id', 'email','password', 'avatar', 'role', 'created_at'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -30,9 +30,11 @@ class User extends Model
 
     // Validation
     protected $validationRules      = [
+        'id' => 'permit_empty',
         'email' => 'required|valid_email|is_unique[users.email, id, {id}]',
         'password' => 'required|min_length[8]',
-        'avatar' => 'ext_in[avatar, gif, apng]|max_size[avatar,2048]'
+        // 'avatar' => 'permit_empty|ext_in[avatar, gif, apng]|max_size[avatar,2048]'
+        'avatar' => 'permit_empty',
     ];
     protected $validationMessages   = [
         'email' => [
@@ -41,19 +43,19 @@ class User extends Model
         'password' => [
             'min_length' => 'Min length of password is 8 character',
         ],
-        'avatar' => [
-            'ext_in' => 'Please upload an avatar',
-            'max_size' => 'Avatar must not exceed 2MB',
-        ]
+        // 'avatar' => [
+        //     'ext_in' => 'Please upload an avatar',
+        //     'max_size' => 'Avatar must not exceed 2MB',
+        // ]
     ];
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
 
     // Callbacks
     protected $allowCallbacks = true;
-    protected $beforeInsert   = ['hashPassword', 'processAvatar'];
+    protected $beforeInsert   = ['hashPassword'];
     protected $afterInsert    = [];
-    protected $beforeUpdate   = ['hashPassword', 'processAvatar'];
+    protected $beforeUpdate   = ['hashPassword'];
     protected $afterUpdate    = [];
     protected $beforeFind     = [];
     protected $afterFind      = [];
@@ -66,6 +68,7 @@ class User extends Model
         if (isset($data['data']['password'])){
             $data['data']['password'] = password_hash($data['data']['password'], PASSWORD_DEFAULT);
         }
+        return $data;
     }
     protected function generateUUID(){
         return Uuid::uuid4()->toString();
@@ -73,21 +76,17 @@ class User extends Model
     protected function processAvatar(array $data){
         
     }
-
     public function createAccount(array $user, array $profile){
         $db = \Config\Database::connect();
-        $profileModel = new Profile();
         $uuid = $this->generateUUID();
 
         $db->transStart();
             $user['id'] = $uuid;
             $this->insert($user);
-
             $profile['id'] = $uuid;
-            $profileModel->insert($profile);
+            $db->table('profiles')->insert($profile);
         $db->transComplete();
-        if ($db->transStatus() === false)
-            return ['status' => false, 'message' => 'System error, can not create account'];
+
         return ['status' => true, 'id' => $uuid];
     }
 

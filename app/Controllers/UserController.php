@@ -20,28 +20,42 @@ class UserController extends BaseController
     }
     public function index()
     {
-        if ($this->id)
+        if (!$this->id)
             return redirect()->to('/login');
-        $data['user'] = $this->profile->getProfile($this->id);
+        $user = $this->user->find($this->id);
+        $profile = $this->profile->where('id', $this->id)->first();
+
+        if (!$user || !$profile) {
+            session()->destroy();
+            return redirect()->to('/login');
+        }
+        $data['user'] = array_merge($user, $profile);
+
+        $data['avatarUrl'] = $user['avatar'] ? base_url($user['avatar']) : base_url('ICON/avatar-default.svg');
         return view('profile', $data);
     }
 
     public function updateProfile(){
+        if (!$this->id)
+            return redirect()->to('/login');
         $id = session()->get('user_id');
         $data = [
+            'id' => $id,
             'firstname' => $this->request->getPost('firstname'),
             'lastname' => $this->request->getPost('lastname'),
             'birth' => $this->request->getPost('birth'),
             'gender' => $this->request->getPost('gender'),
         ];
 
-        if ($this->profile->updateProfile($id, $data))
-            return redirect()->back()->with('success', 'Profile updated successfully');
-        return redirect()->back()->with('error', 'Update error');
+        if ($this->profile->save($data))
+            return redirect()->to('user/profile')->with('success', 'Profile updated successfully');
+
+            var_dump($this->profile->errors()); die(); 
+            return redirect()->back()->with('error', 'Update failed');
     }
 
     public function changePassword(){
-        if ($this->id)
+        if (!$this->id)
             return redirect()->to('/login');
         $rules = [
             'old' => 'required',
@@ -64,11 +78,11 @@ class UserController extends BaseController
 
     public function updateAvatar(){
         if (!$this->id)
-            return redirect()->to('/login');
+            return redirect()->to('user/profile');
     }
 
     public function deleteAccount(){
-        if ($this->id)
+        if (!$this->id)
             return redirect()->to('/login');
 
         $password = $this->request->getPost('password');
@@ -89,6 +103,8 @@ class UserController extends BaseController
         return redirect()->back()->with('error', 'Have error, cannot delete you account');
     }
     public function loginView(){
+        if (!$this->id)
+            return redirect()->to('/login');
         if (session()->get('logged_in')) {
             return redirect()->to('/dashboard');
         }

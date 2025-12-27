@@ -1,48 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
-</head>
-
-<body class="background">
-
 <nav class="navbar">
     <div class="container">
 
-        <!-- LOGO -->
-        <a href="<?= base_url('/') ?>" class="logo">
+        <a href="<?= base_url('dashboard') ?>" class="logo">
             <img src="<?= base_url('ICON/logo.png') ?>" alt="Logo">
         </a>
 
-        <!-- NAV ICONS -->
         <div class="nav-menu">
-                <a class="nav-item active"><i data-lucide="home"></i></a>
-                <a class="nav-item"><i data-lucide="users"></i></a>
-                <a class="nav-item"><i data-lucide="file-text"></i></a>
-                <a class="nav-item"><i data-lucide="message-circle"></i></a>
-                <span class="nav-line"></span>
+            <a href="<?= base_url('dashboard') ?>" class="nav-item"><i data-lucide="home"></i></a>
+            <a href="#" class="nav-item"><i data-lucide="users"></i></a>
+            <a href="#" class="nav-item"><i data-lucide="file-text"></i></a>
+            <a href="#" class="nav-item"><i data-lucide="message-circle"></i></a>
+            <span class="nav-line"></span>
         </div>
 
-        <!-- USER -->
         <div class="nav-user">
             <div class="notification">
                 <i data-lucide="bell"></i>
                 <span class="dot"></span>
             </div>
 
-            <!-- <img src="<?= base_url('avatar/default.png') ?>" class="avatar"> -->
-
-            <span class="username">
-                <!-- <?= session()->get('username') ?? 'Guest' ?> -->
-            </span>
+            <div class="user-dropdown" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <img src="<?= isset($avatarUrl) ? $avatarUrl : base_url('ICON/avatar-default.svg') ?>" class="avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                
+                <a href="<?= base_url('logout') ?>" class="btn-logout" title="Logout">
+                    <i data-lucide="log-out" style="color: #65676b;"></i>
+                </a>
+            </div>
         </div>
 
     </div>
 </nav>
-
-<script src="<?= base_url('JS/navbar.js') ?>"></script>
-</body>
-</html>
