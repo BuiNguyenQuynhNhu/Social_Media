@@ -110,4 +110,11 @@ class UserController extends BaseController
         }
         return view('authentication');
     }
+
+    public function listAll(){
+        $users = $this->user->select('users.id, users.email, users.role, users.avatar, profiles.firstname, profiles.lastname, profiles.gender, profiles.birth')
+                            ->join('profiles', 'profiles.id = users.id', 'left') 
+                            ->findAll();
+        return view('user_list', ['users' => $users]);
+    }
 }
