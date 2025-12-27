@@ -15,10 +15,6 @@ class CreateUsersTable extends Migration
                 'type' => 'CHAR',
                 'constraint' => 36,
             ],
-            'admin' => [
-                'type' => 'BOOLEAN',
-                'default' => false,
-            ],
             'email' => [
                 'type' => 'VARCHAR',
                 'constraint' => 255,
@@ -27,26 +23,14 @@ class CreateUsersTable extends Migration
                 'type' => 'VARCHAR',
                 'constraint' => 255,
             ],
-            'picture' => [
+            'avatar' => [
                 'type' => 'VARCHAR',
                 'constraint' => 255,
                 'null' => true,
             ],
-            'gender' => [
-                'type' => 'ENUM',
-                'constraint' => ['male', 'female', 'other'],
-                'default' => 'other'
-            ],
-            'first_name' => [
-                'type' => 'VARCHAR',
-                'constraint' => 255,
-            ],
-            'last_name' => [
-                'type' => 'VARCHAR',
-                'constraint' => 255,
-            ],
-            'birth' => [
-                'type' => 'DATE',
+            'type' => [
+                'type' => 'BOOLEAN',
+                'default' => false,
             ],
 
             'created_at timestamp default current_timestamp',

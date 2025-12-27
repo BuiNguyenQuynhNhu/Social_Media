@@ -10,12 +10,9 @@ class AdminSeeder extends Seeder
     {
         $data = array(
             'id' => Uuid::uuid4()->tostring(),
-            'first_name' => 'first',
-            'last_name' => 'last',
             'email' => 'admin_test@gmail.com',
             'password' => password_hash('12345678', PASSWORD_BCRYPT),
-            'admin' => true,
-            'gender' => 'male',
+            'type' => 1,
         );
 
         $this->db->table('users')->insert($data);

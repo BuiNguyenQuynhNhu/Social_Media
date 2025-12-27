@@ -8,13 +8,20 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
-        $data = array(
-            'id' => Uuid::uuid4()->tostring(),
-            'first_name' => 'first',
-            'last_name' => 'last',
+        $userId = Uuid::uuid4()->toString();
+        $user = array(
+            'id' => $userId,
             'email' => 'test@gmail',
             'password' => password_hash('12345678', PASSWORD_BCRYPT),
         );
-        $this->db->table('users')->insert($data);
+        $this->db->table('users')->insert($user);
+
+        $profile = array(
+            'id' => $userId,
+            'firstname' => 'test',
+            'lastname' => '1',
+            'birth' => '1990-01-01',
+        );
+        $this->db->table('profiles')->insert($profile);
     }
 }
