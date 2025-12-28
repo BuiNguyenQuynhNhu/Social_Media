@@ -30,7 +30,6 @@ class AuthController extends BaseController
         $userData = [
             'email' => $this->request->getPost('email'),
             'password' => $this->request->getPost('password'),
-            'avatar' => 'ICON/logo.png',
         ];
 
         $profileData = [
@@ -49,8 +48,7 @@ class AuthController extends BaseController
             ]);
             return redirect()->to('user/profile')->with('success', 'Sign up completed successfully');
         }
-        else
-            return redirect()->back()->withInput()->with('error', $res['message']);
+        return redirect()->back()->withInput()->with('error_register', $res['message']);
     }
 
     public function login(){

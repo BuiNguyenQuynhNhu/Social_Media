@@ -203,6 +203,10 @@ form.sign-up-form {
     border-radius: 50%;
     z-index: 6;
 }
+.container.sign-up-mode:before {
+    right: 52%;
+    transform: translate(100%, -50%);
+}
 
 .image {
     width: 75%;

@@ -15,9 +15,9 @@ $routes->post('register', 'AuthController::register');
 
 $routes->group('user', ['filter' => 'auth'], function($routes){
     $routes->get('profile', 'UserController::index');
-    $routes->post('update_profile', 'UserController::updateProfile');
-    $routes->post('change_password', 'UserController::changePassword');
+    $routes->put('update_profile', 'UserController::updateProfile');
+    $routes->put('change_password', 'UserController::changePassword');
     $routes->get('list', 'UserController::listAll');
     // $routes->post('upload_avatar', 'UserController::updateAvatar');
-    $routes->post('delete_account', 'UserController::deleteAccount');
+    $routes->delete('delete_account', 'UserController::deleteAccount');
 });

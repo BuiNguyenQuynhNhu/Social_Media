@@ -94,8 +94,6 @@ class UserController extends BaseController
         if (!password_verify($password, $exist['password']))
             return redirect()->back()->with('error', 'Password is not corrected');
 
-        //delete avatar
-
         if ($this->user->delete($this->id)){
             session()->destroy();
             return redirect()->to('/login')->with('success', 'Account is deleted');
@@ -111,10 +109,4 @@ class UserController extends BaseController
         return view('authentication');
     }
 
-    public function listAll(){
-        $users = $this->user->select('users.id, users.email, users.role, users.avatar, profiles.firstname, profiles.lastname, profiles.gender, profiles.birth')
-                            ->join('profiles', 'profiles.id = users.id', 'left') 
-                            ->findAll();
-        return view('user_list', ['users' => $users]);
-    }
 }

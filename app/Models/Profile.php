@@ -23,19 +23,29 @@ class Profile extends Model
     // Dates
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
-    protected $createdField  = 'created_at';
+    protected $createdField  = '';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
     // Validation
     protected $validationRules      = [
-        'id' => 'required|max_length[36]',
-        'firstname' => 'required|min_length[1]',
-        'lastname' => 'required|min_length[1]',
+        'id' => 'required',
+        'firstname' => 'required',
+        'lastname' => 'required',
         'birth' => 'required',
-        'background' => 'permit_empty|ext_in[avatar, gif, apng]|max_size[avatar,2048]'
+        'background' => 'permit_empty',
     ];
-    protected $validationMessages   = [];
+    protected $validationMessages   = [
+        'id' => [
+            'required' => 'Please fill the email',
+        ],
+        'firstname' => [
+            'required' => 'Please fill your first name',
+        ],
+        'lastname' => [
+            'required' => 'Please fill yout last name',
+        ]
+    ];
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
 

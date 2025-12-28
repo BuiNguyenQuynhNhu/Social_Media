@@ -85,7 +85,7 @@
                 <button onclick="document.getElementById('edit-modal').style.display='none'" class="close-btn"><i data-lucide="x"></i></button>
             </div>
             
-            <form action="<?= base_url('user/update_profile') ?>" method="post" class="edit-form">
+            <form action="<?= base_url('user/update_profile') ?>" method="put" class="edit-form">
                 <div style="display: flex; gap: 10px;">
                     <div class="form-group" style="flex: 1;">
                         <label>First Name</label>
@@ -113,13 +113,13 @@
                 </div>
 
                 <div class="form-actions" style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary" style="width: 100%" method= 'POST'>Save Changes</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%" method= 'put'>Save Changes</button>
                 </div>
             </form>
             
             <div class="danger-zone" style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
                 <h4 style="color: red; margin-bottom: 10px;">Danger Zone</h4>
-                <form action="<?= base_url('user/delete_account') ?>" method="post" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
+                <form action="<?= base_url('user/delete_account') ?>" method="delete" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
                     <div style="display: flex; gap: 10px;">
                         <input type="password" name="password" placeholder="Enter password to confirm" required style="flex: 1; padding: 8px;">
                         <button type="submit" class="btn btn-danger" style="background: red; color: white; border: none; padding: 8px 15px; border-radius: 5px;">Delete</button>

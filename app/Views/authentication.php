@@ -1,3 +1,7 @@
+<?php
+    $isSignUp = session()->getFlashdata('error_register');
+    $containerClass = $isSignUp ? 'sign-up-mode' : '';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,10 +14,10 @@
 </head>
 
 <body>
-    <div class="container">
+    <div class="container <?= $containerClass ?>">   
+
         <div class="forms-container">
             <div class="signin-signup">
-                
                 <form action="<?= base_url('login') ?>" method="post" class="sign-in-form">
                     <h2 class="title">Sign In</h2>
                     
@@ -46,7 +50,12 @@
 
                 <form action="<?= base_url('register') ?>" method="post" class="sign-up-form">
                     <h2 class="title">Sign Up</h2>
-                    
+                    <?php if(session()->getFlashdata('error_register')): ?>
+                        <div class="alert-error">
+                            <?= session()->getFlashdata('error_register') ?>
+                        </div>
+                    <?php endif; ?>
+
                     <div class="input-field">
                         <i class="fas fa-user"></i>
                         <input type="text" name="firstname" placeholder="First Name" required/>
