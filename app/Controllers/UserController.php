@@ -21,7 +21,7 @@ class UserController extends BaseController
     public function index()
     {
         if (!$this->id)
-            return redirect()->to('/login');
+            return redirect()->to('authenticaton');
         $user = $this->user->find($this->id);
         $profile = $this->profile->where('id', $this->id)->first();
 
@@ -32,7 +32,7 @@ class UserController extends BaseController
         $data['user'] = array_merge($user, $profile);
 
         $data['avatarUrl'] = $user['avatar'] ? base_url($user['avatar']) : base_url('ICON/avatar-default.svg');
-        return view('profile', $data);
+        return view('user/profile', $data);
     }
 
     public function updateProfile(){
@@ -56,7 +56,7 @@ class UserController extends BaseController
 
     public function changePassword(){
         if (!$this->id)
-            return redirect()->to('/login');
+            return redirect()->to('authenticaton');
         $rules = [
             'old' => 'required',
             'new' => 'required|min_length[8]',
@@ -83,7 +83,7 @@ class UserController extends BaseController
 
     public function deleteAccount(){
         if (!$this->id)
-            return redirect()->to('/login');
+            return redirect()->to('authenticaton');
 
         $password = $this->request->getPost('password');
         if (empty($password))
@@ -96,15 +96,15 @@ class UserController extends BaseController
 
         if ($this->user->delete($this->id)){
             session()->destroy();
-            return redirect()->to('/login')->with('success', 'Account is deleted');
+            return redirect()->to('authenticaton')->with('success', 'Account is deleted');
         }
         return redirect()->back()->with('error', 'Have error, cannot delete you account');
     }
     public function loginView(){
         if (!$this->id)
-            return redirect()->to('/login');
+            return redirect()->to('authenticaton');
         if (session()->get('logged_in')) {
-            return redirect()->to('/dashboard');
+            return redirect()->to('dashboard');
         }
         return view('authentication');
     }

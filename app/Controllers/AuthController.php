@@ -21,7 +21,7 @@ class AuthController extends BaseController
     public function loginView(){
         // session()->destroy();
         if (session()->get('logged_in'))
-            return redirect()->to('/user/profile');
+            return redirect()->to('user/profile');
 
         return view('authentication');
     }

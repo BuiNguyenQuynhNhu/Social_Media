@@ -21,7 +21,7 @@
 
 <body class="background">
 
-    <?= view('templates/navbar', ['avatarUrl' => $avatarUrl]) ?>
+    <?= view('templates/UserNavbar', ['avatarUrl' => $avatarUrl]) ?>
 
     <div class="profile-container">
         
