@@ -3,8 +3,11 @@ lucide.createIcons();
 const navMenu = document.querySelector('.nav-menu');
 const navItems = document.querySelectorAll('.nav-item');
 const line = document.querySelector('.nav-line');
+const searchInput = document.querySelector('.search-form .input');
+const searchForm = document.querySelector('.search-form');
 
 function moveLine(target) {
+    if (!target) return;
     const rect = target.getBoundingClientRect();
     const menuRect = navMenu.getBoundingClientRect();
 
@@ -13,7 +16,9 @@ function moveLine(target) {
 }
 
 const activeItem = document.querySelector('.nav-item.active');
-if (activeItem) moveLine(activeItem);
+if (activeItem) {
+    setTimeout(() => moveLine(activeItem), 100);
+}
 
 navItems.forEach(item => {
     item.addEventListener('click', () => {
@@ -22,6 +27,14 @@ navItems.forEach(item => {
         moveLine(item);
     });
 });
+
+if (searchForm) {
+    searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const query = searchInput.value;
+        console.log("Searching for:", query);
+    });
+}
 
 window.addEventListener('resize', () => {
     const active = document.querySelector('.nav-item.active');
