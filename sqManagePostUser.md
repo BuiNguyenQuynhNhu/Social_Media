@@ -1,48 +1,62 @@
 sequenceDiagram
     autonumber
-    actor User as User
-    participant UI as Post Creation/Edit UI
+    actor User
+    participant UI as View (Profile / Feed)
+    participant Route as CI4 Route
+    participant Filter as AuthFilter
     participant Ctrl as PostController
-    participant DB as Post Database
+    participant Model as PostModel
+    participant DB as MySQL Database
 
-    Note over User, DB: MANAGE OWN POSTS
+    Note over User, DB: MANAGE USER POSTS (CI4 MVC)
 
-    rect rgb(240, 248, 255)
-    alt ACTION 1: CREATE NEW POST
-        User->>UI: Input Content, Upload Image, Select Privacy
-        User->>UI: Click "Post" Button
-        UI->>Ctrl: API: createPost(userId, content, mediaURL, privacy)
-        
-        Note right of Ctrl: Class attributes used: content, mediaURL, privacy
-        Ctrl->>DB: INSERT INTO post (content, mediaURL, privacy, creatAt)
-        DB-->>Ctrl: Success (Returns new postId)
-        
-        Ctrl-->>UI: Return Success Data
-        UI-->>User: Display new post on Feed
-    
-    else ACTION 2: EDIT POST
-        User->>UI: Click "Edit" -> Modify Content/Privacy -> Save
-        UI->>Ctrl: API: updatePost(postId, newContent, newPrivacy)
-        
-        Ctrl->>DB: Check Post Ownership (SELECT * FROM post WHERE id=... AND userId=...)
-        
-        alt User is Owner
-            Ctrl->>DB: UPDATE post SET content=..., privacy=... WHERE id=...
-            DB-->>Ctrl: Success
-            Ctrl-->>UI: Update Post Display
-            UI-->>User: Notification "Post Updated"
-        else Not Owner
-            Ctrl-->>UI: Error "Unauthorized"
+    rect rgb(240,248,255)
+    alt CREATE POST
+        User->>UI: Enter content
+        User->>UI: Click "Post"
+        UI->>Route: POST /post/create
+        Route->>Filter: Auth Check
+
+        alt Authenticated
+            Filter->>Ctrl: Allow Request
+            Ctrl->>Model: insert(user_id, content)
+            Model->>DB: INSERT INTO posts
+            DB-->>Model: Success
+            Model-->>Ctrl: postId
+            Ctrl-->>UI: Redirect back
+            UI-->>User: Display new post
+        else Not Authenticated
+            Filter-->>UI: Redirect to /login
         end
 
-    else ACTION 3: DELETE POST
-        User->>UI: Click "Delete" -> Confirm Popup
-        UI->>Ctrl: API: deletePost(postId)
-        
-        Ctrl->>DB: DELETE FROM post WHERE id=postId
+    else EDIT POST
+        User->>UI: Edit Post
+        UI->>Route: POST /post/update/{id}
+        Route->>Filter: Auth Check
+        Filter->>Ctrl: Allow
+
+        Ctrl->>Model: checkOwner(postId, userId)
+        Model->>DB: SELECT post
+        DB-->>Model: Result
+
+        alt Is Owner
+            Ctrl->>Model: update(postId)
+            Model->>DB: UPDATE posts
+            DB-->>Ctrl: Success
+            Ctrl-->>UI: Update View
+        else Not Owner
+            Ctrl-->>UI: Error Unauthorized
+        end
+
+    else DELETE POST
+        User->>UI: Click Delete
+        UI->>Route: POST /post/delete/{id}
+        Route->>Filter: Auth Check
+        Filter->>Ctrl: Allow
+
+        Ctrl->>Model: delete(postId)
+        Model->>DB: DELETE posts
         DB-->>Ctrl: Success
-        
-        Ctrl-->>UI: Remove Post from View
-        UI-->>User: Notification "Post Deleted"
+        Ctrl-->>UI: Remove post
     end
     end

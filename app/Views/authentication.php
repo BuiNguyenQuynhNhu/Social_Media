@@ -20,6 +20,8 @@
             <div class="signin-signup">
                 <form action="<?= base_url('login') ?>" method="post" class="sign-in-form">
                     <h2 class="title">Sign In</h2>
+
+                    <?= csrf_field() ?>
                     
                     <?php if(session()->getFlashdata('error')): ?>
                         <div class="alert-error">
@@ -50,6 +52,9 @@
 
                 <form action="<?= base_url('register') ?>" method="post" class="sign-up-form">
                     <h2 class="title">Sign Up</h2>
+
+                    <?= csrf_field() ?>
+                    
                     <?php if(session()->getFlashdata('error_register')): ?>
                         <div class="alert-error">
                             <?= session()->getFlashdata('error_register') ?>

@@ -11,7 +11,7 @@ class UserSeeder extends Seeder
         $userId = Uuid::uuid4()->toString();
         $user = array(
             'id' => $userId,
-            'email' => 'test@gmail',
+            'email' => 'test@gmail.com',
             'password' => password_hash('12345678', PASSWORD_BCRYPT),
         );
         $this->db->table('users')->insert($user);

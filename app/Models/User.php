@@ -80,9 +80,9 @@ class User extends Model
         $db->transStart();
             $user['id'] = $uuid;
             $profile['id'] = $uuid;
-            if ($this->insert($user) === false || $profileModel->insert($profile)) {
-                $db->transRollback();
-                return ['status' => false, 'message' => implode(', ', $this->errors())];
+        if ($this->insert($user) === false || $profileModel->insert($profile) === false) {
+                        $db->transRollback();
+                        return ['status' => false, 'message' => 'Registration failed (Database Error)'];
             }
         $db->transComplete();
         return ['status' => true, 'id' => $uuid];
@@ -101,5 +101,22 @@ class User extends Model
 
     public function updateAvatar($id, $file){
         return $this->update($id, ['avatar' => $file]);
+    }
+
+    public function searchUsers($keyword)
+    {
+        if (empty($keyword)) return [];
+
+        $builder = $this->select('users.id, users.email, users.avatar, profiles.firstname, profiles.lastname') 
+                        ->join('profiles', 'profiles.id = users.id', 'left') 
+                        ->groupStart()
+                            ->like('users.email', $keyword)
+                            ->orLike('profiles.firstname', $keyword) 
+                            ->orLike('profiles.lastname', $keyword)  
+                            ->orLike("CONCAT(COALESCE(profiles.firstname,''), ' ', COALESCE(profiles.lastname,''))", $keyword) 
+                        ->groupEnd();
+
+        $result = $builder->findAll();
+        return $result;
     }
 }
