@@ -26,7 +26,7 @@ class DashboardController extends BaseController
         $finalAvatar = str_starts_with($avatarPath, 'http') ? $avatarPath : base_url($avatarPath);
 
         $postModel = new PostModel();
-        $posts = $postModel->getNewsFeed($currentUserId, 1000, 0);
+        $posts = $postModel->getNewsFeed($currentUserId, 10, 0);
 
         $friendModel = new FriendshipModel();
         $friends = $friendModel->getAllFriends($currentUserId);

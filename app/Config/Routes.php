@@ -55,3 +55,8 @@ $routes->get('dashboard', 'DashboardController::index');
 
 $routes->get('chat', 'ChatController::index');
 $routes->get('chat/with/(:num)', 'ChatController::chatWith/$1');
+
+$routes->get('notifications/get', 'NotificationController::getLatest');
+$routes->post('notifications/read', 'NotificationController::markRead');
+
+$routes->post('notifications/read-item/(:any)', 'NotificationController::markItemRead/$1');

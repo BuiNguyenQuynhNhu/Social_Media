@@ -32,10 +32,10 @@
                     <i data-lucide="home"></i>
                 </a>
 
-                <a href="<?= base_url('friends') ?>" class="nav-item <?= (uri_string() == 'friends') ? 'active' : '' ?>">
+                <a href="<?= base_url('friends') ?>" class="nav-item <?= (uri_string() == 'friends') ? 'active' : '' ?>" style="position: relative;">
                     <i data-lucide="users"></i>
+                    <span id="friend-badge" class="nav-badge"></span>
                 </a>
-
                 <a href="#" class="nav-item">
                     <i data-lucide="file-text"></i>
                 </a>
@@ -49,9 +49,14 @@
 
         <div class="nav-section right">
             <div class="nav-user">
-                <div class="icon-circle notification" title="Notifications">
+                <div class="icon-circle notification" title="Notifications" onclick="toggleNotifications()" style="position: relative;">
                     <i data-lucide="bell"></i>
-                    <span class="dot"></span>
+                    <span id="notif-count" class="notif-dot">0</span>
+                    
+                    <div id="notif-dropdown" class="notif-dropdown">
+                        <div class="notif-header">Notifications</div>
+                        <div id="notif-list"></div>
+                    </div>
                 </div>
 
                 <div class="user-profile">
@@ -67,59 +72,3 @@
         </div>
     </div>
 </nav>
-
-<script>
-    let timeout = null;
-
-    function liveSearch(keyword) {
-        const dropdown = document.getElementById('search-dropdown');
-        
-        if (keyword.length == 0) {
-            dropdown.style.display = 'none';
-            return;
-        }
-
-        clearTimeout(timeout);
-
-        timeout = setTimeout(function() {
-            fetch('<?= base_url("search/live") ?>?q=' + keyword) 
-                .then(response => response.json())
-                .then(data => {
-                    let html = '';
-                    
-                    if (data.length > 0) {
-                        data.forEach(user => {
-                            const avatarSrc = (user.avatar && user.avatar.startsWith('http')) 
-                                              ? user.avatar 
-                                              : '<?= base_url() ?>' + (user.avatar || 'ICON/avatar-default.svg');
-
-                            html += `
-                                <a href="<?= base_url('user/profile/') ?>${user.id}" class="search-item">
-                                    <img src="${avatarSrc}" class="search-avatar">
-                                    <div class="search-info">
-                                        <span class="search-name">${user.firstname} ${user.lastname}</span>
-                                        <span class="search-sub">User</span>
-                                    </div>
-                                </a>
-                            `;
-
-                        });
-                    }
-
-                    dropdown.innerHTML = html;
-                    dropdown.style.display = 'block';
-                });
-        }, 300);
-    }
-
-    document.addEventListener('click', function(e) {
-        const container = document.querySelector('.search-container');
-        if (!container.contains(e.target)) {
-            document.getElementById('search-dropdown').style.display = 'none';
-        }
-    });
-    
-    function hideSearch() {
-        document.getElementById('search-dropdown').style.display = 'none';
-    }
-</script>

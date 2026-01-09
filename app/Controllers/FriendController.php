@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\FriendshipModel;
 use App\Models\User;
+use \App\Models\NotificationModel;
 
 class FriendController extends BaseController
 {
@@ -56,6 +57,8 @@ class FriendController extends BaseController
             'receiver_id'  => $receiverId,
             'status'       => 'pending'
         ]);
+        $notifModel = new NotificationModel();
+        $notifModel->addNotification($receiverId, $requesterId, 'friend_request');
 
         return $this->response->setJSON(['status' => 'success', 'new_status' => 'request_sent']);
     }

@@ -5,14 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Friends</title>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        const APP_CONFIG = {
+            baseURL: '<?= base_url() ?>',
+            userId: '<?= session()->get('user_id') ?>',
+            csrfTokenName: '<?= csrf_token() ?>',     
+            csrfHash: '<?= csrf_hash() ?>'
+        };
+    </script>
     <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/overall.css') ?>">
     
     <style>
         .friends-container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
         .section-title { font-size: 20px; font-weight: 700; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* Grid Layout: Tự động chia cột */
+
         .friends-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -20,7 +27,6 @@
             margin-bottom: 40px;
         }
 
-        /* Card bạn bè */
         .friend-card {
             background: white;
             border-radius: 8px;
@@ -33,7 +39,7 @@
 
         .card-img {
             width: 100%;
-            aspect-ratio: 1/1; /* Ảnh vuông */
+            aspect-ratio: 1/1; 
             object-fit: cover;
             background: #f0f2f5;
             cursor: pointer;
@@ -131,25 +137,57 @@
     <script> lucide.createIcons(); </script>
 
     <script>
+        async function sendFriendAction(url, dataObj) {
+            let formData = new FormData();
+
+            for (let key in dataObj) {
+                formData.append(key, dataObj[key]);
+            }
+
+            if (APP_CONFIG.csrfTokenName && APP_CONFIG.csrfHash) {
+                formData.append(APP_CONFIG.csrfTokenName, APP_CONFIG.csrfHash);
+            }
+
+            try {
+                let response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                });
+
+                if (response.status === 403) {
+                    alert("Security token expired. Please reload the page.");
+                    location.reload();
+                    return;
+                }
+
+                let result = await response.json();
+                
+                if (result.status === 'success') {
+                    location.reload(); 
+                } else {
+                    alert(result.message || 'Action failed');
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
         function acceptFriend(requesterId) {
-            fetch('<?= base_url("friend/accept") ?>', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-                body: 'requester_id=' + requesterId
-            }).then(res => res.json()).then(data => { if(data.status === 'success') location.reload(); });
+            sendFriendAction(APP_CONFIG.baseURL + '/friend/accept', { 
+                'requester_id': requesterId 
+            });
         }
 
         function cancelRequest(targetId) {
-            fetch('<?= base_url("friend/remove") ?>', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-                body: 'target_id=' + targetId
-            }).then(res => res.json()).then(data => { if(data.status === 'success') location.reload(); });
+            sendFriendAction(APP_CONFIG.baseURL + '/friend/remove', { 
+                'target_id': targetId 
+            });
         }
 
         function unfriendUser(targetId) {
-            if(confirm("Are you sure?")) {
-                cancelRequest(targetId);
+            if(confirm("Are you sure you want to unfriend this person?")) {
+                cancelRequest(targetId); 
             }
         }
     </script>

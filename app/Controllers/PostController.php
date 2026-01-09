@@ -160,6 +160,12 @@ class PostController extends BaseController
                 'post_id' => $postId,
                 'reaction' => $type
             ]);
+            $postModel = new PostModel();
+            $post = $postModel->find($postId);
+            if ($post) {
+                $notifModel = new \App\Models\NotificationModel();
+                $notifModel->addNotification($post['user_id'], $userId, 'post_like', $postId);
+            }
             return $this->response->setJSON(['status' => 'added']);
         }
     }
@@ -183,6 +189,12 @@ class PostController extends BaseController
 
         if ($commentModel->insert($data)) {
             $newId = $commentModel->getInsertID();
+            $postModel = new PostModel();
+            $post = $postModel->find($data['post_id']);
+            if ($post) {
+                $notifModel = new \App\Models\NotificationModel();
+                $notifModel->addNotification($post['user_id'], $data['user_id'], 'post_comment', $data['post_id']);
+            }
             $newComment = $commentModel->select('comments.*, users.avatar, profiles.firstname, profiles.lastname')
                                        ->join('users', 'users.id = comments.user_id')
                                        ->join('profiles', 'profiles.id = users.id', 'left')
