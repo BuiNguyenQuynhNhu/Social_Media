@@ -50,3 +50,8 @@ $routes->group('friend', ['filter' => 'auth'], function($routes){
 $routes->get('friends', 'FriendController::index', ['filter' => 'auth']);
 $routes->get('search', 'UserController::search', ['filter' => 'auth']);
 $routes->get('search/live', 'UserController::liveSearch', ['filter' => 'auth']);
+
+$routes->get('dashboard', 'DashboardController::index');
+
+$routes->get('chat', 'ChatController::index');
+$routes->get('chat/with/(:num)', 'ChatController::chatWith/$1');

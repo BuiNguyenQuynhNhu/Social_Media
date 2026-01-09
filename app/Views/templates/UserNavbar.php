@@ -56,7 +56,7 @@
 
                 <div class="user-profile">
                     <a href="<?= base_url('user/profile') ?>" class="avatar-link" title="Your Profile">
-                        <img src="<?= $avatarUrl ?? base_url('ICON/avatar-default.svg') ?>" class="search-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        <img src="<?= $avatarUrl ?>" class="search-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                     </a>
                 </div>
 

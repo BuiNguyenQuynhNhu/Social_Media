@@ -294,8 +294,8 @@ function openEditPostModal(postId, content, privacy) {
     
     document.getElementById('edit-content').value = content;
     document.getElementById('edit-privacy').value = privacy;
-    
-    form.action = APP_CONFIG.baseURL + '/post/update/' + postId;
+
+    form.setAttribute('data-post-id', postId);
 
     togglePostMenu(postId);
     modal.style.display = 'flex';
@@ -619,7 +619,7 @@ function generatePostHTML(post) {
             <div id="comment-list-${post.id}" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;"></div>
             
             <div style="display:flex; gap:10px;">
-                <img src="${APP_CONFIG.myAvatar}" style="width:32px; height:32px; border-radius:50%; object-fit: cover;"> 
+                <img src="${getImageUrl(APP_CONFIG.myAvatar, 'avatar')}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;"> 
                 <div style="flex:1; position:relative;">
                     <input type="text" id="input-comment-${post.id}" placeholder="Write a comment..." 
                            onkeypress="handleEnter(event, ${post.id})" 
@@ -632,4 +632,27 @@ function generatePostHTML(post) {
         </div>
     </div>
     `;
+}
+
+
+function submitEditPost(event) {
+    event.preventDefault();
+
+    const form = document.getElementById('editPostForm');
+    const postId = form.getAttribute('data-post-id'); 
+    
+    if (!postId) {
+        alert("Error: No post ID found.");
+        return;
+    }
+
+    const formData = new FormData(form);
+
+    sendRequest(APP_CONFIG.baseURL + '/post/update/' + postId, formData).then(res => {
+        if(res.status === 'success') {
+            location.reload();
+        } else {
+            alert(res.message || 'Error updating post');
+        }
+    });
 }

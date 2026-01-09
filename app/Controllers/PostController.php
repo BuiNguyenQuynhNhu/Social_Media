@@ -106,7 +106,7 @@ class PostController extends BaseController
         $userId = session()->get('user_id');
 
         if (!$post || $post['user_id'] !== $userId) {
-            return redirect()->back()->with('error', 'Unauthorized access');
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized access']);
         }
 
         $postModel->update($id, [
@@ -114,7 +114,7 @@ class PostController extends BaseController
             'privacy' => $this->request->getPost('privacy')
         ]);
 
-        return redirect()->back()->with('success', 'Post updated successfully');
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Post updated successfully']);
     }
 
     public function delete($id)

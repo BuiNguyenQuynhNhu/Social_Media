@@ -382,7 +382,7 @@
                 <h3 style="margin:0">Edit Post</h3>
                 <div onclick="document.getElementById('editPostModal').style.display='none'" style="cursor:pointer"><i data-lucide="x"></i></div>
             </div>
-            <form id="editPostForm" method="post" action="">
+            <form id="editPostForm" onsubmit="submitEditPost(event)">
                 <?= csrf_field() ?>
                 <div class="modal-body" style="padding: 15px;">
                     <textarea name="content" id="edit-content" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; min-height: 100px; resize: none;"></textarea>
