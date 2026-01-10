@@ -80,6 +80,19 @@ class Post extends Model
         return $this->where('id_user', $id)->countAllResults();
     }
 
+    public function getFeed($userId) {
+        return $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
+            ->join('profiles', 'profiles.id = posts.id_user')
+            ->join('users', 'users.id = posts.id_user')
+            ->groupStart()
+                ->where('posts.id_user', $userId)
+                ->orWhere("posts.id_user IN (SELECT receiver_id FROM friendships WHERE requester_id = '$userId' AND status = 'accepted')", null, false)
+                ->orWhere("posts.id_user IN (SELECT requester_id FROM friendships WHERE receiver_id = '$userId' AND status = 'accepted')", null, false)
+            ->groupEnd()
+            ->orderBy('posts.created_at', 'DESC')
+            ->findAll();
+    }
+
     public function list() {
         return $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
                     ->join('profiles', 'profiles.id= posts.id_user')

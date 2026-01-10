@@ -1,13 +1,15 @@
 <div class="post-card" data-id="<?= $post['id'] ?>">
     <div class="post-header">
         <div class="header-left" style="display:flex; gap:10px; align-items:center; flex:1;">
+        <a href="<?= base_url('user/profile/'.$post['id_user']) ?>">
             <img src="<?= (isset($post['avatar']) && strpos($post['avatar'], 'http') === 0) ? $post['avatar'] : ($post['avatar'] ? base_url($post['avatar']) : base_url('ICON/avatar-default.svg')) ?>" class="avatar-medium">
+        </a>
             <div class="post-info">
                 <a href="<?= base_url('user/profile/'.$post['id_user']) ?>" class="author-name"><?= esc($post['firstname'] . ' ' . $post['lastname']) ?></a>
                 <span class="timestamp"><?= date('M d, Y', strtotime($post['created_at'])) ?></span>
             </div>
         </div>
-        <?php if (session()->get('user_id') == $post['id_user']): ?>
+        <?php if (session()->get('user_id') == $post['id_user'] && (isset($showDelete) && $showDelete)): ?>
             <form action="<?= base_url('post/delete_post/' . $post['id']) ?>" method="post" onsubmit="return confirm('Do you really want to delete this post?')">
                 <?= csrf_field() ?>
                 <input type="hidden" name="_method" value="DELETE">

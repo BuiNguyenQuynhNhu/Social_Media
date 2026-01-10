@@ -63,7 +63,7 @@ class CommentController extends BaseController
             $profile = $profileModel->find($this->userId);
             
             $avatar = $user['avatar'] ?? 'ICON/avatar-default.svg';
-            if(!str_starts_with($avatar, 'http')) $avatar = base_url($avatar);
+            if(strpos($avatar, 'http') !== 0) $avatar = base_url($avatar);
 
             return $this->response->setJSON([
                 'status' => 'success',
@@ -150,7 +150,7 @@ class CommentController extends BaseController
                 $p = $profileModel->find($uid);
                 
                 $avatar = $u['avatar'] ?? 'ICON/avatar-default.svg';
-                if(!str_starts_with($avatar, 'http')) $avatar = base_url($avatar);
+                if(strpos($avatar, 'http') !== 0) $avatar = base_url($avatar);
 
                 $usersCache[$uid] = [
                     'id' => $uid,
@@ -161,13 +161,14 @@ class CommentController extends BaseController
             
             $result[] = [
                 'id' => (string)$comment['_id'],
+                'post_id' => $comment['post_id'],
                 'content' => $comment['content'],
                 'parent_id' => $comment['parent_id'] ?? null,
                 'depth' => $comment['depth'] ?? 0,
                 'created_at' => $comment['created_at'],
                 'user' => $usersCache[$uid],
                 'likes_count' => count($comment['likes'] ?? []),
-                'is_liked' => in_array($this->userId, $comment['likes'] ?? []),
+                'is_liked' => in_array($this->userId, (array)($comment['likes'] ?? [])),
                 'can_delete' => ($uid == $this->userId)
             ];
         }

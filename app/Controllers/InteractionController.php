@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\Interation;
+use Ramsey\Uuid\Uuid;
 
 class InteractionController extends BaseController
 {
@@ -48,7 +49,7 @@ class InteractionController extends BaseController
 
         // Create new reaction
         $this->interaction->insert([
-            'id'      => uuid_url(), // Ensure ID is generated if not auto-increment
+            'id'      => Uuid::uuid4()->toString(),
             'user_id' => $this->userId,
             'post_id' => $postId,
             'type'    => $type
@@ -67,6 +68,16 @@ class InteractionController extends BaseController
         
         $counts = array_count_values(array_column($reactions, 'type'));
         
-        return $this->response->setJSON(['counts' => $counts, 'total' => count($reactions), 'users' => $reactions]);
+        // Check current user's reaction
+        $myReaction = $this->interaction->where('user_id', $this->userId)
+                                        ->where('post_id', $postId)
+                                        ->first();
+        
+        return $this->response->setJSON([
+            'counts' => $counts, 
+            'total' => count($reactions), 
+            'users' => $reactions,
+            'myReaction' => $myReaction ? $myReaction['type'] : null
+        ]);
     }
 }

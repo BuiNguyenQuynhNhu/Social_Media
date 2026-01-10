@@ -16,11 +16,11 @@
             <div class="name-details">
                 <h1><?= esc($user['firstname'] . ' ' . $user['lastname']) ?></h1>
                 <div class="profile-nav">
-                    <div class="nav-tab active" onclick="switchTab('posts', this)">
+                    <a href="<?= base_url('user/profile/'.$user['id']) ?>" class="nav-tab <?= (strpos(uri_string(), 'profile') !== false && strpos(uri_string(), 'list_friend') === false) ? 'active' : '' ?>" style="text-decoration: none; color: inherit;">
                         <span><?= count($posts ?? []) ?> Posts</span>
                         <div class="nav-underline"></div>
-                    </div>
-                    <a href="<?= base_url('user/list_friend/'.$user['id']) ?>" class="nav-tab" style="text-decoration: none;">
+                    </a>
+                    <a href="<?= base_url('user/list_friend/'.$user['id']) ?>" class="nav-tab <?= (strpos(uri_string(), 'list_friend') !== false) ? 'active' : '' ?>" style="text-decoration: none; color: inherit;">
                         <span><?= count($friends ?? []) ?> Friends</span>
                         <div class="nav-underline"></div>
                     </a>

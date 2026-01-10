@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\FriendShip;
 use App\Models\User;
+use App\Models\Profile;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class FriendShipController extends BaseController
@@ -26,6 +27,28 @@ class FriendShipController extends BaseController
         return ['user' => $user, 'avatarUrl' => $avatarUrl, 'user_id' => $this->userId];
     }
 
+    private function getTargetUserData($targetId) {
+        $userModel = new User();
+        $profileModel = new Profile();
+        
+        $targetUser = $userModel->find($targetId);
+        $targetProfile = $profileModel->where('id', $targetId)->first();
+        
+        if(!$targetUser || !$targetProfile) return null;
+        
+        $merged = array_merge($targetUser, $targetProfile);
+        
+        $merged['avatarUrl'] = (strpos($merged['avatar'], 'http') === 0) 
+            ? $merged['avatar'] 
+            : ($merged['avatar'] ? base_url($merged['avatar']) : base_url('ICON/avatar-default.svg'));
+            
+        $merged['coverUrl'] = (strpos($merged['background'], 'http') === 0) 
+            ? $merged['background'] 
+            : (!empty($merged['background']) ? base_url($merged['background']) : base_url('ICON/background-default.jpg'));
+            
+        return $merged;
+    }
+
     public function index()
     {
         if (!$this->userId) return redirect()->to('login');
@@ -44,9 +67,23 @@ class FriendShipController extends BaseController
         
         $data = $this->getUserData(); 
         $data['targetId'] = $id;
+        
+        $targetData = $this->getTargetUserData($id);
+        if($targetData) {
+            $data['navbarAvatarUrl'] = $data['avatarUrl']; 
+            $data['avatarUrl'] = $targetData['avatarUrl'];
+            $data['coverUrl'] = $targetData['coverUrl'];
+            $data['user'] = $targetData; 
+        }
+
+        // Get posts and friends count for the target user
+        $postModel = new \App\Models\Post();
+        $data['posts'] = $postModel->where('id_user', $id)->findAll();
+        $data['friends'] = $this->friend->listFriend($id);
+
         $data['title'] = 'Friends List';
         $data['activeTab'] = 'all';
-        $data['list'] = $this->friend->listFriend($id);
+        $data['list'] = $data['friends'];
         
         return view('user/listFriend', $data);
     }
@@ -58,6 +95,21 @@ class FriendShipController extends BaseController
         }
 
         $data = $this->getUserData();
+        $data['targetId'] = $id;
+        
+        $targetData = $this->getTargetUserData($id);
+        if($targetData) {
+            $data['navbarAvatarUrl'] = $data['avatarUrl']; 
+            $data['avatarUrl'] = $targetData['avatarUrl'];
+            $data['coverUrl'] = $targetData['coverUrl'];
+            $data['user'] = $targetData; 
+        }
+
+        // Get posts and friends count
+        $postModel = new \App\Models\Post();
+        $data['posts'] = $postModel->where('id_user', $id)->findAll();
+        $data['friends'] = $this->friend->listFriend($id);
+
         $data['title'] = 'Friend Requests';
         $data['activeTab'] = 'received';
         $data['list'] = $this->friend->listReceive($id);
@@ -73,6 +125,20 @@ class FriendShipController extends BaseController
 
         $data = $this->getUserData();
         $data['targetId'] = $id;
+        
+        $targetData = $this->getTargetUserData($id);
+        if($targetData) {
+            $data['navbarAvatarUrl'] = $data['avatarUrl']; 
+            $data['avatarUrl'] = $targetData['avatarUrl'];
+            $data['coverUrl'] = $targetData['coverUrl'];
+            $data['user'] = $targetData; 
+        }
+
+        // Get posts and friends count
+        $postModel = new \App\Models\Post();
+        $data['posts'] = $postModel->where('id_user', $id)->findAll();
+        $data['friends'] = $this->friend->listFriend($id);
+
         $data['title'] = 'Sent Requests';
         $data['activeTab'] = 'sent';
         $data['list'] = $this->friend->listSend($id);

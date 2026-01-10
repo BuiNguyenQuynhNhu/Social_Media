@@ -318,6 +318,35 @@ body.background {
     border-radius: 8px;
     background: #f0f2f5;
 }
+/* Sidebar Alignment (dashboard.css) */
+.dashboard-container {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding-top: 20px;
+}
+
+.main-feed {
+    width: 100%;
+    max-width: 680px; /* Standard FB post width */
+}
+
+/* Fixed Header (profile.css) */
+.user-info-main {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin-top: -30px; /* Overlap with cover photo */
+}
+
+.main-avatar {
+    width: 168px;
+    height: 168px;
+    border: 4px solid var(--fb-white);
+    border-radius: 50%;
+    background: #eee;
+    object-fit: cover;
+}
 
 /* Form Styling */
 .fb-input {

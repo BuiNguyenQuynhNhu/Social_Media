@@ -8,11 +8,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($user['firstname'] . ' ' . $user['lastname']) ?> | Profile</title>
     
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/User/profile.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/overall.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/post/post.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/post/comment.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/post/interaction.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/dashboard.css') ?>">
 </head>
 
 <body class="background">
@@ -36,7 +40,7 @@
                     <?php endif; ?>
 
                     <?php foreach ($posts as $post): ?>
-                        <?= view('components/user/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl]) ?>
+                        <?= view('components/user/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl, 'showDelete' => true]) ?>
                     <?php endforeach; ?>
                 </div>
 
@@ -55,6 +59,10 @@
             </div>
         </div>
     </div>
+    <script>
+        const BASE_URL = "<?= rtrim(base_url(), '/') ?>";
+        lucide.createIcons();
+    </script>
     <script src="<?= base_url('JS/post.js') ?>"></script>
 </body>
 </html>

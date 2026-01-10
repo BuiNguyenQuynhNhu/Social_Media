@@ -41,9 +41,9 @@ class UserController extends BaseController
             ? $user['avatar'] 
             : ($user['avatar'] ? base_url($user['avatar']) : base_url('ICON/avatar-default.svg'));
 
-        // Load posts for the dashboard feed
+        // Load posts for the dashboard feed (Friends + Self)
         $postController = new PostController();
-        $data['posts'] = $postController->listAll(); 
+        $data['posts'] = $postController->listFeed($this->id); 
 
         return view('dashboard', $data);
     }

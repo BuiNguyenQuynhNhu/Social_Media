@@ -110,6 +110,11 @@ class PostController extends BaseController
         return $this->mergeMedia($sqlPosts);
     }
 
+    public function listFeed($userId) {
+        $sqlPosts = $this->post->getFeed($userId);
+        return $this->mergeMedia($sqlPosts);
+    }
+
     public function listUserPosts($id) {
         $sqlPosts = $this->post->getPostByUser($id);
         return $this->mergeMedia($sqlPosts);

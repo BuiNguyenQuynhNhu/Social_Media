@@ -28,14 +28,15 @@
 
         <div class="nav-section center">
             <div class="nav-menu">
-                <a href="<?= base_url('user/dashboard') ?>" class="nav-item <?= (uri_string() == 'dashboard' || uri_string() == '') ? 'active' : '' ?>">
+                <a href="<?= base_url('user/dashboard') ?>" class="nav-item <?= (strpos(uri_string(), 'dashboard') !== false || uri_string() == '/' || uri_string() == '') ? 'active' : '' ?>">
                     <i data-lucide="home"></i>
                 </a>
 
-                <a href="<?= base_url('user/friends') ?>" class="nav-item <?= (uri_string() == 'friends') ? 'active' : '' ?>" style="position: relative;">
+                <a href="<?= base_url('user/friends') ?>" class="nav-item <?= (strpos(uri_string(), 'friend') !== false) ? 'active' : '' ?>" style="position: relative;">
                     <i data-lucide="users"></i>
                     <span id="friend-badge" class="nav-badge"></span>
                 </a>
+                
                 <a href="#" class="nav-item">
                     <i data-lucide="file-text"></i>
                 </a>

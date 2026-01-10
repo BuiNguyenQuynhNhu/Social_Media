@@ -13,7 +13,7 @@ class FriendShip extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id', 'receiver_id', 'requested_id', 'status'];
+    protected $allowedFields    = ['id', 'receiver_id', 'requester_id', 'status', 'created_at', 'updated_at'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -22,7 +22,7 @@ class FriendShip extends Model
     protected array $castHandlers = [];
 
     // Dates
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
@@ -68,7 +68,7 @@ class FriendShip extends Model
     }
 
     public function listSend($id) {
-        return $this->select('friendships.id as id_friend_ship, users.id, profiles.firstname, profiles.lastname, users.avatar')
+        return $this->select('friendships.id as id_friend_ship, users.id, profiles.firstname, profiles.lastname, users.avatar, friendships.created_at, friendships.updated_at')
             ->join('users', 'users.id = friendships.receiver_id')
             ->join('profiles', 'profiles.id = users.id')
             ->where('friendships.requester_id', $id)
@@ -76,7 +76,7 @@ class FriendShip extends Model
             ->findAll();
     }
     public function listReceive($id) {
-        return $this->select('friendships.id as id_friend_ship, users.id, profiles.firstname, profiles.lastname, users.avatar')
+        return $this->select('friendships.id as id_friend_ship, users.id, profiles.firstname, profiles.lastname, users.avatar, friendships.created_at, friendships.updated_at')
             ->join('users', 'users.id = friendships.requester_id')
             ->join('profiles', 'profiles.id = users.id')
             ->where('friendships.receiver_id', $id)
