@@ -56,6 +56,15 @@ $routes->group('comment', ['filter' => 'auth'], function($routes){
     $routes->get('get/(:any)', 'CommentController::getComments/$1');
 });
 
+// Messages
+$routes->group('message', ['filter' => 'auth'], function($routes){
+    $routes->get('/', 'MessageController::index');
+    $routes->get('conversations', 'MessageController::getConversations');
+    $routes->get('get/(:any)', 'MessageController::getMessages/$1');
+    $routes->post('send/(:any)', 'MessageController::sendMessage/$1');
+    $routes->delete('delete/(:any)', 'MessageController::deleteMessage/$1');
+});
+
 //Super Admin
 $routes->group('admin', ['filter' => 'auth'], function($routes){
     $routes->get('profile/(:any)', 'UserController::profile/$1');

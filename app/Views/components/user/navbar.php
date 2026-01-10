@@ -40,7 +40,7 @@
                 <a href="#" class="nav-item">
                     <i data-lucide="file-text"></i>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="<?= base_url('message') ?>" class="nav-item <?= (strpos(uri_string(), 'message') !== false) ? 'active' : '' ?>">
                     <i data-lucide="message-circle"></i>
                 </a>
                 
