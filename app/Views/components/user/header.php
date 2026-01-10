@@ -20,7 +20,7 @@
                         <span><?= count($posts ?? []) ?> Posts</span>
                         <div class="nav-underline"></div>
                     </div>
-                    <a href="<?= base_url('user/update_profile/'.$user['id']) ?>" class="nav-tab" style="text-decoration: none;">
+                    <a href="<?= base_url('user/list_friend/'.$user['id']) ?>" class="nav-tab" style="text-decoration: none;">
                         <span><?= count($friends ?? []) ?> Friends</span>
                         <div class="nav-underline"></div>
                     </a>
@@ -50,7 +50,6 @@
         
         <form action="<?= base_url('user/update_profile/'.$user['id']) ?>" method="POST" class="modal-body" enctype="multipart/form-data">
             <?= csrf_field() ?>
-            <input type="hidden" name="_method" value="PUT">
 
             <div class="edit-section" id="avatar-section">
                 <div class="section-header">

@@ -52,15 +52,10 @@
                 <div class="icon-circle notification" title="Notifications" onclick="toggleNotifications()" style="position: relative;">
                     <i data-lucide="bell"></i>
                     <span id="notif-count" class="notif-dot">0</span>
-                    
-                    <div id="notif-dropdown" class="notif-dropdown">
-                        <div class="notif-header">Notifications</div>
-                        <div id="notif-list"></div>
-                    </div>
                 </div>
 
                 <div class="user-profile">
-                    <a href="<?= base_url('user/profile') . $user['id']?>" class="avatar-link" title="Your Profile">
+                    <a href="<?= base_url('user/profile/') . $user['id']?>" class="avatar-link" title="Your Profile">
                         <img src="<?= $avatarUrl ?>" class="search-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                     </a>
                 </div>

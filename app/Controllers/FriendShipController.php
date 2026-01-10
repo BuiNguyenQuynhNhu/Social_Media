@@ -17,20 +17,67 @@ class FriendShipController extends BaseController
         $this->friend = new FriendShip();
         $this->userId = session()->get('user_id');
     }
+    private function getUserData() {
+        $userModel = new User();
+        $user = $userModel->find($this->userId);
+        $avatarUrl = (strpos($user['avatar'], 'http') === 0) 
+            ? $user['avatar'] 
+            : ($user['avatar'] ? base_url($user['avatar']) : base_url('ICON/avatar-default.svg'));
+        return ['user' => $user, 'avatarUrl' => $avatarUrl, 'user_id' => $this->userId];
+    }
+
     public function index()
     {
         if (!$this->userId) return redirect()->to('login');
-
-        $data = [
-            'title'     => 'All Friends',
-            'activeTab' => 'all',
-            'list'      => $this->friend->listFriend($this->userId)
-        ];
+        
+        $data = $this->getUserData();
+        $data['title'] = 'All Friends';
+        $data['activeTab'] = 'all';
+        $data['list'] = $this->friend->listFriend($this->userId);
+        
         return view('user/listFriend', $data);
     }
 
-    public function listFriend(){
+    // New methods for ID-based routing with privacy checks
+    public function listFriend($id) {
+        if (!$this->userId) return redirect()->to('login');
         
+        $data = $this->getUserData(); 
+        $data['targetId'] = $id;
+        $data['title'] = 'Friends List';
+        $data['activeTab'] = 'all';
+        $data['list'] = $this->friend->listFriend($id);
+        
+        return view('user/listFriend', $data);
+    }
+
+    public function listReceive($id) {
+        if (!$this->userId) return redirect()->to('login');
+        if($id != $this->userId) {
+            return redirect()->to('user/dashboard')->with('error', 'Unauthorized access to requests');
+        }
+
+        $data = $this->getUserData();
+        $data['title'] = 'Friend Requests';
+        $data['activeTab'] = 'received';
+        $data['list'] = $this->friend->listReceive($id);
+
+        return view('user/listFriend', $data);
+    }
+    
+    public function listRequest($id) {
+        if (!$this->userId) return redirect()->to('login');
+         if($id != $this->userId) {
+            return redirect()->to('user/dashboard')->with('error', 'Unauthorized access to outgoing requests');
+        }
+
+        $data = $this->getUserData();
+        $data['targetId'] = $id;
+        $data['title'] = 'Sent Requests';
+        $data['activeTab'] = 'sent';
+        $data['list'] = $this->friend->listSend($id);
+
+        return view('user/listFriend', $data);
     }
 
     public function send($receiverId)
@@ -66,11 +113,10 @@ class FriendShipController extends BaseController
     {
         if (!$this->userId) return redirect()->to('login');
 
-        $data = [
-            'title'     => 'Friend Requests',
-            'activeTab' => 'received',
-            'list'      => $this->friend->listReceive($this->userId),
-        ];
+        $data = $this->getUserData();
+        $data['title'] = 'Friend Requests';
+        $data['activeTab'] = 'received';
+        $data['list'] = $this->friend->listReceive($this->userId);
 
         return view('user/listFriend', $data);
     }
@@ -79,11 +125,10 @@ class FriendShipController extends BaseController
     {
         if (!$this->userId) return redirect()->to('login');
 
-        $data = [
-            'title'     => 'Sent Requests',
-            'activeTab' => 'sent',
-            'list'      => $this->friend->listSend($this->userId),
-        ];
+        $data = $this->getUserData();
+        $data['title'] = 'Sent Requests';
+        $data['activeTab'] = 'sent';
+        $data['list'] = $this->friend->listSend($this->userId);
 
         return view('user/listFriend', $data);
     }

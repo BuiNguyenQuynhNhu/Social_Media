@@ -68,7 +68,7 @@ class FriendShip extends Model
     }
 
     public function listSend($id) {
-        return $this->select('friendships.*, profiles.firstname, profiles.lastname, users.avatar')
+        return $this->select('friendships.id as id_friend_ship, users.id, profiles.firstname, profiles.lastname, users.avatar')
             ->join('users', 'users.id = friendships.receiver_id')
             ->join('profiles', 'profiles.id = users.id')
             ->where('friendships.requester_id', $id)
@@ -76,7 +76,7 @@ class FriendShip extends Model
             ->findAll();
     }
     public function listReceive($id) {
-        return $this->select('friendships.*, profiles.firstname, profiles.lastname, users.avatar')
+        return $this->select('friendships.id as id_friend_ship, users.id, profiles.firstname, profiles.lastname, users.avatar')
             ->join('users', 'users.id = friendships.requester_id')
             ->join('profiles', 'profiles.id = users.id')
             ->where('friendships.receiver_id', $id)
@@ -84,7 +84,7 @@ class FriendShip extends Model
             ->findAll();
     }
     public function listFriend($id) {
-        return $this->select('friendships.*, profiles.firstname, profiles.lastname, users.avatar')
+        return $this->select('friendships.id as id_friend_ship, users.id, profiles.firstname, profiles.lastname, users.avatar')
             ->join('users', "users.id = (CASE WHEN friendships.requester_id = '$id' THEN friendships.receiver_id ELSE friendships.requester_id END)")
             ->join('profiles', 'profiles.id = users.id')
             ->where('friendships.status', 'accepted')

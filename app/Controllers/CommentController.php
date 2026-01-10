@@ -27,34 +27,55 @@ class CommentController extends BaseController
         }
 
         $content = $this->request->getPost('content');
+        $parentId = $this->request->getPost('parent_id') ?? null;
+        
         if (empty($content)) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Content cannot be empty']);
+        }
+
+        $depth = 0;
+        if ($parentId) {
+            $parent = $this->collection->findOne(['_id' => new \MongoDB\BSON\ObjectId($parentId)]);
+            if ($parent) {
+                $depth = ($parent['depth'] ?? 0) + 1;
+            }
+            if ($depth > 3) {
+                 return $this->response->setJSON(['status' => 'error', 'message' => 'Max reply depth reached']);
+            }
         }
 
         $comment = [
             'post_id' => $postId,
             'user_id' => $this->userId,
             'content' => $content,
+            'parent_id' => $parentId,
+            'depth' => $depth,
+            'likes' => [],
             'created_at' => date('Y-m-d H:i:s')
         ];
 
         $result = $this->collection->insertOne($comment);
 
         if ($result->getInsertedCount() > 0) {
-            // Fetch user details for immediate display
             $userModel = new User();
             $profileModel = new Profile();
             $user = $userModel->find($this->userId);
             $profile = $profileModel->find($this->userId);
+            
+            $avatar = $user['avatar'] ?? 'ICON/avatar-default.svg';
+            if(!str_starts_with($avatar, 'http')) $avatar = base_url($avatar);
 
             return $this->response->setJSON([
                 'status' => 'success',
                 'data' => [
                     'id' => (string)$result->getInsertedId(),
                     'content' => $content,
+                    'parent_id' => $parentId,
+                    'depth' => $depth,
+                    'likes_count' => 0,
                     'user' => [
                         'id' => $this->userId,
-                        'avatar' => $user['avatar'] ?? 'ICON/avatar-default.svg',
+                        'avatar' => $avatar,
                         'name' => $profile ? $profile['firstname'] . ' ' . $profile['lastname'] : 'Unknown'
                     ],
                     'created_at' => $comment['created_at']
@@ -71,9 +92,6 @@ class CommentController extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
         }
 
-        // Logic to verify ownership would normally look up the comment first
-        // For now trusting the user owns it or is admin (Implementation simplification)
-        
         $filter = ['_id' => new \MongoDB\BSON\ObjectId($commentId)];
         $comment = $this->collection->findOne($filter);
         
@@ -90,27 +108,67 @@ class CommentController extends BaseController
         return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to delete']);
     }
 
+    public function like($commentId) {
+        if (!$this->userId) return $this->response->setJSON(['status' => 'error']);
+        
+        $oid = new \MongoDB\BSON\ObjectId($commentId);
+        $comment = $this->collection->findOne(['_id' => $oid]);
+        
+        if (!$comment) return $this->response->setJSON(['status' => 'error', 'message' => 'Not found']);
+
+        $likes = (array)($comment['likes'] ?? []);
+        $action = 'liked';
+
+        if (in_array($this->userId, $likes)) {
+            $likes = array_diff($likes, [$this->userId]);
+            $action = 'unliked';
+        } else {
+            $likes[] = $this->userId;
+        }
+
+        $this->collection->updateOne(
+            ['_id' => $oid],
+            ['$set' => ['likes' => array_values($likes)]]
+        );
+
+        return $this->response->setJSON(['status' => 'success', 'action' => $action, 'count' => count($likes)]);
+    }
+
     public function getComments($postId)
     {
-        $comments = $this->collection->find(['post_id' => $postId], ['sort' => ['created_at' => -1]]);
+        $comments = $this->collection->find(['post_id' => $postId], ['sort' => ['created_at' => 1]]);
         
         $result = [];
         $userModel = new User();
         $profileModel = new Profile();
+        $usersCache = []; 
         
         foreach ($comments as $comment) {
-            $user = $userModel->find($comment['user_id']);
-            $profile = $profileModel->find($comment['user_id']);
+            $uid = $comment['user_id'];
+            if (!isset($usersCache[$uid])) {
+                $u = $userModel->find($uid);
+                $p = $profileModel->find($uid);
+                
+                $avatar = $u['avatar'] ?? 'ICON/avatar-default.svg';
+                if(!str_starts_with($avatar, 'http')) $avatar = base_url($avatar);
+
+                $usersCache[$uid] = [
+                    'id' => $uid,
+                    'avatar' => $avatar,
+                    'name' => $p ? $p['firstname'] . ' ' . $p['lastname'] : 'Unknown'
+                ];
+            }
             
             $result[] = [
                 'id' => (string)$comment['_id'],
                 'content' => $comment['content'],
+                'parent_id' => $comment['parent_id'] ?? null,
+                'depth' => $comment['depth'] ?? 0,
                 'created_at' => $comment['created_at'],
-                'user' => [
-                    'id' => $comment['user_id'],
-                    'avatar' => $user['avatar'] ?? 'ICON/avatar-default.svg',
-                    'name' => $profile ? $profile['firstname'] . ' ' . $profile['lastname'] : 'Unknown'
-                ]
+                'user' => $usersCache[$uid],
+                'likes_count' => count($comment['likes'] ?? []),
+                'is_liked' => in_array($this->userId, $comment['likes'] ?? []),
+                'can_delete' => ($uid == $this->userId)
             ];
         }
 

@@ -9,165 +9,43 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body>
+<body class="background">
 
 <!-- Navbar -->
-<?= view('templates/UserNavbar') ?>
+    <!-- Navbar -->
+    <?= view('components/user/navbar', ['avatarUrl' => $avatarUrl]) ?>
 
 
-<div class="dashboard-container">
-    <!-- Left Sidebar -->
-    <?= view('components/sidebar_left') ?>
+    <div class="dashboard-container">
+        <!-- Left Sidebar -->
+        <?= view('components/user/sidebar_left') ?>
 
-    <!-- Main Feed -->
-    <div class="main-feed">
-        <!-- Create Post -->
-        <div class="create-post-card">
-            <div class="cp-top">
-                <img src="<?= $avatarUrl ?>" alt="User" class="avatar-medium">
-                <div class="cp-input" onclick="openCreatePostModal()">
-                    What's on your mind, <?= $user['firstname'] ?>?
-                </div>
-            </div>
-            <div class="cp-actions">
-                <button class="cp-btn" onclick="openCreatePostModal()">
-                    <i data-lucide="image" class="text-green"></i>
-                    <span>Photo/Video</span>
-                </button>
-            </div>
-        </div>
+        <!-- Main Feed -->
+        <div class="main-feed">
+            <!-- Create Post -->
+            <?= view('components/user/create_post', ['avatarUrl' => $avatarUrl, 'user' => $user]) ?>
 
-        <!-- Posts -->
-        <div class="posts-feed">
-            <?php if (!empty($posts)): ?>
-                <?php foreach ($posts as $post): ?>
-                    <div class="post-card" data-id="<?= $post['id'] ?>">
-                        <div class="post-header">
-                            <img src="<?= $post['avatar'] ? base_url($post['avatar']) : base_url('ICON/avatar-default.svg') ?>" alt="User" class="avatar-small">
-                            <div class="post-info">
-                                <a href="<?= base_url('user/profile/'.$post['id_user']) ?>" class="author-name"><?= esc($post['firstname'] . ' ' . $post['lastname']) ?></a>
-                                <span class="timestamp"><?= date('M d, Y', strtotime($post['created_at'])) ?></span>
-                            </div>
-                            <button class="icon-btn-ghost"><i data-lucide="more-horizontal"></i></button>
-                        </div>
-                        
-                        <div class="post-content">
-                            <?= esc($post['content']) ?>
-                        </div>
-
-                        <!-- Media Grid -->
-                        <?php if (!empty($post['media'])): ?>
-                            <?php 
-                                $mediaCount = count($post['media']);
-                                $displayMedia = array_slice($post['media'], 0, 5);
-                                $gridClass = 'grid-' . min($mediaCount, 5);
-                            ?>
-                            <div class="post-media-grid <?= $gridClass ?>">
-                                <?php foreach ($displayMedia as $index => $item): ?>
-                                    <div class="media-item <?= ($index === 4 && $mediaCount > 5) ? 'more-overlay' : '' ?>" 
-                                         data-more="+<?= $mediaCount - 5 ?>" 
-                                         onclick="openLightbox('<?= $post['id'] ?>', <?= $index ?>)">
-                                        <?php if (strpos($item['type'], 'video') !== false): ?>
-                                            <video src="<?= $item['url'] ?>"></video>
-                                        <?php else: ?>
-                                            <img src="<?= $item['url'] ?>" alt="Post Image">
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="post-stats">
-                            <div class="stat-item">
-                                <i data-lucide="thumbs-up" class="w-4 h-4"></i>
-                                <span id="likes-count-<?= $post['id'] ?>">0</span>
-                            </div>
-                            <div class="stat-item" onclick="toggleComments('<?= $post['id'] ?>')">
-                                <span id="comments-count-<?= $post['id'] ?>">0 Comments</span>
-                            </div>
-                        </div>
-
-                        <div class="post-actions">
-                            <div class="reaction-wrapper">
-                                <button class="action-btn" id="btn-react-<?= $post['id'] ?>">
-                                    <i data-lucide="thumbs-up"></i>
-                                    <span id="reaction-btn-text-<?= $post['id'] ?>">Like</span>
-                                </button>
-                                <div class="reaction-box">
-                                    <div class="reaction-icon" onclick="sendReaction('<?= $post['id'] ?>', 'like')">👍</div>
-                                    <div class="reaction-icon" onclick="sendReaction('<?= $post['id'] ?>', 'love')">❤️</div>
-                                    <div class="reaction-icon" onclick="sendReaction('<?= $post['id'] ?>', 'haha')">😆</div>
-                                    <div class="reaction-icon" onclick="sendReaction('<?= $post['id'] ?>', 'wow')">😮</div>
-                                    <div class="reaction-icon" onclick="sendReaction('<?= $post['id'] ?>', 'sad')">😢</div>
-                                    <div class="reaction-icon" onclick="sendReaction('<?= $post['id'] ?>', 'angry')">😡</div>
-                                </div>
-                            </div>
-                            <button class="action-btn" onclick="toggleComments('<?= $post['id'] ?>')">
-                                <i data-lucide="message-square"></i>
-                                <span>Comment</span>
-                            </button>
-                            <button class="action-btn">
-                                <i data-lucide="share-2"></i>
-                                <span>Share</span>
-                            </button>
-                        </div>
-
-                        <!-- Comments Section -->
-                        <div class="comments-section" id="comments-<?= $post['id'] ?>" style="display: none;">
-                            <div class="comment-input-wrapper">
-                                <img src="<?= $avatarUrl ?>" class="avatar-xs">
-                                <div class="input-box">
-                                    <input type="text" placeholder="Write a comment..." onkeydown="if(event.key === 'Enter') addComment(this, '<?= $post['id'] ?>')">
-                                    <button onclick="addComment(this.previousElementSibling, '<?= $post['id'] ?>')"><i data-lucide="send"></i></button>
-                                </div>
-                            </div>
-                            <div class="comments-list"></div>
-                        </div>
+            <!-- Posts -->
+            <div class="posts-feed">
+                <?php if (!empty($posts)): ?>
+                    <?php foreach ($posts as $post): ?>
+                        <?= view('components/user/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl]) ?>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="empty-state">
+                        <i data-lucide="newspaper"></i>
+                        <p>No posts yet. Be the first to post!</p>
                     </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="empty-state">
-                    <i data-lucide="newspaper"></i>
-                    <p>No posts yet. Be the first to post!</p>
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
         </div>
+
+        <!-- Right Sidebar -->
+        <?= view('components/user/sidebar_right') ?>
+
     </div>
 
-    <!-- Right Sidebar -->
-    <?= view('components/sidebar_right') ?>
-
-</div>
-
-<!-- Create Post Modal -->
-<div id="createPostModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Create Post</h2>
-            <button class="close-btn" onclick="closeCreatePostModal()"><i data-lucide="x"></i></button>
-        </div>
-        <form action="<?= base_url('post/create_post') ?>" method="post" enctype="multipart/form-data">
-            <div class="modal-body">
-                <div class="user-micro">
-                    <img src="<?= $avatarUrl ?>" class="avatar-small">
-                    <span><?= $user['firstname'] . ' ' . $user['lastname'] ?></span>
-                </div>
-                <textarea name="content" placeholder="What's on your mind?"></textarea>
-                <div class="media-preview" id="media-preview-area"></div>
-                <div class="add-to-post">
-                    <span>Add to your post</span>
-                    <label class="icon-action text-green">
-                        <i data-lucide="image"></i>
-                        <input type="file" name="images[]" multiple accept="image/*,video/*" hidden onchange="previewFiles(this)">
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn-primary w-full">Post</button>
-            </div>
-        </form>
-    </div>
-</div>
+    <!-- Create Post Modal is already included via user/create_post component -->
 
 <script>
     // Initialize Lucide Icons
@@ -257,26 +135,131 @@
         });
     }
 
+    // --- COMMENT SYSTEM ---
     function loadComments(postId) {
         $.get('<?= base_url('comment/get/') ?>' + postId, function(res) {
-            let list = $('#comments-' + postId + ' .comments-list');
-            list.empty();
+            let container = $('#comments-' + postId + ' .comments-list');
+            container.empty();
             if(res.data) {
-                res.data.forEach(c => {
-                    list.append(`
-                        <div class="comment">
-                            <img src="${c.user.avatar}" class="avatar-xs">
-                            <div class="comment-bubble">
-                                <a href="#" class="comment-author">${c.user.name}</a>
-                                <p>${c.content}</p>
-                            </div>
-                        </div>
-                    `);
-                });
                 $('#comments-count-' + postId).text(res.data.length + ' Comments');
+                
+                // Build Tree
+                let map = {}, roots = [];
+                res.data.forEach(c => {
+                    c.children = [];
+                    map[c.id] = c;
+                });
+                res.data.forEach(c => {
+                    if(c.parent_id && map[c.parent_id]) {
+                        map[c.parent_id].children.push(c);
+                    } else {
+                        roots.push(c);
+                    }
+                });
+
+                roots.forEach(c => {
+                    renderComment(c, container);
+                });
+                lucide.createIcons();
             }
         });
     }
+
+    function renderComment(c, container) {
+        let timeText = c.created_at ? new Date(c.created_at).toLocaleString() : 'Just now';
+        let likeActive = c.is_liked ? 'style="color:#1877f2; font-weight:bold;"' : '';
+        let likeText = c.is_liked ? 'Liked' : 'Like';
+        let deleteBtn = c.can_delete ? `<span onclick="deleteComment('${c.id}', '${c.post_id}')">Delete</span>` : '';
+        
+        let html = `
+            <div class="comment-wrapper" id="comment-${c.id}">
+                <div class="comment" data-depth="${c.depth}">
+                    <img src="${c.user.avatar}" class="avatar-xs">
+                    <div class="comment-content-wrapper">
+                        <div class="comment-bubble">
+                            <a href="<?= base_url('user/profile/') ?>${c.user.id}" class="comment-author">${c.user.name}</a>
+                            <p>${c.content}</p>
+                        </div>
+                        <div class="comment-actions">
+                            <span>${timeText}</span>
+                            <span onclick="likeComment('${c.id}')" ${likeActive} id="like-btn-${c.id}">${likeText} (${c.likes_count})</span>
+                            <span onclick="toggleReply('${c.id}')">Reply</span>
+                            ${deleteBtn}
+                        </div>
+                        <div class="reply-box" id="reply-box-${c.id}">
+                             <div class="reply-input-wrapper">
+                                <input type="text" id="reply-input-${c.id}" placeholder="Write a reply...">
+                                <button onclick="submitReply('${c.post_id}', '${c.id}')" style="color:#1877f2; border:none; background:none; cursor:pointer;"><i data-lucide="send"></i></button>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="replies-container" style="display:flex; flex-direction:column; gap:0;">
+                </div>
+            </div>
+        `;
+        
+        let el = $(html);
+        container.append(el);
+        
+        // Render Children
+        let repliesContainer = el.find('.replies-container');
+        if(c.children && c.children.length > 0) {
+            c.children.forEach(child => {
+                renderComment(child, repliesContainer);
+            });
+        }
+    }
+
+    function toggleReply(id) {
+        $('#reply-box-' + id).toggle();
+        $('#reply-input-' + id).focus();
+    }
+
+    function submitReply(postId, parentId) {
+        let content = $('#reply-input-' + parentId).val();
+        if(!content) return;
+        
+        $.post('<?= base_url('comment/add/') ?>' + postId, {content: content, parent_id: parentId}, function(res) {
+            if(res.status === 'success') {
+                loadComments(postId);
+            } else {
+                alert(res.message);
+            }
+        });
+    }
+
+    function likeComment(id) {
+        $.post('<?= base_url('comment/like/') ?>' + id, function(res) {
+            if(res.status === 'success') {
+                let btn = $('#like-btn-' + id);
+                if(res.action === 'liked') {
+                    btn.css('color', '#1877f2').css('font-weight', 'bold');
+                    btn.text('Liked (' + res.count + ')');
+                } else {
+                    btn.css('color', '').css('font-weight', 'normal');
+                    btn.text('Like (' + res.count + ')');
+                }
+            }
+        });
+    }
+
+    function deleteComment(id, postId) {
+        if(!confirm('Delete this comment?')) return;
+        $.ajax({
+            url: '<?= base_url('comment/delete/') ?>' + id,
+            type: 'DELETE',
+            success: function(res) {
+                if(res.status === 'success') {
+                    loadComments(postId);
+                } else {
+                    alert('Failed to delete');
+                }
+            }
+        });
+    }
+
+    // Main create post handler (no change needed but ensuring safety)
     
     // Initial Load
     $(document).ready(function() {

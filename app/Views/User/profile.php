@@ -16,9 +16,9 @@
 </head>
 
 <body class="background">
-    <?= view('templates/UserNavbar', ['avatarUrl' => $avatarUrl]) ?>
+    <?= view('components/user/navbar', ['avatarUrl' => $avatarUrl]) ?>
     <div class="profile-container">
-        <?= view('templates/UserHeader') ?>
+        <?= view('components/user/header') ?>
 
         <div class="profile-body-layout">
             <div class="left-column">
@@ -32,50 +32,12 @@
             <div class="right-column">
                 <div id="posts-container" class="tab-content active">
                     <?php if($isOwnProfile): ?>
-                        <?= view('templates/post') ?>
+                        <?= view('components/user/create_post', ['user' => $user, 'avatarUrl' => $avatarUrl]) ?>
                     <?php endif; ?>
 
                     <?php foreach ($posts as $post): ?>
-                        <div class="fb-card post-card">
-                            <div class="post-header">
-                                <div class="header-left">
-                                    <img src="<?= (isset($post['avatar']) && strpos($post['avatar'], 'http') === 0) ? $post['avatar'] : ($post['avatar'] ? base_url($post['avatar']) : base_url('ICON/avatar-default.svg')) ?>" class="small-avatar">
-                                    <div class="post-info">
-                                        <span class="author"><?= esc($post['firstname'] . ' ' . $post['lastname']) ?></span>
-                                        <span class="time"><?= date('M d, Y', strtotime($post['created_at'])) ?></span>
-                                    </div>
-                                </div>
-
-                                <?php if (session()->get('user_id') == $post['id_user']): ?>
-                                <form action="<?= base_url('post/delete_post/' . $post['id']) ?>" method="post"
-                                    onsubmit="return confirm('Do you really want to delete this post?')">
-
-                                    <?= csrf_field() ?>
-                                    <input type="hidden" name="_method" value="DELETE">
-
-                                    <button type="submit" class="delete-icon">
-                                        <i data-lucide="trash-2"></i>
-                                    </button>
-                                </form>
-
-                                <?php endif; ?>
-                            </div>
-
-                            <div class="post-content">
-                                <p><?= esc($post['content']) ?></p>
-                                
-                                <div class="media-grid">
-                                    <?php foreach ($post['media'] as $media): ?>
-                                        <?php if ($media['type'] === 'video'): ?>
-                                            <video src="<?= $media['url'] ?>" controls class="post-media-item"></video>
-                                        <?php else: ?>
-                                            <img src="<?= $media['url'] ?>" class="post-media-item">
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
+                        <?= view('components/user/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl]) ?>
+                    <?php endforeach; ?>
                 </div>
 
                 <div id="friends-container" class="tab-content">

@@ -68,7 +68,7 @@ class Post extends Model
     }
 
     public function getPostByUser($id){
-        return $this->select('posts.*, profiles.firstname, profiles.lastname, users.avatar')
+        return $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
                     ->join('profiles', 'profiles.id = posts.id_user')
                     ->join('users', 'users.id = posts.id_user')
                     ->where('posts.id_user', $id)
@@ -81,7 +81,7 @@ class Post extends Model
     }
 
     public function list() {
-        return $this->select('posts.*, profiles.firstname, profiles.lastname, users.avatar')
+        return $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
                     ->join('profiles', 'profiles.id= posts.id_user')
                     ->join('users', 'users.id = posts.id_user')
                     ->orderBy('posts.created_at', 'DESC')
