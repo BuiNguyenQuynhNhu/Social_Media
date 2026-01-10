@@ -6,15 +6,18 @@ use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\User;
 use App\Models\Profile;
+use App\Models\Admin;
 
 class AuthController extends BaseController
 {
     protected $user;
+    protected $admin;
     protected $profile;
 
     public function __construct()
     {
         $this->user = new User();
+        $this->admin = new Admin();
         $this->profile = new Profile();
     }
 
@@ -46,9 +49,10 @@ class AuthController extends BaseController
                 'username' => $userData['email'],
                 'logged_in' => true,
             ]);
-            return redirect()->to('user/profile')->with('success', 'Sign up completed successfully');
+            return redirect()->to('user/dashboard')->with('success', 'Sign up completed successfully');
         }
         return redirect()->back()->withInput()->with('error_register', $res['message']);
+    
     }
 
     public function login(){
@@ -59,14 +63,18 @@ class AuthController extends BaseController
         if (!$exist)
             return redirect()->back()->with('error', 'Email is not exist');
         if (!password_verify($password, $exist['password']))
-            return redirect()->back()->with('error', 'Password is not corrected');
+            return redirect()->back()->with('error', 'Password is incorrected');
 
         session()->set([
             'user_id' => $exist['id'],
-            'username' => $exist['password'],
+            'email' => $exist['email'],
+            'type'      => $exist['type'],
             'logged_in' => true,
         ]);
-        return redirect()->to('user/profile');
+        if ($exist['type'] === '1') {
+            return redirect()->to('admin/dashboard');
+        }
+        return redirect()->to('user/profile/'.$exist['id']);
     }
 
     public function logout(){

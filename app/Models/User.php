@@ -102,4 +102,8 @@ class User extends Model
     public function updateAvatar($id, $file){
         return $this->update($id, ['avatar' => $file]);
     }
+
+    public function list(){
+        return $this->findAll();
+    }
 }

@@ -1,0 +1,131 @@
+<?php
+
+namespace App\Controllers;
+
+use App\Controllers\BaseController;
+use App\Libraries\Cloudinary;
+use App\Libraries\MongoDB; 
+use App\Models\Post;
+
+class PostController extends BaseController
+{
+    protected $post;
+    protected $userId;
+
+    public function __construct() {
+        $this->post = new Post();
+        $this->userId = session()->get('user_id');
+    }
+
+    public function create() {
+        if (!$this->userId) return redirect()->to('login');
+        $rules = [
+            'images' => [
+                'label' => 'Media files',
+                'rules' => 'uploaded[images]|max_size[images,5120]|ext_in[images,jpg,jpeg,png,gif,mp4,mov,avi]',
+                'errors' => [
+                    'ext_in' => 'Only images (jpg, png, gif) or videos (mp4, mov) are allowed.'
+                ]
+            ]
+        ];
+
+        $files = $this->request->getFileMultiple('images');
+        if ($files && $files[0]->isValid()) {
+            if (!$this->validate($rules)) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getErrors());
+            }
+        }
+
+        $postData = [
+            'content' => $this->request->getPost('content'),
+            'id_user' => $this->userId,
+            'privacy' => $this->request->getPost('privacy') ?? 'public',
+        ];
+
+        $postId = $this->post->create($postData);
+
+        if ($postId) {
+            if ($files && $files[0]->isValid()) {
+                $cloudinary = new Cloudinary();
+                $mongo = new MongoDB();
+                $mediaCollection = $mongo->getCollection('post_media');
+
+                $mediaItems = [];
+                foreach ($files as $file) {
+                    if ($file->isValid() && !$file->hasMoved()) {
+                        $res = $cloudinary->uploadPost($file->getTempName(), 'posts');
+                        
+                        $mediaItems[] = [
+                            'url'       => $res['secure_url'],
+                            'public_id' => $res['public_id'],
+                            'type'      => $res['resource_type'],
+                            'width'     => $res['width'] ?? null,
+                            'height'    => $res['height'] ?? null,
+                            'format'    => $res['format']
+                        ];
+                    }
+                }
+
+                if (!empty($mediaItems)) {
+                    $mediaCollection->insertOne([
+                        'post_id'    => $postId,
+                        'items'      => $mediaItems,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                }
+            }
+            return redirect()->back()->with('success', 'Posted successfully!');
+        }
+        return redirect()->back()->with('error', 'Failed to create post.');
+    }
+
+    public function delete($postId) {
+        if (!$this->userId) return redirect()->to('login');
+
+        $post = $this->post->find($postId);
+        if (!$post || $post['id_user'] !== $this->userId) {
+            return redirect()->back()->with('error', 'Unauthorized access.');
+        }
+
+        $mongo = new MongoDB();
+        $mediaCollection = $mongo->getCollection('post_media');
+        $mediaData = $mediaCollection->findOne(['post_id' => $postId]);
+
+        if ($mediaData) {
+            $cloudinary = new Cloudinary();
+            foreach ($mediaData['items'] as $item) {
+                $cloudinary->destroy($item['public_id']); 
+            }
+            $mediaCollection->deleteOne(['post_id' => $postId]);
+        }
+
+        if ($this->post->delete($postId)) {
+            return redirect()->back()->with('success', 'Post deleted.');
+        }
+        return redirect()->back()->with('error', 'Could not delete post.');
+    }
+
+    public function listAll() {
+        $sqlPosts = $this->post->list();
+        return $this->mergeMedia($sqlPosts);
+    }
+
+    public function listUserPosts($id) {
+        $sqlPosts = $this->post->getPostByUser($id);
+        return $this->mergeMedia($sqlPosts);
+    }
+
+    private function mergeMedia($posts) {
+        if (empty($posts)) return [];
+
+        $mongo = new MongoDB();
+        $mediaCollection = $mongo->getCollection('post_media');
+
+        foreach ($posts as &$post) {
+            $media = $mediaCollection->findOne(['post_id' => $post['id']]);
+            $post['media'] = $media ? (array)$media['items'] : [];
+        }
+
+        return $posts;
+    }
+}

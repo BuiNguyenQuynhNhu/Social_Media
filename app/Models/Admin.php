@@ -12,7 +12,7 @@ class Admin extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['password'];
+    protected $allowedFields    = ['password', 'avatar'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -43,4 +43,20 @@ class Admin extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+    //functions
+    protected function updatePassword($id, $nPassword){
+        return $this->save([
+            'id' => $id,
+            'password' => $nPassword,
+        ]);
+    }
+
+    protected function updateAvatar($id, $file){
+        return $this->update($id, ['avatar' => $file]);
+    }
+
+    protected function list(){
+        return $this->findAll();
+    }
 }

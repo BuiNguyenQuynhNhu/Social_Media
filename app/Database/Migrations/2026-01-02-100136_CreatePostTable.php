@@ -11,17 +11,26 @@ class CreatePostTable extends Migration
         $this->forge->addField([
             'id' => [
                 'type' => 'CHAR',
-                'constaint' => 36,
+                'constraint' => 36,
             ],
             'content' => [
                 'type' => 'TEXT',
+            ],
+            'id_user' => [
+                'type'       => 'CHAR',
+                'constraint' => 36,
+            ],
+            'privacy' => [
+                'type' => 'ENUM',
+                'constraint' => ['public', 'friends', 'private'],
+                'default' => 'public',
             ],
 
             'created_at timestamp default current_timestamp',
             
         ]);
         $this->forge->addKey('id', true);
-        $this->forge->addForeignKey('id', 'users', 'id', 'cascade', 'cascade');
+        $this->forge->addForeignKey('id_user', 'users', 'id', 'cascade', 'cascade');
         $this->forge->createTable('posts');
     }
 

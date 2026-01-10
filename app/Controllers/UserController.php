@@ -6,6 +6,9 @@ use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\Profile;
 use App\Models\User;
+use App\Models\Post;
+use App\Models\FriendShip;
+use App\Libraries\Cloudinary;
 
 class UserController extends BaseController
 {
@@ -21,7 +24,7 @@ class UserController extends BaseController
     public function index()
     {
         if (!$this->id)
-            return redirect()->to('authenticaton');
+            return redirect()->to('login');
         $user = $this->user->find($this->id);
         $profile = $this->profile->where('id', $this->id)->first();
 
@@ -30,33 +33,82 @@ class UserController extends BaseController
             return redirect()->to('/login');
         }
         $data['user'] = array_merge($user, $profile);
+        $data['user_id'] = $this->id; 
+        $data['keyword'] = $this->request->getGet('q') ?? '';
 
-        $data['avatarUrl'] = $user['avatar'] ? base_url($user['avatar']) : base_url('ICON/avatar-default.svg');
+        
+        $data['avatarUrl'] = (strpos($user['avatar'], 'http') === 0) 
+            ? $user['avatar'] 
+            : ($user['avatar'] ? base_url($user['avatar']) : base_url('ICON/avatar-default.svg'));
+
+        // Load posts for the dashboard feed
+        $postController = new PostController();
+        $data['posts'] = $postController->listAll(); 
+
+        return view('dashboard', $data);
+    }
+
+    public function profile($id = null){
+        if (!$this->id)
+            return redirect()->to('authenticaton');
+        $targetId = $id ?? $this->id;
+    
+        $user = $this->user->find($targetId);
+        $profile = $this->profile->where('id', $targetId)->first();
+
+        if (!$user || !$profile) {
+            session()->destroy();
+            return redirect()->to('/login');
+        }
+        $friend = new FriendShip();
+        $postController = new PostController();
+        $data['posts'] = $postController->listUserPosts($targetId);
+        $data['user'] = array_merge($user, $profile);
+        $data['friends'] = $friend->listFriend($targetId);
+        $data['avatarUrl'] = (strpos($user['avatar'], 'http') === 0) 
+            ? $user['avatar'] 
+            : ($user['avatar'] ? base_url($user['avatar']) : base_url('ICON/avatar-default.svg'));
+
+        $data['coverUrl'] = (strpos($profile['background'], 'http') === 0) 
+            ? $profile['background'] 
+            : (!empty($profile['background']) ? base_url($profile['background']) : base_url('ICON/background-default.jpg'));
         return view('user/profile', $data);
     }
 
-    public function updateProfile(){
-        if (!$this->id)
-            return redirect()->to('/login');
-        $id = session()->get('user_id');
-        $data = [
-            'id' => $id,
+    public function updateProfile($id = null) {
+        if (!$this->id) return redirect()->to('/login');
+        
+        $cloudinary = new Cloudinary();
+        $targetId = $id ?? $this->id;
+
+        $profileData = [
+            'id'        => $targetId,
             'firstname' => $this->request->getPost('firstname'),
-            'lastname' => $this->request->getPost('lastname'),
-            'birth' => $this->request->getPost('birth'),
-            'gender' => $this->request->getPost('gender'),
+            'lastname'  => $this->request->getPost('lastname'),
+            'birth'     => $this->request->getPost('birth'),
+            'gender'    => $this->request->getPost('gender'),
         ];
 
-        if ($this->profile->save($data))
-            return redirect()->to('user/profile')->with('success', 'Profile updated successfully');
+        $cover = $this->request->getFile('cover');
+        if ($cover && $cover->isValid()) {
+            $profileData['background'] = $cloudinary->upload($cover->getTempName(), 'covers');
+        }
 
-            var_dump($this->profile->errors()); die(); 
-            return redirect()->back()->with('error', 'Update failed');
+        if ($this->profile->save($profileData)) {
+            $avatar = $this->request->getFile('avatar');
+            if ($avatar && $avatar->isValid()) {
+                $avatarUrl = $cloudinary->upload($avatar->getTempName(), 'avatars');
+                $this->user->update($targetId, ['avatar' => $avatarUrl]);
+            }
+            return redirect()->to("user/profile/$targetId")->with('success', 'Update successfully');
+        }
+
+        return redirect()->back()->with('error', 'Update failed');
     }
 
     public function changePassword(){
         if (!$this->id)
-            return redirect()->to('authenticaton');
+            return redirect()->to('login');
         $rules = [
             'old' => 'required',
             'new' => 'required|min_length[8]',
@@ -76,7 +128,7 @@ class UserController extends BaseController
         return redirect()->back()->with('success', 'Password change have done');
     }
 
-    public function updateAvatar(){
+    public function updateBackground(){
         if (!$this->id)
             return redirect()->to('user/profile');
     }

@@ -1,0 +1,97 @@
+<?php
+
+namespace App\Models;
+
+use Ramsey\Uuid\Uuid;
+use CodeIgniter\Model;
+
+class FriendShip extends Model
+{
+    protected $table            = 'friendships';
+    protected $primaryKey       = 'id';
+    protected $useAutoIncrement = false;
+    protected $returnType       = 'array';
+    protected $useSoftDeletes   = false;
+    protected $protectFields    = true;
+    protected $allowedFields    = ['id', 'receiver_id', 'requested_id', 'status'];
+
+    protected bool $allowEmptyInserts = false;
+    protected bool $updateOnlyChanged = true;
+
+    protected array $casts = [];
+    protected array $castHandlers = [];
+
+    // Dates
+    protected $useTimestamps = false;
+    protected $dateFormat    = 'datetime';
+    protected $createdField  = 'created_at';
+    protected $updatedField  = 'updated_at';
+    protected $deletedField  = 'deleted_at';
+
+    // Validation
+    protected $validationRules      = [];
+    protected $validationMessages   = [];
+    protected $skipValidation       = false;
+    protected $cleanValidationRules = true;
+
+    // Callbacks
+    protected $allowCallbacks = true;
+    protected $beforeInsert   = [];
+    protected $afterInsert    = [];
+    protected $beforeUpdate   = [];
+    protected $afterUpdate    = [];
+    protected $beforeFind     = [];
+    protected $afterFind      = [];
+    protected $beforeDelete   = [];
+    protected $afterDelete    = [];
+
+    //function
+    protected function generateUUID() {
+        return Uuid::uuid4()->toString();
+    }
+
+
+    public function accept($shipId) {
+        return $this->update($shipId, ['status' => 'accepted']);
+    }
+
+
+    public function create($currentUserId, $targetUserId) {
+        $data = [
+            'id'           => $this->generateUUID(),
+            'requester_id' => $currentUserId,
+            'receiver_id'  => $targetUserId,
+            'status'       => 'pending'
+        ];
+
+        return $this->insert($data) ? $data['id'] : false;
+    }
+
+    public function listSend($id) {
+        return $this->select('friendships.*, profiles.firstname, profiles.lastname, users.avatar')
+            ->join('users', 'users.id = friendships.receiver_id')
+            ->join('profiles', 'profiles.id = users.id')
+            ->where('friendships.requester_id', $id)
+            ->where('friendships.status', 'pending')
+            ->findAll();
+    }
+    public function listReceive($id) {
+        return $this->select('friendships.*, profiles.firstname, profiles.lastname, users.avatar')
+            ->join('users', 'users.id = friendships.requester_id')
+            ->join('profiles', 'profiles.id = users.id')
+            ->where('friendships.receiver_id', $id)
+            ->where('friendships.status', 'pending')
+            ->findAll();
+    }
+    public function listFriend($id) {
+        return $this->select('friendships.*, profiles.firstname, profiles.lastname, users.avatar')
+            ->join('users', "users.id = (CASE WHEN friendships.requester_id = '$id' THEN friendships.receiver_id ELSE friendships.requester_id END)")
+            ->join('profiles', 'profiles.id = users.id')
+            ->where('friendships.status', 'accepted')
+            ->groupStart()
+                ->where('friendships.requester_id', $id)
+                ->orWhere('friendships.receiver_id', $id)
+            ->groupEnd()
+            ->findAll();
+    }
+}
