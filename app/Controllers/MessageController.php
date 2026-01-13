@@ -1,249 +1,112 @@
 <?php
-
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
-use App\Libraries\MongoDB;
+use App\Models\Message;
+use App\Models\FriendShip;
 
-class MessageController extends BaseController
-{
-    protected $mongo;
-    protected $collection;
+class MessageController extends BaseController {
+    protected $msg;
+    protected $friend;
     protected $userId;
 
-    public function __construct()
-    {
-        $this->mongo = new MongoDB();
-        $this->collection = $this->mongo->getCollection('messages');
+    public function __construct() {
+        $this->msg = new Message();
+        $this->friend = new FriendShip();
         $this->userId = session()->get('user_id');
     }
+    public function getMessages($receiverId) {
+        if (!$this->userId) return $this->response->setJSON(['status' => 'error']);
 
-    public function index()
-    {
-        if (!$this->userId) return redirect()->to('login');
+        $chatType = $this->request->getGet('type') ?? 'private'; 
+        $groupId = ($chatType === 'group') ? $receiverId : null;
 
-        $userModel = new \App\Models\User();
-        $user = $userModel->find($this->userId);
-        
-        $avatarUrl = (strpos($user['avatar'], 'http') === 0) 
-            ? $user['avatar'] 
-            : ($user['avatar'] ? base_url($user['avatar']) : base_url('ICON/avatar-default.svg'));
-
-        $data = [
-            'user' => $user,
-            'avatarUrl' => $avatarUrl,
-            'user_id' => $this->userId
-        ];
-
-        return view('message/index', $data);
-    }
-
-    public function getConversations()
-    {
-        if (!$this->userId) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
-        }
-
-        // Get all unique conversations
-        $pipeline = [
-            ['$match' => [
-                '$or' => [
-                    ['sender_id' => $this->userId],
-                    ['receiver_id' => $this->userId]
-                ]
-            ]],
-            ['$sort' => ['created_at' => -1]],
-            ['$group' => [
-                '_id' => [
-                    '$cond' => [
-                        ['$eq' => ['$sender_id', $this->userId]],
-                        '$receiver_id',
-                        '$sender_id'
-                    ]
-                ],
-                'last_message' => ['$first' => '$content'],
-                'last_time' => ['$first' => '$created_at'],
-                'unread_count' => [
-                    '$sum' => [
-                        '$cond' => [
-                            ['$and' => [
-                                ['$eq' => ['$receiver_id', $this->userId]],
-                                ['$eq' => ['$read_at', null]]
-                            ]],
-                            1,
-                            0
-                        ]
-                    ]
-                ]
-            ]]
-        ];
-
-        $conversations = $this->collection->aggregate($pipeline)->toArray();
-
-        // Get user info and nicknames
-        $userModel = new \App\Models\User();
-        $profileModel = new \App\Models\Profile();
-        $friendModel = new \App\Models\FriendShip();
-
-        $result = [];
-        foreach ($conversations as $conv) {
-            $friendId = $conv['_id'];
-            $user = $userModel->find($friendId);
-            $profile = $profileModel->find($friendId);
-
-            if (!$user || !$profile) continue;
-
-            // Get nickname from friendship
-            $friendship = $friendModel->where("(requester_id = '$this->userId' AND receiver_id = '$friendId') OR (requester_id = '$friendId' AND receiver_id = '$this->userId')", null, false)
-                ->where('status', 'accepted')
-                ->first();
-
-            $displayName = $profile['firstname'] . ' ' . $profile['lastname'];
-            
-            if ($friendship) {
-                if ($friendship['requester_id'] == $this->userId && !empty($friendship['nickname1'])) {
-                    $displayName = $friendship['nickname1'];
-                } elseif ($friendship['receiver_id'] == $this->userId && !empty($friendship['nickname2'])) {
-                    $displayName = $friendship['nickname2'];
-                }
-            }
-
-            $avatar = $user['avatar'] ?? 'ICON/avatar-default.svg';
-            if (strpos($avatar, 'http') !== 0) $avatar = base_url($avatar);
-
-            $result[] = [
-                'friend_id' => $friendId,
-                'name' => $displayName,
-                'avatar' => $avatar,
-                'last_message' => $conv['last_message'] ?? '',
-                'last_time' => $conv['last_time'],
-                'unread_count' => $conv['unread_count']
-            ];
-        }
-
-        return $this->response->setJSON(['status' => 'success', 'data' => $result]);
-    }
-
-    public function getMessages($friendId)
-    {
-        if (!$this->userId) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
-        }
-
-        // Mark messages as read
-        $this->collection->updateMany(
-            [
-                'sender_id' => $friendId,
-                'receiver_id' => $this->userId,
-                'read_at' => null
-            ],
-            ['$set' => ['read_at' => date('Y-m-d H:i:s')]]
-        );
-
-        // Get messages
-        $messages = $this->collection->find(
-            [
-                '$or' => [
-                    ['sender_id' => $this->userId, 'receiver_id' => $friendId],
-                    ['sender_id' => $friendId, 'receiver_id' => $this->userId]
-                ]
-            ],
-            ['sort' => ['created_at' => 1]]
-        )->toArray();
+        $messages = $this->msg->get($this->userId, $receiverId);
 
         $result = [];
         foreach ($messages as $msg) {
+            $senderId = $msg['sender_id'];
+            
             $result[] = [
                 'id' => (string)$msg['_id'],
-                'sender_id' => $msg['sender_id'],
-                'content' => $msg['content'] ?? '',
+                'content' => $msg['content'],
+                'sender_name' => $this->DisplayName($senderId, $chatType, $groupId),
+                'is_mine' => ($senderId == $this->userId),
                 'media' => $msg['media'] ?? null,
-                'created_at' => $msg['created_at'],
-                'is_mine' => ($msg['sender_id'] == $this->userId)
+                'created_at' => $msg['created_at']
             ];
         }
-
         return $this->response->setJSON(['status' => 'success', 'data' => $result]);
     }
-
-    public function sendMessage($receiverId)
+    private function DisplayName($targetUserId, $chatType, $groupId = null)
     {
-        if (!$this->userId) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
+        $db = \Config\Database::connect();
+
+        if ($chatType === 'group' && $groupId) {
+            $groupMember = $db->table('group_members')
+                            ->select('nickname')
+                            ->where(['group_id' => $groupId, 'user_id' => $targetUserId])
+                            ->get()->getRowArray();
+            
+            if (!empty($groupMember['nickname'])) return $groupMember['nickname'];
+            
+            $profile = $db->table('profiles')->where('id', $targetUserId)->get()->getRowArray();
+            return $profile;
         }
 
-        $content = $this->request->getPost('content');
-        $media = null;
+        $friendship = $this->friend->where('status', 'accepted')
+            ->groupStart()
+                ->where(['requester_id' => $this->userId, 'receiver_id' => $targetUserId])
+                ->orWhere(['requester_id' => $targetUserId, 'receiver_id' => $this->userId])
+            ->groupEnd()->first();
 
-        // Handle media upload
-        $file = $this->request->getFile('media');
-        if ($file && $file->isValid()) {
-            $cloudinary = new \App\Libraries\Cloudinary();
-            $upload = $cloudinary->upload($file->getTempName(), [
-                'folder' => 'messages',
-                'resource_type' => 'auto'
-            ]);
-
-            if ($upload) {
-                $media = [
-                    'type' => strpos($file->getMimeType(), 'video') !== false ? 'video' : 'image',
-                    'url' => $upload['secure_url'],
-                    'public_id' => $upload['public_id']
-                ];
+        if ($friendship) {
+            if ($friendship['requester_id'] == $this->userId && !empty($friendship['nickname1'])) {
+                return $friendship['nickname1'];
+            } elseif ($friendship['receiver_id'] == $this->userId && !empty($friendship['nickname2'])) {
+                return $friendship['nickname2'];
             }
         }
 
-        if (empty($content) && empty($media)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Message cannot be empty']);
+        $profile = $db->table('profiles')->where('id', $targetUserId)->get()->getRowArray();
+        return $profile;
+    }
+    public function send($receiverId) {
+        if (!$this->userId) return $this->response->setJSON(['status' => 'error']);
+        $chatType = $this->request->getPost('chat_type') ?? 'private';
+        $isFriend = $this->friend->where('status', 'accepted')
+            ->groupStart()
+                ->where('requester_id', $this->userId)->where('receiver_id', $receiverId)
+                ->orWhere('requester_id', $receiverId)->where('receiver_id', $this->userId)
+            ->groupEnd()->first();
+
+        if (!$isFriend) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'You can only message friends.']);
         }
 
-        $message = [
-            'sender_id' => $this->userId,
+        $content = $this->request->getPost('content');
+        $replyTo = $this->request->getPost('reply_to');
+
+        $data = [
+            'sender_id'   => $this->userId,
             'receiver_id' => $receiverId,
-            'content' => $content ?? '',
-            'media' => $media,
-            'created_at' => date('Y-m-d H:i:s'),
-            'read_at' => null
+            'chat_type'   => $chatType,
+            'content'     => $content,
+            'reply_to'    => $replyTo ? $replyTo : null,
+            'reactions'   => [],
+            'created_at'  => date('Y-m-d H:i:s'),
+            'read_at'     => null
         ];
 
-        $result = $this->collection->insertOne($message);
-
-        if ($result->getInsertedCount() > 0) {
-            return $this->response->setJSON([
-                'status' => 'success',
-                'data' => [
-                    'id' => (string)$result->getInsertedId(),
-                    'sender_id' => $this->userId,
-                    'content' => $content,
-                    'media' => $media,
-                    'created_at' => $message['created_at'],
-                    'is_mine' => true
-                ]
-            ]);
+        if ($this->msg->save($data)) {
+            return $this->response->setJSON(['status' => 'success', 'data' => $data]);
         }
-
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to send message']);
     }
 
-    public function deleteMessage($messageId)
-    {
-        if (!$this->userId) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
-        }
-
-        $oid = new \MongoDB\BSON\ObjectId($messageId);
-        $message = $this->collection->findOne(['_id' => $oid]);
-
-        if (!$message || $message['sender_id'] !== $this->userId) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
-        }
-
-        $result = $this->collection->deleteOne(['_id' => $oid]);
-
-        if ($result->getDeletedCount() > 0) {
+    public function react($messageId) {
+        $type = $this->request->getPost('type');
+        if ($this->msg->toggle($messageId, $this->userId, $type)) {
             return $this->response->setJSON(['status' => 'success']);
         }
-
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to delete']);
+        return $this->response->setJSON(['status' => 'error']);
     }
 }

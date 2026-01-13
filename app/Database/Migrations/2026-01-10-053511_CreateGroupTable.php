@@ -25,22 +25,16 @@ class CreateGroupTable extends Migration
                 'type' => 'VARCHAR',
                 'constraint' => 36,
             ],
-            'requires_approval' => [
+            'privacy' =>[
                 'type' => 'BOOLEAN',
                 'default' => false,
             ],
-            'min_account_age_days' => [
-                'type' => 'INT',
-                'default' => 0,
+            'post_requirement' => [
+                'type' => 'BOOLEAN',
+                'default' => false,
             ],
-            'created_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
-            ],
-            'updated_at' => [
-                'type' => 'DATETIME',
-                'null' => true,
-            ],
+            'created_at timestamp default current_timestamp',
+            'updated_at timestamp default current_timestamp on update current_timestamp'
         ]);
         $this->forge->addKey('id', true);
         $this->forge->addForeignKey('owner_id', 'users', 'id', 'CASCADE', 'CASCADE');

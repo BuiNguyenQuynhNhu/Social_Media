@@ -7,6 +7,7 @@ use App\Models\FriendShip;
 use App\Models\User;
 use App\Models\Profile;
 use CodeIgniter\HTTP\ResponseInterface;
+use App\Models\Post;
 
 class FriendShipController extends BaseController
 {
@@ -61,7 +62,6 @@ class FriendShipController extends BaseController
         return view('user/listFriend', $data);
     }
 
-    // New methods for ID-based routing with privacy checks
     public function listFriend($id) {
         if (!$this->userId) return redirect()->to('login');
         
@@ -76,7 +76,6 @@ class FriendShipController extends BaseController
             $data['user'] = $targetData; 
         }
 
-        // Get posts and friends count for the target user
         $postModel = new \App\Models\Post();
         $data['posts'] = $postModel->where('id_user', $id)->findAll();
         $data['friends'] = $this->friend->listFriend($id);
@@ -105,8 +104,7 @@ class FriendShipController extends BaseController
             $data['user'] = $targetData; 
         }
 
-        // Get posts and friends count
-        $postModel = new \App\Models\Post();
+        $postModel = new Post();
         $data['posts'] = $postModel->where('id_user', $id)->findAll();
         $data['friends'] = $this->friend->listFriend($id);
 
@@ -134,8 +132,7 @@ class FriendShipController extends BaseController
             $data['user'] = $targetData; 
         }
 
-        // Get posts and friends count
-        $postModel = new \App\Models\Post();
+        $postModel = new Post();
         $data['posts'] = $postModel->where('id_user', $id)->findAll();
         $data['friends'] = $this->friend->listFriend($id);
 

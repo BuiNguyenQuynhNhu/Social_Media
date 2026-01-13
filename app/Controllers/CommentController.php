@@ -4,20 +4,38 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Libraries\MongoDB;
+use App\Libraries\Media;
+use MongoDB\BSON\ObjectId;
 use App\Models\User;
 use App\Models\Profile;
+use App\Models\Comment;
 
 class CommentController extends BaseController
 {
-    protected $mongo;
-    protected $collection;
+    protected $comment;
     protected $userId;
 
     public function __construct()
     {
-        $this->mongo = new MongoDB();
-        $this->collection = $this->mongo->getCollection('comments');
+        $this->comment = new Comment();
         $this->userId = session()->get('user_id');
+    }
+
+    private function _prepareResponseData($result)
+    {
+        $userModel = new User();
+        $profileModel = new Profile();
+        $u = $userModel->find($this->userId);
+        $p = $profileModel->where('id', $this->userId)->first();
+
+        return array_merge($result, [
+            'user' => [
+                'name'   => $p['firstname'] . ' ' . $p['lastname'],
+                'avatar' => (isset($u['avatar']) && strpos($u['avatar'], 'http') === 0) 
+                            ? $u['avatar'] 
+                            : base_url($u['avatar'] ?: 'ICON/avatar-default.svg')
+            ]
+        ]);
     }
 
     public function add($postId)
@@ -26,60 +44,48 @@ class CommentController extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
         }
 
-        $content = $this->request->getPost('content');
-        $parentId = $this->request->getPost('parent_id') ?? null;
-        
-        if (empty($content)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Content cannot be empty']);
-        }
-
-        $depth = 0;
-        if ($parentId) {
-            $parent = $this->collection->findOne(['_id' => new \MongoDB\BSON\ObjectId($parentId)]);
-            if ($parent) {
-                $depth = ($parent['depth'] ?? 0) + 1;
-            }
-            if ($depth > 3) {
-                 return $this->response->setJSON(['status' => 'error', 'message' => 'Max reply depth reached']);
-            }
-        }
-
-        $comment = [
-            'post_id' => $postId,
-            'user_id' => $this->userId,
-            'content' => $content,
-            'parent_id' => $parentId,
-            'depth' => $depth,
-            'likes' => [],
-            'created_at' => date('Y-m-d H:i:s')
+        $rules = [
+            'media' => [
+                'label' => 'Media file',
+                'rules' => 'max_size[media,2048]|ext_in[media,jpg,jpeg,png,gif,mp4,mov]',
+                'errors' => [
+                    'max_size' => 'File size exceeds 2MB limit.',
+                    'ext_in'   => 'Only images and videos are allowed.'
+                ]
+            ]
         ];
 
-        $result = $this->collection->insertOne($comment);
+        $file = $this->request->getFile('media');
+        if ($file && $file->isValid() && !$this->validate($rules)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => $this->validator->getError('media')]);
+        }
 
-        if ($result->getInsertedCount() > 0) {
-            $userModel = new User();
-            $profileModel = new Profile();
-            $user = $userModel->find($this->userId);
-            $profile = $profileModel->find($this->userId);
-            
-            $avatar = $user['avatar'] ?? 'ICON/avatar-default.svg';
-            if(strpos($avatar, 'http') !== 0) $avatar = base_url($avatar);
+        $content = $this->request->getPost('content');
+        $parentId = $this->request->getPost('parent_id') ?: null;
+        $mediaItem = null;
+        if ($file && $file->isValid()) {
+            $mediaService = new Media();
+            $uploadedMedia = $mediaService->uploadMultiple([$file], 'comments');
+            $mediaItem = $uploadedMedia[0] ?? null;
+        }
 
+        if (empty($content) && !$mediaItem) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Comment cannot be empty']);
+        }
+        $data = [
+            'post_id'   => $postId,
+            'user_id'   => $this->userId,
+            'content'   => $content,
+            'media'     => $mediaItem,
+            'parent_id' => $parentId
+        ];
+
+        $result = $this->comment->addComment($data);
+
+        if ($result) {
             return $this->response->setJSON([
                 'status' => 'success',
-                'data' => [
-                    'id' => (string)$result->getInsertedId(),
-                    'content' => $content,
-                    'parent_id' => $parentId,
-                    'depth' => $depth,
-                    'likes_count' => 0,
-                    'user' => [
-                        'id' => $this->userId,
-                        'avatar' => $avatar,
-                        'name' => $profile ? $profile['firstname'] . ' ' . $profile['lastname'] : 'Unknown'
-                    ],
-                    'created_at' => $comment['created_at']
-                ]
+                'data'   => $this->_prepareResponseData($result)
             ]);
         }
 
@@ -92,14 +98,14 @@ class CommentController extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
         }
 
-        $filter = ['_id' => new \MongoDB\BSON\ObjectId($commentId)];
-        $comment = $this->collection->findOne($filter);
+        $filter = ['_id' => new ObjectId($commentId)];
+        $comment = $this->comment->find($filter);
         
         if (!$comment || $comment['user_id'] !== $this->userId) {
              return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized or Not Found']);
         }
 
-        $result = $this->collection->deleteOne($filter);
+        $result = $this->comment->delete($filter);
 
         if ($result->getDeletedCount() > 0) {
             return $this->response->setJSON(['status' => 'success']);
@@ -108,68 +114,61 @@ class CommentController extends BaseController
         return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to delete']);
     }
 
-    public function like($commentId) {
+    public function react($commentId)
+    {
         if (!$this->userId) return $this->response->setJSON(['status' => 'error']);
         
-        $oid = new \MongoDB\BSON\ObjectId($commentId);
-        $comment = $this->collection->findOne(['_id' => $oid]);
-        
-        if (!$comment) return $this->response->setJSON(['status' => 'error', 'message' => 'Not found']);
+        $type = $this->request->getPost('type') ?: 'like';
+        $result = $this->comment->toggle($commentId, $this->userId, $type);
 
-        $likes = (array)($comment['likes'] ?? []);
-        $action = 'liked';
-
-        if (in_array($this->userId, $likes)) {
-            $likes = array_diff($likes, [$this->userId]);
-            $action = 'unliked';
-        } else {
-            $likes[] = $this->userId;
+        if ($result) {
+            return $this->response->setJSON(['status' => 'success', 'data' => $result]);
         }
-
-        $this->collection->updateOne(
-            ['_id' => $oid],
-            ['$set' => ['likes' => array_values($likes)]]
-        );
-
-        return $this->response->setJSON(['status' => 'success', 'action' => $action, 'count' => count($likes)]);
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Not found']);
     }
 
-    public function getComments($postId)
+    public function get($postId)
     {
-        $comments = $this->collection->find(['post_id' => $postId], ['sort' => ['created_at' => 1]]);
+        $comments = $this->comment->get($postId);
         
-        $result = [];
         $userModel = new User();
         $profileModel = new Profile();
         $usersCache = []; 
+        $result = [];
         
         foreach ($comments as $comment) {
             $uid = $comment['user_id'];
             if (!isset($usersCache[$uid])) {
                 $u = $userModel->find($uid);
-                $p = $profileModel->find($uid);
+                $p = $profileModel->where('id', $uid)->first();
                 
                 $avatar = $u['avatar'] ?? 'ICON/avatar-default.svg';
                 if(strpos($avatar, 'http') !== 0) $avatar = base_url($avatar);
 
                 $usersCache[$uid] = [
-                    'id' => $uid,
                     'avatar' => $avatar,
-                    'name' => $p ? $p['firstname'] . ' ' . $p['lastname'] : 'Unknown'
+                    'name'   => $p['firstname'] . ' ' . $p['lastname']
                 ];
             }
-            
+            $myReaction = null;
+            foreach ($comment['reactions'] ?? [] as $r) {
+                if ($r['user_id'] === $this->userId) {
+                    $myReaction = $r['type'];
+                    break;
+                }
+            }
+
             $result[] = [
-                'id' => (string)$comment['_id'],
-                'post_id' => $comment['post_id'],
-                'content' => $comment['content'],
-                'parent_id' => $comment['parent_id'] ?? null,
-                'depth' => $comment['depth'] ?? 0,
-                'created_at' => $comment['created_at'],
-                'user' => $usersCache[$uid],
-                'likes_count' => count($comment['likes'] ?? []),
-                'is_liked' => in_array($this->userId, (array)($comment['likes'] ?? [])),
-                'can_delete' => ($uid == $this->userId)
+                'id'            => (string)$comment['_id'],
+                'content'       => $comment['content'],
+                'media'         => $comment['media'],
+                'parent_id'     => isset($comment['parent_id']) ? (string)$comment['parent_id'] : null,
+                'depth'         => $comment['depth'] ?? 0,
+                'created_at'    => $comment['created_at'],
+                'user'          => $usersCache[$uid],
+                'reactions'     => array_count_values(array_column((array)($comment['reactions'] ?? []), 'type')),
+                'total_reacts'  => count((array)($comment['reactions'] ?? [])),
+                'my_reaction'   => $myReaction
             ];
         }
 

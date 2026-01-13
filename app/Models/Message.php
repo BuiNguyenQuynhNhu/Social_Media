@@ -2,45 +2,55 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
+use App\Libraries\MongoDB;
+use MongoDB\BSON\ObjectId;
 
-class Message extends Model
-{
-    protected $table            = 'messages';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = false;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
-    protected $protectFields    = true;
-    protected $allowedFields    = [];
+class Message {
+    protected $collection;
 
-    protected bool $allowEmptyInserts = false;
-    protected bool $updateOnlyChanged = true;
+    public function __construct() {
+        $mongo = new MongoDB();
+        $this->collection = $mongo->getCollection('messages');
+    }
 
-    protected array $casts = [];
-    protected array $castHandlers = [];
+    public function save($data) {
+        return $this->collection->insertOne($data);
+    }
 
-    // Dates
-    protected $useTimestamps = false;
-    protected $dateFormat    = 'datetime';
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
-    protected $deletedField  = 'deleted_at';
+    public function toggle($messageId, $userId, $type) {
+        $oid = new ObjectId($messageId);
+        $message = $this->collection->findOne(['_id' => $oid]);
+        if (!$message) return false;
 
-    // Validation
-    protected $validationRules      = [];
-    protected $validationMessages   = [];
-    protected $skipValidation       = false;
-    protected $cleanValidationRules = true;
+        $reactions = (array)($message['reactions'] ?? []);
+        $foundIndex = -1;
+        foreach ($reactions as $index => $res) {
+            if ($res['user_id'] === $userId) {
+                $foundIndex = $index;
+                break;
+            }
+        }
 
-    // Callbacks
-    protected $allowCallbacks = true;
-    protected $beforeInsert   = [];
-    protected $afterInsert    = [];
-    protected $beforeUpdate   = [];
-    protected $afterUpdate    = [];
-    protected $beforeFind     = [];
-    protected $afterFind      = [];
-    protected $beforeDelete   = [];
-    protected $afterDelete    = [];
+        if ($foundIndex !== -1) {
+            if ($reactions[$foundIndex]['type'] === $type) {
+                array_splice($reactions, $foundIndex, 1);
+            } else {
+                $reactions[$foundIndex]['type'] = $type;
+            }
+        } else {
+            $reactions[] = ['user_id' => $userId, 'type' => $type];
+        }
+
+        return $this->collection->updateOne(['_id' => $oid], ['$set' => ['reactions' => $reactions]]);
+    }
+
+    public function get($userId, $receiverId) {
+        return $this->collection->find([
+            '$or' => [
+                ['sender_id' => $userId, 'receiver_id' => $receiverId],
+                ['sender_id' => $receiverId, 'receiver_id' => $userId],
+                ['receiver_id' => $receiverId, 'chat_type' => 'group']
+            ]
+        ], ['sort' => ['created_at' => 1]])->toArray();
+    }
 }

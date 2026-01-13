@@ -22,7 +22,7 @@ class CreatePostTable extends Migration
             ],
             'privacy' => [
                 'type' => 'ENUM',
-                'constraint' => ['public', 'friends', 'private'],
+                'constraint' => ['public', 'private'],
                 'default' => 'public',
             ],
 

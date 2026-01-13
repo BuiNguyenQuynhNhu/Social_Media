@@ -5,7 +5,9 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Libraries\Cloudinary;
 use App\Libraries\MongoDB; 
+use App\Libraries\Media;
 use App\Models\Post;
+
 
 class PostController extends BaseController
 {
@@ -20,59 +22,25 @@ class PostController extends BaseController
     public function create() {
         if (!$this->userId) return redirect()->to('login');
         $rules = [
-            'images' => [
-                'label' => 'Media files',
-                'rules' => 'uploaded[images]|max_size[images,5120]|ext_in[images,jpg,jpeg,png,gif,mp4,mov,avi]',
-                'errors' => [
-                    'ext_in' => 'Only images (jpg, png, gif) or videos (mp4, mov) are allowed.'
-                ]
-            ]
+            'images' => 'uploaded[images]|max_size[images,5120]|ext_in[images,jpg,jpeg,png,gif,mp4,mov,avi]'
         ];
 
         $files = $this->request->getFileMultiple('images');
-        if ($files && $files[0]->isValid()) {
-            if (!$this->validate($rules)) {
-                return redirect()->back()->withInput()->with('error', $this->validator->getErrors());
-            }
+        if ($files && $files[0]->isValid() && !$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('error', $this->validator->getErrors());
         }
 
-        $postData = [
+        $postId = $this->post->create([
             'content' => $this->request->getPost('content'),
             'id_user' => $this->userId,
             'privacy' => $this->request->getPost('privacy') ?? 'public',
-        ];
-
-        $postId = $this->post->create($postData);
+        ]);
 
         if ($postId) {
             if ($files && $files[0]->isValid()) {
-                $cloudinary = new Cloudinary();
-                $mongo = new MongoDB();
-                $mediaCollection = $mongo->getCollection('post_media');
-
-                $mediaItems = [];
-                foreach ($files as $file) {
-                    if ($file->isValid() && !$file->hasMoved()) {
-                        $res = $cloudinary->uploadPost($file->getTempName(), 'posts');
-                        
-                        $mediaItems[] = [
-                            'url'       => $res['secure_url'],
-                            'public_id' => $res['public_id'],
-                            'type'      => $res['resource_type'],
-                            'width'     => $res['width'] ?? null,
-                            'height'    => $res['height'] ?? null,
-                            'format'    => $res['format']
-                        ];
-                    }
-                }
-
-                if (!empty($mediaItems)) {
-                    $mediaCollection->insertOne([
-                        'post_id'    => $postId,
-                        'items'      => $mediaItems,
-                        'created_at' => date('Y-m-d H:i:s')
-                    ]);
-                }
+                $mediaService = new Media();
+                $mediaItems = $mediaService->uploadMultiple($files, 'posts');
+                $mediaService->storeMetadata($postId, $mediaItems, 'post_media');
             }
             return redirect()->back()->with('success', 'Posted successfully!');
         }
