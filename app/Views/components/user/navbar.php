@@ -28,20 +28,21 @@
 
         <div class="nav-section center">
             <div class="nav-menu">
-                <a href="<?= base_url('user/dashboard') ?>" class="nav-item <?= (strpos(uri_string(), 'dashboard') !== false || uri_string() == '/' || uri_string() == '') ? 'active' : '' ?>">
+                <a href="<?= base_url('user/dashboard') ?>" class="nav-item <?= (strpos(uri_string(), 'dashboard') !== false || uri_string() == '/' || uri_string() == '') ? 'active' : '' ?>" title="Home">
                     <i data-lucide="home"></i>
                 </a>
 
-                <a href="<?= base_url('user/friends') ?>" class="nav-item <?= (strpos(uri_string(), 'friend') !== false) ? 'active' : '' ?>" style="position: relative;">
-                    <i data-lucide="users"></i>
+                <a href="<?= base_url('friend/requests') ?>" class="nav-item <?= (strpos(uri_string(), 'friend/requests') !== false) ? 'active' : '' ?>" style="position: relative;" title="Friend Requests">
+                    <i data-lucide="user-plus"></i>
                     <span id="friend-badge" class="nav-badge"></span>
                 </a>
                 
-                <a href="#" class="nav-item">
-                    <i data-lucide="file-text"></i>
+                <a href="<?= base_url('group') ?>" class="nav-item <?= (strpos(uri_string(), 'group') !== false) ? 'active' : '' ?>" title="Groups">
+                    <i data-lucide="users-2"></i>
                 </a>
-                <a href="<?= base_url('message') ?>" class="nav-item <?= (strpos(uri_string(), 'message') !== false) ? 'active' : '' ?>">
-                    <i data-lucide="message-circle"></i>
+                
+                <a href="<?= base_url('chat') ?>" class="nav-item <?= (strpos(uri_string(), 'chat') !== false) ? 'active' : '' ?>" title="Chats">
+                    <i data-lucide="message-square"></i>
                 </a>
                 
                 <span class="nav-line"></span>
@@ -52,11 +53,11 @@
             <div class="nav-user">
                 <div class="icon-circle notification" title="Notifications" onclick="toggleNotifications()" style="position: relative;">
                     <i data-lucide="bell"></i>
-                    <span id="notif-count" class="notif-dot">0</span>
+                    <span id="notif-dot" class="notif-dot" style="display: none;"></span>
                 </div>
 
                 <div class="user-profile">
-                    <a href="<?= base_url('user/profile/') . $user['id']?>" class="avatar-link" title="Your Profile">
+                    <a href="<?= base_url('user/profile/') . session()->get('user_id')?>" class="avatar-link" title="Your Profile">
                         <img src="<?= $avatarUrl ?>" class="search-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                     </a>
                 </div>

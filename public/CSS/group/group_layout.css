@@ -1,0 +1,372 @@
+/* ===========================================
+   GROUP PAGE STYLING - FACEBOOK INSPIRED
+   =========================================== */
+
+/* Group Browse Container */
+.group-browse-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 16px;
+}
+
+.browse-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.browse-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #050505;
+    margin: 0;
+}
+
+/* Group Tabs */
+.group-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e4e6eb;
+}
+
+.group-tab {
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 15px;
+    font-weight: 600;
+    color: #65676b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.group-tab:hover {
+    background: #f0f2f5;
+    border-radius: 8px 8px 0 0;
+}
+
+.group-tab.active {
+    color: #1877f2;
+    border-bottom-color: #1877f2;
+}
+
+/* Group Grid */
+.group-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+/* Group Card */
+.group-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s, transform 0.2s;
+    cursor: pointer;
+}
+
+.group-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.group-card-cover {
+    width: 100%;
+    height: 150px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-size: cover;
+    background-position: center;
+}
+
+.group-card-body {
+    padding: 16px;
+}
+
+.group-card-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #050505;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.group-card-info {
+    font-size: 13px;
+    color: #65676b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.group-card-info i {
+    width: 14px;
+    height: 14px;
+}
+
+.group-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.group-card-actions .btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+/* Group Page Container */
+.group-page-container {
+    background: #f0f2f5;
+    min-height: 100vh;
+}
+
+/* Group Header */
+.group-header {
+    background: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.group-cover {
+    width: 100%;
+    height: 350px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.group-cover-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+    padding: 20px 24px;
+}
+
+.group-cover-overlay h1 {
+    color: white;
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.group-info-bar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.group-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 14px;
+    color: #65676b;
+}
+
+.group-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.group-meta-item i {
+    width: 16px;
+    height: 16px;
+}
+
+.group-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Group Navigation Tabs */
+.group-nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    border-top: 1px solid #e4e6eb;
+    display: flex;
+    gap: 4px;
+}
+
+.group-nav-tab {
+    padding: 16px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 15px;
+    font-weight: 600;
+    color: #65676b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.group-nav-tab:hover {
+    background: #f0f2f5;
+    border-radius: 8px 8px 0 0;
+}
+
+.group-nav-tab.active {
+    color: #1877f2;
+    border-bottom-color: #1877f2;
+}
+
+/* Group Content Area */
+.group-content-area {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+/* Group Feed */
+.group-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.group-about {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.about-section {
+    margin-bottom: 20px;
+}
+
+.about-section:last-child {
+    margin-bottom: 0;
+}
+
+.about-section h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #050505;
+}
+
+.about-section h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #050505;
+}
+
+.about-section p {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #050505;
+}
+
+/* Group Members Sidebar */
+.group-members-sidebar {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.members-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.members-header h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #050505;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.member-item:hover {
+    background: #f0f2f5;
+}
+
+.member-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.member-info {
+    flex: 1;
+}
+
+.member-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #050505;
+}
+
+.member-role {
+    font-size: 13px;
+    color: #65676b;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .group-content-area {
+        grid-template-columns: 1fr;
+    }
+
+    .group-members-sidebar {
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 600px) {
+    .browse-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .group-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .group-cover {
+        height: 200px;
+    }
+
+    .group-nav {
+        overflow-x: auto;
+        padding: 0 16px;
+    }
+}

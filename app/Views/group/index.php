@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="base_url" content="<?= rtrim(base_url(), '/') ?>">
+    <meta name="user_id" content="<?= $user_id ?>">
+    <meta name="group_id" content="<?= $group['id'] ?? '' ?>">
+    <title><?= isset($group) ? esc($group['name']) : 'Groups' ?> | Social Media</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/overall.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/group/group_layout.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/group/group_components.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/post/post.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/post/comment.css') ?>">
+    
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="background">
+
+<?= view('components/user/navbar', ['avatarUrl' => $avatarUrl]) ?>
+
+<div class="group-page-container">
+    <?php if (isset($group)): ?>
+        <!-- Individual Group Page -->
+        <?= view('group/components/group_header', [
+            'group' => $group,
+            'is_member' => $is_member ?? false,
+            'is_admin' => $is_admin ?? false
+        ]) ?>
+        
+        <div class="group-content-area">
+            <!-- Feed Tab -->
+            <?= view('group/components/group_feed', [
+                'posts' => $posts ?? [],
+                'is_member' => $is_member ?? false,
+                'avatarUrl' => $avatarUrl
+            ]) ?>
+            
+            <!-- Members Tab -->
+            <?= view('group/components/group_members', [
+                'is_member' => $is_member ?? false
+            ]) ?>
+            
+            <!-- About Tab -->
+            <div class="group-about" id="group-about-content" style="display: none;">
+                <div class="about-section">
+                    <h2>About This Group</h2>
+                    <p id="group-description"><?= esc($group['description'] ?? 'No description available.') ?></p>
+                </div>
+                <div class="about-section">
+                    <h3>Privacy</h3>
+                    <p>
+                        <i data-lucide="<?= $group['privacy'] === 'public' ? 'globe' : 'lock' ?>"></i>
+                        <?= ucfirst($group['privacy']) ?> group
+                    </p>
+                </div>
+                <div class="about-section">
+                    <h3>Created</h3>
+                    <p><?= date('F j, Y', strtotime($group['created_at'])) ?></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Group Settings Modal (Admin Only) -->
+        <?php if ($is_admin ?? false): ?>
+            <?= view('group/components/group_settings') ?>
+        <?php endif; ?>
+        
+    <?php else: ?>
+        <!-- Browse Groups Page -->
+        <?= view('group/components/group_list') ?>
+    <?php endif; ?>
+</div>
+
+<!-- JavaScript -->
+<script src="<?= base_url('JS/post/utils.js') ?>"></script>
+<script src="<?= base_url('JS/post/reactions.js') ?>"></script>
+<script src="<?= base_url('JS/post/comments.js') ?>"></script>
+<script src="<?= base_url('JS/post.js') ?>"></script>
+<script src="<?= base_url('JS/group/list.js') ?>"></script>
+<script src="<?= base_url('JS/group/members.js') ?>"></script>
+<script src="<?= base_url('JS/group/actions.js') ?>"></script>
+<script src="<?= base_url('JS/group/settings.js') ?>"></script>
+<script src="<?= base_url('JS/group.js') ?>"></script>
+
+</body>
+</html>

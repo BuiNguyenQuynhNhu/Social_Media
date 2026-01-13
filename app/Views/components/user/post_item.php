@@ -79,15 +79,7 @@
         </button>
     </div>
 
+
     <!-- Comments Section -->
-    <div class="comments-section" id="comments-<?= $post['id'] ?>" style="display: none;">
-        <div class="comment-input-wrapper">
-            <img src="<?= $avatarUrl ?>" class="avatar-xs">
-            <div class="input-box">
-                <input type="text" placeholder="Write a comment..." onkeydown="if(event.key === 'Enter') addComment(this, '<?= $post['id'] ?>')">
-                <button onclick="addComment(this.previousElementSibling, '<?= $post['id'] ?>')"><i data-lucide="send"></i></button>
-            </div>
-        </div>
-        <div class="comments-list"></div>
-    </div>
+    <?= view('components/post/comment_section', ['post' => $post, 'avatarUrl' => $avatarUrl]) ?>
 </div>

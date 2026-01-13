@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class ChatMember extends Model
 {
-    protected $table            = 'chatmembers';
+    protected $table            = 'chat_members';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
@@ -64,7 +64,7 @@ class ChatMember extends Model
     }
 
     public function getMembers($chatId) {
-        return $this->select('chatmembers.*, profiles.firstname, profiles.lastname, users.avatar')
+        return $this->select('chat_members.*, profiles.firstname, profiles.lastname, users.avatar')
                     ->join('users', 'users.id = chat_members.user_id')
                     ->join('profiles', 'profiles.id = users.id')
                     ->where('chat_id', $chatId)

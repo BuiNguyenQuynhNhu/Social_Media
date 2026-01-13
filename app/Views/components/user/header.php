@@ -1,5 +1,6 @@
 <?php 
     $isOwnProfile = (session()->get('user_id') == $user['id']); 
+    $coverUrl = $coverUrl ?? base_url('images/default-cover.jpg');
 ?>
 <div class="profile-header-card">
     <div class="cover-photo" style="background-image: url('<?= $coverUrl ?>'); background-size: cover; background-position: center;">
@@ -30,7 +31,6 @@
         
         <div class="header-actions">
             <?php if($isOwnProfile): ?>
-                <button class="btn btn-blue"><i data-lucide="plus"></i> Add Post</button>
                 <button class="btn btn-gray" onclick="openEditModal('all')">
                     <i data-lucide="edit-2"></i> Edit Profile
                 </button>

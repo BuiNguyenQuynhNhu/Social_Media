@@ -63,6 +63,9 @@
         }
     </script>
     <script src="<?= base_url('JS/navbar.js') ?>"></script>
+    <script src="<?= base_url('JS/post/utils.js') ?>"></script>
+    <script src="<?= base_url('JS/post/reactions.js') ?>"></script>
+    <script src="<?= base_url('JS/post/comments.js') ?>"></script>
     <script src="<?= base_url('JS/post.js') ?>"></script>
 </body>
 </html>

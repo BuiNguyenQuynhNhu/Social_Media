@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
 use App\Libraries\MongoDB;
 use MongoDB\BSON\ObjectId;
 
-class Commen
+class Comment
 {
     protected $collection;
+
     public function __construct()
     {
         $mongo = new MongoDB();
@@ -22,7 +22,8 @@ class Commen
             $parent = $this->collection->findOne(['_id' => new ObjectId($data['parent_id'])]);
             if ($parent) {
                 $parentDepth = $parent['depth'] ?? 0;
-                $depth = ($parentDepth >= 2) ? 2 : $parentDepth + 1;
+                // Cap at depth 2, don't allow deeper nesting
+                $depth = min(2, $parentDepth + 1);
             }
         }
 
@@ -30,63 +31,58 @@ class Commen
             'post_id'    => $data['post_id'],
             'user_id'    => $data['user_id'],
             'content'    => $data['content'],
-            'media'      => $data['media'] ?? null,
-            'parent_id'  => $data['parent_id'],
+            'parent_id'  => $data['parent_id'] ?? null,
             'depth'      => $depth,
-            'reactions'  => [],
+            'likes'      => [],
             'created_at' => date('Y-m-d H:i:s')
         ];
 
         $result = $this->collection->insertOne($comment);
-        return $result->getInsertedCount() > 0 ? array_merge($comment, ['id' => (string)$result->getInsertedId()]) : false;
+        
+        if ($result->getInsertedCount() > 0) {
+            $comment['id'] = (string)$result->getInsertedId();
+            return $comment;
+        }
+        
+        return false;
     }
 
-    public function toggle($commentId, $userId, $type)
+    public function get($postId)
     {
-        $oid = new ObjectId($commentId);
-        $comment = $this->collection->findOne(['_id' => $oid]);
+        return $this->collection->find(['post_id' => $postId], ['sort' => ['created_at' => 1]])->toArray();
+    }
+
+    public function find($commentId)
+    {
+        return $this->collection->findOne(['_id' => new ObjectId($commentId)]);
+    }
+
+    public function delete($commentId)
+    {
+        return $this->collection->deleteOne(['_id' => new ObjectId($commentId)]);
+    }
+
+    public function toggleLike($commentId, $userId)
+    {
+        $comment = $this->find($commentId);
+        
         if (!$comment) return false;
 
-        $reactions = (array)($comment['reactions'] ?? []);
-        $existingIndex = -1;
-        foreach ($reactions as $index => $react) {
-            if ($react['user_id'] === $userId) {
-                $existingIndex = $index;
-                break;
-            }
-        }
+        $likes = (array)($comment['likes'] ?? []);
+        $action = 'liked';
 
-        if ($existingIndex !== -1) {
-            if ($reactions[$existingIndex]['type'] === $type) {
-                array_splice($reactions, $existingIndex, 1);
-                $action = 'removed';
-            } else {
-                $reactions[$existingIndex]['type'] = $type;
-                $action = 'updated';
-            }
+        if (in_array($userId, $likes)) {
+            $likes = array_diff($likes, [$userId]);
+            $action = 'unliked';
         } else {
-            $reactions[] = ['user_id' => $userId, 'type' => $type];
-            $action = 'added';
+            $likes[] = $userId;
         }
 
-        $this->collection->updateOne(['_id' => $oid], ['$set' => ['reactions' => $reactions]]);
-        $counts = array_count_values(array_column($reactions, 'type'));
-        
-        return ['action' => $action, 'counts' => $counts, 'total' => count($reactions)];
-    }
+        $this->collection->updateOne(
+            ['_id' => new ObjectId($commentId)],
+            ['$set' => ['likes' => array_values($likes)]]
+        );
 
-    public function find($id){
-        return $this->collection->findOne(['_id' => new ObjectID($id)]);
-    }
-
-    public function get($post_id){
-        return $this->collection->find(['post_id' => $post_id], ['sort' => ['created_at' => 1]])->toArray();
-    }
-
-    public function delete($id, $user_id){
-        return $this->collection->deleteOne([
-            '_id' => new ObjectId($id),
-            'user_id' => $user_id
-        ]);
+        return ['action' => $action, 'count' => count($likes)];
     }
 }

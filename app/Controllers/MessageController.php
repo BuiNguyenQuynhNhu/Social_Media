@@ -14,7 +14,69 @@ class MessageController extends BaseController {
         $this->friend = new FriendShip();
         $this->userId = session()->get('user_id');
     }
-    public function getMessages($receiverId) {
+
+    public function index() {
+        if (!$this->userId) return redirect()->to('/login');
+
+        $db = \Config\Database::connect();
+        $user = $db->table('users')->where('id', $this->userId)->get()->getRowArray();
+        $avatarUrl = $user['avatar'] ?? base_url('images/default-avatar.png');
+
+        return view('message/index', [
+            'user_id' => $this->userId,
+            'avatarUrl' => $avatarUrl
+        ]);
+    }
+
+    public function getConversations() {
+        if (!$this->userId) return $this->response->setJSON(['status' => 'error']);
+
+        $db = \Config\Database::connect();
+        
+        // Get all accepted friendships
+        $friends = $this->friend->where('status', 'accepted')
+            ->groupStart()
+                ->where('requester_id', $this->userId)
+                ->orWhere('receiver_id', $this->userId)
+            ->groupEnd()
+            ->findAll();
+
+        $conversations = [];
+        foreach ($friends as $friendship) {
+            $friendId = ($friendship['requester_id'] == $this->userId) 
+                ? $friendship['receiver_id'] 
+                : $friendship['requester_id'];
+
+            // Get friend info
+            $friendUser = $db->table('users')->where('id', $friendId)->get()->getRowArray();
+            $friendProfile = $db->table('profiles')->where('id', $friendId)->get()->getRowArray();
+
+            // Get nickname
+            $nickname = null;
+            if ($friendship['requester_id'] == $this->userId && !empty($friendship['nickname1'])) {
+                $nickname = $friendship['nickname1'];
+            } elseif ($friendship['receiver_id'] == $this->userId && !empty($friendship['nickname2'])) {
+                $nickname = $friendship['nickname2'];
+            }
+
+            $name = $nickname ?? ($friendProfile['firstname'] . ' ' . $friendProfile['lastname']);
+
+            // Get last message
+            $lastMessages = $this->msg->get($this->userId, $friendId);
+            $lastMessage = !empty($lastMessages) ? end($lastMessages)['content'] : null;
+
+            $conversations[] = [
+                'friend_id' => $friendId,
+                'name' => $name,
+                'avatar' => $friendUser['avatar'] ?? base_url('images/default-avatar.png'),
+                'last_message' => $lastMessage,
+                'unread_count' => 0 // TODO: Implement unread count logic
+            ];
+        }
+
+        return $this->response->setJSON(['status' => 'success', 'data' => $conversations]);
+    }
+    public function get($receiverId) {
         if (!$this->userId) return $this->response->setJSON(['status' => 'error']);
 
         $chatType = $this->request->getGet('type') ?? 'private'; 
@@ -70,7 +132,7 @@ class MessageController extends BaseController {
         $profile = $db->table('profiles')->where('id', $targetUserId)->get()->getRowArray();
         return $profile;
     }
-    public function send($receiverId) {
+    public function sendMessage($receiverId) {
         if (!$this->userId) return $this->response->setJSON(['status' => 'error']);
         $chatType = $this->request->getPost('chat_type') ?? 'private';
         $isFriend = $this->friend->where('status', 'accepted')

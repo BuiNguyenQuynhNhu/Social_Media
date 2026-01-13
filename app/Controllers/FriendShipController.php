@@ -177,6 +177,20 @@ class FriendShipController extends BaseController
         if (!$this->userId) return redirect()->to('login');
 
         $data = $this->getUserData();
+        $data['targetId'] = $this->userId;
+        
+        $targetData = $this->getTargetUserData($this->userId);
+        if($targetData) {
+            $data['navbarAvatarUrl'] = $data['avatarUrl']; 
+            $data['avatarUrl'] = $targetData['avatarUrl'];
+            $data['coverUrl'] = $targetData['coverUrl'];
+            $data['user'] = $targetData; 
+        }
+
+        $postModel = new Post();
+        $data['posts'] = $postModel->where('id_user', $this->userId)->findAll();
+        $data['friends'] = $this->friend->listFriend($this->userId);
+
         $data['title'] = 'Friend Requests';
         $data['activeTab'] = 'received';
         $data['list'] = $this->friend->listReceive($this->userId);
@@ -189,6 +203,20 @@ class FriendShipController extends BaseController
         if (!$this->userId) return redirect()->to('login');
 
         $data = $this->getUserData();
+        $data['targetId'] = $this->userId;
+        
+        $targetData = $this->getTargetUserData($this->userId);
+        if($targetData) {
+            $data['navbarAvatarUrl'] = $data['avatarUrl']; 
+            $data['avatarUrl'] = $targetData['avatarUrl'];
+            $data['coverUrl'] = $targetData['coverUrl'];
+            $data['user'] = $targetData; 
+        }
+
+        $postModel = new Post();
+        $data['posts'] = $postModel->where('id_user', $this->userId)->findAll();
+        $data['friends'] = $this->friend->listFriend($this->userId);
+
         $data['title'] = 'Sent Requests';
         $data['activeTab'] = 'sent';
         $data['list'] = $this->friend->listSend($this->userId);

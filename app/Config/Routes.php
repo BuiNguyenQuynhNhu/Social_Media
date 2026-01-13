@@ -60,9 +60,40 @@ $routes->group('comment', ['filter' => 'auth'], function($routes){
 $routes->group('message', ['filter' => 'auth'], function($routes){
     $routes->get('/', 'MessageController::index');
     $routes->get('conversations', 'MessageController::getConversations');
-    $routes->get('get/(:any)', 'MessageController::getMessages/$1');
+    $routes->get('get/(:any)', 'MessageController::get/$1');
     $routes->post('send/(:any)', 'MessageController::sendMessage/$1');
-    $routes->delete('delete/(:any)', 'MessageController::deleteMessage/$1');
+    $routes->post('react/(:any)', 'MessageController::react/$1');
+});
+
+// Chats (Group Chats)
+$routes->group('chat', ['filter' => 'auth'], function($routes){
+    $routes->get('/', 'ChatController::index');
+    $routes->get('list', 'ChatController::list');
+    $routes->get('members/(:any)', 'ChatController::getMembers/$1');
+    $routes->post('create', 'ChatController::create');
+    $routes->post('invite/(:any)', 'ChatController::invite/$1');
+    $routes->post('update/(:any)', 'ChatController::update/$1');
+    $routes->post('nickname/(:any)', 'ChatController::updateNickname/$1');
+    $routes->post('leave/(:any)', 'ChatController::leave/$1');
+});
+
+// Groups
+$routes->group('group', ['filter' => 'auth'], function($routes){
+    $routes->get('/', 'GroupController::index');
+    $routes->get('create-view', 'GroupController::createView'); // View page
+    $routes->get('my-groups', 'GroupController::myGroups');
+    $routes->get('suggested', 'GroupController::suggested');
+    $routes->get('(:any)', 'GroupController::show/$1');
+    $routes->get('(:any)/members', 'GroupController::getMembers/$1');
+    
+    $routes->post('create', 'GroupController::create');
+    $routes->post('(:any)/join', 'GroupController::join/$1');
+    $routes->post('(:any)/leave', 'GroupController::leave/$1');
+    $routes->post('(:any)/update', 'GroupController::update/$1');
+    $routes->post('(:any)/privacy', 'GroupController::updatePrivacy/$1');
+    $routes->post('(:any)/requirements', 'GroupController::setRequire/$1');
+    $routes->delete('(:any)', 'GroupController::delete/$1');
+    $routes->post('(:any)/promote/(:any)', 'GroupController::promote/$1/$2');
 });
 
 //Super Admin
