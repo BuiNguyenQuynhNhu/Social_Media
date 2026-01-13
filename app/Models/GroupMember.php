@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class GroupMember extends Model
 {
-    protected $table            = 'groupmembers';
+    protected $table            = 'group_members';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = false;
     protected $returnType       = 'array';
@@ -50,13 +50,17 @@ class GroupMember extends Model
                     ->update();
     }
 
-    public function add($id, $userId, $role=false){
-        return $this->insert([
-            'group_id' => $id,
+    public function add($groupId, $userId, $role = 'member')
+    {
+        $data = [
+            'id' => \Ramsey\Uuid\Uuid::uuid4()->toString(),
+            'group_id' => $groupId,
             'user_id' => $userId,
             'role' => $role,
-            'joined_at' => date('Y-m-d H:i:s'),
-        ]);
+            'joined_at' => date('Y-m-d H:i:s')
+        ];
+
+        return $this->insert($data);
     }
 
     public function isMember($id, $userId) {

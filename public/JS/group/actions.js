@@ -70,6 +70,11 @@ function switchTab(tabName) {
  */
 function openGroupPostModal() {
     if (typeof openCreatePostModal === 'function') {
+        // Set group ID in the modal
+        const groupInput = document.getElementById('modal-group-id');
+        if (groupInput) {
+            groupInput.value = GROUP_ID;
+        }
         openCreatePostModal();
     } else {
         alert('Post creation feature integrated with existing post system');

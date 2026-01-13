@@ -13,7 +13,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .browse-header h1 {
@@ -29,6 +31,8 @@
     gap: 8px;
     margin-bottom: 20px;
     border-bottom: 1px solid #e4e6eb;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .group-tab {
@@ -41,6 +45,8 @@
     color: #65676b;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .group-tab:hover {
@@ -56,7 +62,7 @@
 /* Group Grid */
 .group-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
     gap: 16px;
 }
 
@@ -68,10 +74,12 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.2s, transform 0.2s;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
 }
 
 .group-card:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
 }
 
@@ -81,21 +89,27 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     background-size: cover;
     background-position: center;
+    flex-shrink: 0;
 }
 
 .group-card-body {
     padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .group-card-name {
     font-size: 17px;
     font-weight: 700;
     color: #050505;
-    margin-bottom: 4px;
+    margin: 0 0 8px 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    word-break: break-word;
 }
 
 .group-card-info {

@@ -13,7 +13,7 @@ class Group extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id', 'name', 'description', 'post_requirement', 'privacy', 'created_at', 'description', 'owner_id'];
+    protected $allowedFields    = ['id', 'name', 'description', 'post_requirement', 'privacy', 'cover_photo', 'avatar', 'created_at', 'owner_id'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

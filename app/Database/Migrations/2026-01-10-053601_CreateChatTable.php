@@ -21,6 +21,11 @@ class CreateChatTable extends Migration
                 'type' => 'VARCHAR',
                 'constraint' => 36,
             ],
+            'avatar' => [
+                'type' => 'VARCHAR',
+                'constraint' => 255,
+                'null' => true,
+            ],
             'privacy' =>[
                 'type' => 'BOOLEAN',
                 'default' => false,

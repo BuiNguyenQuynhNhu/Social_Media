@@ -26,7 +26,7 @@ class GroupController extends BaseController
 
         $db = \Config\Database::connect();
         $user = $db->table('users')->where('id', $this->user_id)->get()->getRowArray();
-        $avatarUrl = $user['avatar'] ?? base_url('images/default-avatar.png');
+        $avatarUrl = $user['avatar'] ?? base_url('ICON/avatar-default.png');
 
         return view('group/index', [
             'user_id' => $this->user_id,
@@ -39,7 +39,7 @@ class GroupController extends BaseController
 
         $db = \Config\Database::connect();
         $user = $db->table('users')->where('id', $this->user_id)->get()->getRowArray();
-        $avatarUrl = $user['avatar'] ?? base_url('images/default-avatar.png');
+        $avatarUrl = $user['avatar'] ?? base_url('ICON/avatar-default.png');
 
         return view('group/create', [
             'user_id' => $this->user_id,
@@ -52,7 +52,7 @@ class GroupController extends BaseController
 
         $db = \Config\Database::connect();
         $user = $db->table('users')->where('id', $this->user_id)->get()->getRowArray();
-        $avatarUrl = $user['avatar'] ?? base_url('images/default-avatar.png');
+        $avatarUrl = $user['avatar'] ?? base_url('ICON/avatar-default.png');
 
         $group = $this->group->find($groupId);
         if (!$group) return redirect()->to('/group');
@@ -110,6 +110,15 @@ class GroupController extends BaseController
                 ->countAllResults();
 
             $group['member_count'] = $memberCount;
+            
+            // Set default images if null
+            if (empty($group['cover_photo'])) {
+                $group['cover_photo'] = base_url('ICON/background-default.jpg');
+            }
+            if (empty($group['avatar'])) {
+                $group['avatar'] = base_url('ICON/group-default.png');
+            }
+            
             $groups[] = $group;
         }
 
@@ -157,7 +166,7 @@ class GroupController extends BaseController
             $result[] = [
                 'user_id' => $member['user_id'],
                 'name' => $member['firstname'] . ' ' . $member['lastname'],
-                'avatar' => $member['avatar'] ?? base_url('images/default-avatar.png'),
+                'avatar' => $member['avatar'] ?? base_url('ICON/avatar-default.svg'),
                 'role' => $member['role']
             ];
         }

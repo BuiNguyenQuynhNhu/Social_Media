@@ -44,6 +44,59 @@ class UserController extends BaseController
         // Load posts for the dashboard feed (Friends + Self)
         $postController = new PostController();
         $data['posts'] = $postController->listFeed($this->id); 
+        
+        // Load User's Groups (Limit 5 for sidebar)
+        $db = \Config\Database::connect();
+        $memberships = $db->table('group_members')
+            ->select('groups.*, group_members.role')
+            ->join('groups', 'groups.id = group_members.group_id')
+            ->where('group_members.user_id', $this->id)
+            ->limit(5)
+            ->get()->getResultArray();
+            
+        // Process groups with default images
+        foreach ($memberships as &$group) {
+            $group['cover_photo'] = $group['cover_photo'] ?? base_url('ICON/background-default.jpg');
+            $group['avatar'] = $group['avatar'] ?? base_url('ICON/group-default.png');
+        }
+        $data['myGroups'] = $memberships;
+
+        // Load Recent Chats (Limit 10)
+        $chats = $db->table('chat_members')
+            ->select('chats.*')
+            ->join('chats', 'chats.id = chat_members.chat_id')
+            ->where('chat_members.user_id', $this->id)
+            ->orderBy('chats.updated_at', 'DESC')
+            ->limit(10)
+            ->get()->getResultArray();
+            
+        // Process chats with default images
+        foreach ($chats as &$chat) {
+             if ($chat['privacy'] == 0) {
+                 // Private chat - get other user's info
+                $otherMember = $db->table('chat_members')
+                    ->where('chat_id', $chat['id'])
+                    ->where('user_id !=', $this->id)
+                    ->get()->getRowArray();
+                
+                if ($otherMember) {
+                    $otherUser = $db->table('users')
+                        ->join('profiles', 'profiles.id = users.id')
+                        ->where('users.id', $otherMember['user_id'])
+                        ->get()->getRowArray();
+                        
+                    $chat['name'] = $otherUser['firstname'] . ' ' . $otherUser['lastname'];
+                    $chat['avatar'] = $otherUser['avatar'] ?? base_url('ICON/avatar-default.svg');
+                } else {
+                     $chat['name'] = 'Unknown User';
+                     $chat['avatar'] = base_url('ICON/avatar-default.svg');
+                }
+             } else {
+                 // Group chat
+                 $chat['avatar'] = $chat['avatar'] ?? base_url('ICON/group-default.png');
+             }
+        }
+        $data['recentChats'] = $chats;
 
         return view('dashboard', $data);
     }

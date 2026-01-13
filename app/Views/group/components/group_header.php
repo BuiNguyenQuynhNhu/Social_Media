@@ -1,11 +1,11 @@
 <div class="group-header">
-    <div class="group-cover" id="group-cover" style="background-image: url('<?= $group['cover_photo'] ?? base_url('images/default-cover.jpg') ?>');">
+    <div class="group-cover" id="group-cover" style="background-image: url('<?= $group['cover_photo'] ?? base_url('ICON/background-default.jpg') ?>');">
         <!-- Cover Photo -->
     </div>
     
     <div class="group-info-bar">
         <div class="group-main-info">
-            <img src="<?= $group['avatar'] ?? base_url('images/default-group.png') ?>" class="group-avatar" alt="Group avatar" id="group-avatar">
+            <img src="<?= $group['avatar'] ?? base_url('ICON/group-default.png') ?>" class="group-avatar" alt="Group avatar" id="group-avatar">
             <div class="group-title-section">
                 <h1 id="group-name"><?= esc($group['name']) ?></h1>
                 <div class="group-meta">

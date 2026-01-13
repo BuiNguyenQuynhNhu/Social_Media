@@ -56,7 +56,7 @@ function renderGroupCard(group, container) {
 
     container.append(`
         <div class="group-card" onclick="window.location.href='${BASE_URL}/group/${group.id}'">
-            <div class="group-card-cover" style="background-image: url('${group.cover_photo || BASE_URL + '/images/default-cover.jpg'}');"></div>
+            <div class="group-card-cover" style="background-image: url('${group.cover_photo || BASE_URL + '/ICON/background-default.jpg'}');"></div>
             <div class="group-card-body">
                 <h3 class="group-card-name">${escapeHtml(group.name)}</h3>
                 <div class="group-card-info">

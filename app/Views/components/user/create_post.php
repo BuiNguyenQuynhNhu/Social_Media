@@ -20,6 +20,7 @@
 
         <form action="<?= base_url('post/create_post') ?>" method="POST" enctype="multipart/form-data">
             <?= csrf_field() ?>
+            <input type="hidden" name="group_id" id="modal-group-id" value="">
             
             <div class="modal-body">
                 <div class="user-micro">
@@ -40,7 +41,7 @@
                 <textarea name="content" class="modal-body textarea" placeholder="What's on your mind, <?= esc($user['firstname']) ?>?" 
                           rows="6" required style="width: 100%; border: none; outline: none; font-size: 24px; resize: none; font-family: inherit;"></textarea>
                 
-                <div id="media-preview-area" class="media-preview"></div>
+                <div id="media-preview-container" style="display: none; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 12px;"></div>
 
                 <div class="add-to-post">
                     <span style="font-weight: 600;">Add to your post</span>

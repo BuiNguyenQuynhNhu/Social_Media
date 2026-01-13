@@ -53,16 +53,30 @@ function previewPostFiles(input) {
 
     if (input.files && input.files.length > 0) {
         preview.style.display = 'grid';
-        Array.from(input.files).forEach(file => {
+        Array.from(input.files).forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = function (e) {
                 const div = document.createElement('div');
                 div.className = 'preview-item';
+                div.style.cssText = 'position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 1;';
+
                 if (file.type.startsWith('video')) {
-                    div.innerHTML = `<video src="${e.target.result}" controls></video>`;
+                    div.innerHTML = `<video src="${e.target.result}" controls style="width: 100%; height: 100%; object-fit: cover;"></video>`;
                 } else {
-                    div.innerHTML = `<img src="${e.target.result}">`;
+                    div.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
                 }
+
+                // Add remove button
+                const removeBtn = document.createElement('button');
+                removeBtn.innerHTML = '×';
+                removeBtn.style.cssText = 'position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,0.7); color: white; border: none; cursor: pointer; font-size: 18px;';
+                removeBtn.onclick = (e) => {
+                    e.preventDefault();
+                    div.remove();
+                    if (preview.children.length === 0) preview.style.display = 'none';
+                };
+                div.appendChild(removeBtn);
+
                 preview.appendChild(div);
             }
             reader.readAsDataURL(file);

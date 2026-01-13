@@ -21,27 +21,52 @@ class PostController extends BaseController
 
     public function create() {
         if (!$this->userId) return redirect()->to('login');
-        $rules = [
-            'images' => 'uploaded[images]|max_size[images,5120]|ext_in[images,jpg,jpeg,png,gif,mp4,mov,avi]'
-        ];
-
-        $files = $this->request->getFileMultiple('images');
-        if ($files && $files[0]->isValid() && !$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('error', $this->validator->getErrors());
+        
+        $content = $this->request->getPost('content');
+        if (empty($content)) {
+            return redirect()->back()->with('error', 'Post content is required.');
         }
 
+        $db = \Config\Database::connect();
+        $db->transStart();
+
         $postId = $this->post->create([
-            'content' => $this->request->getPost('content'),
+            'content' => $content,
             'id_user' => $this->userId,
             'privacy' => $this->request->getPost('privacy') ?? 'public',
         ]);
 
         if ($postId) {
-            if ($files && $files[0]->isValid()) {
-                $mediaService = new Media();
-                $mediaItems = $mediaService->uploadMultiple($files, 'posts');
-                $mediaService->storeMetadata($postId, $mediaItems, 'post_media');
+            // Handle Group Post
+            $groupId = $this->request->getPost('group_id');
+            if (!empty($groupId)) {
+                $db->table('group_posts')->insert([
+                    'id' => Uuid::uuid4()->toString(),
+                    'group_id' => $groupId,
+                    'post_id' => $postId,
+                    'status' => 'pending' // Or 'accepted' depending on group settings
+                ]);
             }
+
+            // Handle media upload if files are present
+            $files = $this->request->getFileMultiple('images');
+            if ($files && $files[0]->isValid()) {
+                try {
+                    $mediaService = new Media();
+                    $mediaItems = $mediaService->uploadMultiple($files, 'posts');
+                    $mediaService->storeMetadata($postId, $mediaItems, 'post_media');
+                } catch (\Exception $e) {
+                    log_message('error', 'Media upload failed: ' . $e->getMessage());
+                    // Continue even if media upload fails
+                }
+            }
+            
+            $db->transComplete();
+            
+            if ($db->transStatus() === false) {
+                 return redirect()->back()->with('error', 'Failed to create post.');
+            }
+
             return redirect()->back()->with('success', 'Posted successfully!');
         }
         return redirect()->back()->with('error', 'Failed to create post.');
@@ -95,7 +120,7 @@ class PostController extends BaseController
         $mediaCollection = $mongo->getCollection('post_media');
 
         foreach ($posts as &$post) {
-            $media = $mediaCollection->findOne(['post_id' => $post['id']]);
+            $media = $mediaCollection->findOne(['entity_id' => $post['id']]);
             $post['media'] = $media ? (array)$media['items'] : [];
         }
 
