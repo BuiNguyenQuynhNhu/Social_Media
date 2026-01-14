@@ -12,6 +12,14 @@ $routes->get('login', 'AuthController::loginView');
 $routes->post('login', 'AuthController::login');
 $routes->get('logout', 'AuthController::logout');
 $routes->post('register', 'AuthController::register');
+// Message Routes
+$routes->group('message', ['filter' => 'auth'], function($routes){
+    $routes->get('/', 'MessageController::index');
+    $routes->get('conversations', 'MessageController::getConversations');
+    $routes->get('chat/(:any)', 'MessageController::getMessages/$1');
+    $routes->post('send', 'MessageController::send');
+    $routes->post('mark-read/(:any)', 'MessageController::markAsRead/$1');
+});
 
 // Notifications
 $routes->group('notifications', ['filter' => 'auth'], function($routes){

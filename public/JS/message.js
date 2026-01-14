@@ -1,194 +1,253 @@
-const BASE_URL = document.querySelector('meta[name="base_url"]')?.content || '';
-const MY_ID = document.querySelector('meta[name="user_id"]')?.content || '';
-let currentFriendId = null;
-
 /**
- * Initialize message page
+ * Message.js - Facebook Messenger Style Messaging
  */
+
+let currentChatId = null;
+let conversations = [];
+
 $(document).ready(function () {
-    lucide.createIcons();
     loadConversations();
+    setupEventListeners();
 
-    $('#message-form').on('submit', function (e) {
-        e.preventDefault();
-        sendMessage();
-    });
-
-    $('#message-input').on('keydown', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
+    // Poll for new messages every 5 seconds
+    setInterval(function () {
+        if (currentChatId) {
+            loadMessages(currentChatId, false);
         }
-    });
-
-    // Auto-refresh conversations every 10 seconds
-    setInterval(loadConversations, 10000);
+        loadConversations();
+    }, 5000);
 });
 
 /**
- * Load all conversations for current user
+ * Load all conversations
  */
 function loadConversations() {
-    $.get(BASE_URL + '/message/conversations', function (res) {
-        if (res.status === 'success') {
-            const list = $('#conversation-list');
-            list.empty();
+    $.ajax({
+        url: `${BASE_URL}/message/conversations`,
+        type: 'GET',
+        success: function (response) {
+            if (response.status === 'success') {
+                conversations = response.conversations;
+                renderConversations(response.conversations);
+            }
+        },
+        error: function (xhr) {
+            console.error('Failed to load conversations:', xhr);
+        }
+    });
+}
 
-            res.data.forEach(conv => {
-                const unreadBadge = conv.unread_count > 0
-                    ? `<span class="unread-badge">${conv.unread_count}</span>`
-                    : '';
+/**
+ * Render conversation list
+ */
+function renderConversations(convos) {
+    const $list = $('#conversation-list');
 
-                const isActive = (currentFriendId === conv.friend_id) ? 'active' : '';
-                const itemClass = conv.unread_count > 0 ? `conversation-item unread ${isActive}` : `conversation-item ${isActive}`;
+    if (!convos || convos.length === 0) {
+        $list.html('<div style="padding: 20px; text-align: center; color: #65676b;">No conversations yet</div>');
+        return;
+    }
 
-                list.append(`
-                    <div class="${itemClass}" onclick="openChat('${conv.friend_id}', '${escapeHtml(conv.name)}', '${conv.avatar}')">
-                        <img src="${conv.avatar}" class="avatar-medium" alt="${escapeHtml(conv.name)}">
-                        <div class="conversation-info">
-                            <div class="conversation-name">${escapeHtml(conv.name)}</div>
-                            <div class="conversation-preview">${escapeHtml(conv.last_message || 'No messages yet')}</div>
-                        </div>
-                        ${unreadBadge}
-                    </div>
-                `);
-            });
+    $list.empty();
 
-            // Auto-load first chat if none selected
-            if (!currentFriendId && res.data.length > 0) {
-                const first = res.data[0];
-                // Only if not mobile (optional check, but good for UX)
-                if (window.innerWidth > 768) {
-                    openChat(first.friend_id, first.name, first.avatar);
+    convos.forEach(convo => {
+        const isActive = currentChatId == convo.friend_id ? 'active' : '';
+        const $item = $(`
+            <div class="conversation-item ${isActive}" data-friend-id="${convo.friend_id}">
+                <img src="${convo.avatar}" class="conversation-avatar" alt="${convo.name}">
+                <div class="conversation-info">
+                    <div class="conversation-name">${escapeHtml(convo.name)}</div>
+                    <div class="conversation-preview">${escapeHtml(convo.last_message || 'No messages yet')}</div>
+                </div>
+                <div class="conversation-time">${timeAgo(convo.last_message_time)}</div>
+            </div>
+        `);
+
+        $item.on('click', function () {
+            openChat(convo.friend_id, convo.name, convo.avatar);
+        });
+
+        $list.append($item);
+    });
+
+    lucide.createIcons();
+}
+
+/**
+ * Open a chat with a friend
+ */
+function openChat(friendId, friendName, friendAvatar) {
+    currentChatId = friendId;
+
+    // Update UI
+    $('.conversation-item').removeClass('active');
+    $(`.conversation-item[data-friend-id="${friendId}"]`).addClass('active');
+
+    // Hide empty state, show chat
+    $('.chat-empty-state').hide();
+    $('#active-chat').show();
+
+    // Update header
+    $('#recipient-avatar').attr('src', friendAvatar);
+    $('#recipient-name').text(friendName);
+
+    // Load messages
+    loadMessages(friendId, true);
+
+    // Focus input
+    $('#message-input').focus();
+}
+
+/**
+ * Load messages for a chat
+ */
+function loadMessages(friendId, scrollToBottom = false) {
+    $.ajax({
+        url: `${BASE_URL}/message/chat/${friendId}`,
+        type: 'GET',
+        success: function (response) {
+            if (response.status === 'success') {
+                renderMessages(response.messages);
+                if (scrollToBottom) {
+                    scrollChatToBottom();
                 }
             }
-
-            lucide.createIcons();
+        },
+        error: function (xhr) {
+            console.error('Failed to load messages:', xhr);
         }
     });
 }
 
 /**
- * Open a chat with specific friend
+ * Render messages in chat
  */
-function openChat(friendId, name, avatar) {
-    currentFriendId = friendId;
-    $('#receiver-id').val(friendId);
-    $('#chat-name').text(name);
-    $('#chat-avatar').attr('src', avatar);
+function renderMessages(messages) {
+    const $container = $('#chat-messages');
+    const scrollPos = $container.scrollTop();
+    const scrollHeight = $container[0].scrollHeight;
+    const wasAtBottom = scrollPos + $container.innerHeight() >= scrollHeight - 50;
 
-    $('#empty-state').hide();
-    $('#chat-container').show();
+    $container.empty();
 
-    $('.conversation-item').removeClass('active');
-    $(event.target).closest('.conversation-item').addClass('active');
+    if (!messages || messages.length === 0) {
+        $container.html('<div style="padding: 20px; text-align: center; color: #65676b;">No messages yet. Start the conversation!</div>');
+        return;
+    }
 
-    loadMessages(friendId);
-}
+    messages.forEach(msg => {
+        const isSent = msg.sender_id == USER_ID;
+        const messageClass = isSent ? 'sent' : 'received';
 
-/**
- * Load messages for specific friend
- */
-function loadMessages(friendId) {
-    $.get(BASE_URL + '/message/get/' + friendId, function (res) {
-        if (res.status === 'success') {
-            const container = $('#chat-messages');
-            container.empty();
+        const $messageGroup = $(`
+            <div class="message-group ${messageClass}">
+                ${!isSent ? `<img src="${msg.avatar}" class="message-avatar" alt="Avatar">` : ''}
+                <div class="message-bubble">${escapeHtml(msg.content)}</div>
+            </div>
+        `);
 
-            res.data.forEach(msg => {
-                const bubble = msg.is_mine ? 'message-bubble mine' : 'message-bubble';
-                let content = '';
-
-                if (msg.media) {
-                    if (msg.media.type === 'video') {
-                        content = `<video src="${msg.media.url}" controls style="max-width: 300px; border-radius: 12px;"></video>`;
-                    } else {
-                        content = `<img src="${msg.media.url}" style="max-width: 300px; border-radius: 12px;" alt="Media">`;
-                    }
-                }
-
-                if (msg.content) {
-                    content += `<p>${escapeHtml(msg.content)}</p>`;
-                }
-
-                container.append(`
-                    <div class="message-group ${msg.is_mine ? 'mine' : ''}">
-                        <div class="${bubble}">
-                            ${content}
-                            <div class="message-time">${formatTime(msg.created_at)}</div>
-                        </div>
-                    </div>
-                `);
-            });
-
-            container.scrollTop(container[0].scrollHeight);
-            loadConversations(); // Refresh to update unread count
-        }
+        $container.append($messageGroup);
     });
+
+    // Maintain scroll position or scroll to bottom
+    if (wasAtBottom) {
+        scrollChatToBottom();
+    }
 }
 
 /**
  * Send a message
  */
 function sendMessage() {
-    const form = $('#message-form')[0];
-    const formData = new FormData(form);
-    const receiverId = $('#receiver-id').val();
+    const message = $('#message-input').val().trim();
 
-    if (!receiverId) return;
+    if (!message || !currentChatId) return;
 
     $.ajax({
-        url: BASE_URL + '/message/send/' + receiverId,
+        url: `${BASE_URL}/message/send`,
         type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (res) {
-            if (res.status === 'success') {
+        data: {
+            receiver_id: currentChatId,
+            content: message
+        },
+        success: function (response) {
+            if (response.status === 'success') {
                 $('#message-input').val('');
-                $('#media-preview').empty();
-                $('#media-input').val('');
-                loadMessages(receiverId);
+                loadMessages(currentChatId, true);
+                loadConversations(); // Update conversation list
+            } else {
+                alert(response.message || 'Failed to send message');
             }
+        },
+        error: function (xhr) {
+            console.error('Failed to send message:', xhr);
+            alert('Failed to send message');
         }
     });
 }
 
 /**
- * Preview media before sending
+ * Setup event listeners
  */
-function previewMedia(input) {
-    const preview = $('#media-preview');
-    preview.empty();
+function setupEventListeners() {
+    // Search conversations
+    $('#search-conversations').on('input', function () {
+        const query = $(this).val().toLowerCase();
+        $('.conversation-item').each(function () {
+            const name = $(this).find('.conversation-name').text().toLowerCase();
+            $(this).toggle(name.includes(query));
+        });
+    });
 
-    if (input.files && input.files[0]) {
-        const file = input.files[0];
-        const reader = new FileReader();
+    // Message input - enable/disable send button
+    $('#message-input').on('input', function () {
+        const hasText = $(this).val().trim().length > 0;
+        $('#send-btn').prop('disabled', !hasText);
+    });
 
-        reader.onload = function (e) {
-            if (file.type.startsWith('video')) {
-                preview.html(`<video src="${e.target.result}" style="max-height: 100px;"></video>`);
-            } else {
-                preview.html(`<img src="${e.target.result}" style="max-height: 100px;" alt="Preview">`);
-            }
-        };
+    // Send message on button click
+    $('#send-btn').on('click', sendMessage);
 
-        reader.readAsDataURL(file);
-    }
+    // Send message on Enter key
+    $('#message-input').on('keypress', function (e) {
+        if (e.which === 13 && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+}
+
+/**
+ * Scroll chat to bottom
+ */
+function scrollChatToBottom() {
+    const $container = $('#chat-messages');
+    $container.scrollTop($container[0].scrollHeight);
 }
 
 /**
  * Escape HTML to prevent XSS
  */
 function escapeHtml(text) {
-    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-    return text.replace(/[&<>"']/g, m => map[m]);
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 /**
- * Format timestamp
+ * Format time ago
  */
-function formatTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+function timeAgo(timestamp) {
+    if (!timestamp) return '';
+
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diff = Math.floor((now - time) / 1000); // seconds
+
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}d`;
+
+    return time.toLocaleDateString();
 }

@@ -1,5 +1,5 @@
-<div class="empty-state" id="empty-state">
-    <i data-lucide="message-circle" style="width: 80px; height: 80px; color: #65676b;"></i>
+<div class="chat-empty-state">
+    <i data-lucide="message-circle" style="width: 100px; height: 100px;"></i>
     <h3>Your Messages</h3>
-    <p>Send private messages to friends</p>
+    <p>Send private messages to a friend or group</p>
 </div>

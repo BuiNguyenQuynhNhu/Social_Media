@@ -41,7 +41,7 @@
                     <i data-lucide="users-2"></i>
                 </a>
                 
-                <a href="<?= base_url('chat') ?>" class="nav-item <?= (strpos(uri_string(), 'chat') !== false) ? 'active' : '' ?>" title="Chats">
+                <a href="<?= base_url('message') ?>" class="nav-item <?= (strpos(uri_string(), 'message') !== false) ? 'active' : '' ?>" title="Messages">
                     <i data-lucide="message-square"></i>
                 </a>
                 

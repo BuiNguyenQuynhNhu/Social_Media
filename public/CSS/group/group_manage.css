@@ -56,7 +56,8 @@
     gap: 2px;
 }
 
-.nav-item {
+.sidebar-nav .nav-item,
+.sidebar-footer .nav-item {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -69,17 +70,18 @@
     transition: background 0.2s;
 }
 
-.nav-item:hover {
+.sidebar-nav .nav-item:hover,
+.sidebar-footer .nav-item:hover {
     background: #f0f2f5;
 }
 
-.nav-item.active {
+.sidebar-nav .nav-item.active {
     background: #e7f3ff;
-    /* Light blue active state */
     color: #1877f2;
 }
 
-.nav-item i {
+.sidebar-nav .nav-item i,
+.sidebar-footer .nav-item i {
     width: 20px;
     height: 20px;
 }

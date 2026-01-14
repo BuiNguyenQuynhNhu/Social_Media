@@ -10,10 +10,7 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/overall.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('CSS/message/message.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('CSS/message/message_components.css') ?>">
-    <!-- <link rel="stylesheet" href="<?= base_url('CSS/message/conversation.css') ?>"> -->
-    <!-- <link rel="stylesheet" href="<?= base_url('CSS/message/chat.css') ?>"> -->
+    <link rel="stylesheet" href="<?= base_url('CSS/message/messenger.css') ?>">
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -23,29 +20,31 @@
 <?= view('components/user/navbar', ['avatarUrl' => $avatarUrl]) ?>
 
 <div class="message-container">
-    <!-- Left Sidebar - Conversation List -->
+    <!-- Conversation List (Left) -->
     <?= view('message/components/conversation_list') ?>
 
-    <!-- Right Side - Message Thread -->
-    <div class="message-thread">
+    <!-- Chat Area (Center/Right) -->
+    <div class="chat-area" id="chat-area">
         <!-- Empty State -->
         <?= view('message/components/empty_state') ?>
 
-        <!-- Chat Container -->
-        <div class="chat-container" id="chat-container" style="display: none;">
-            <!-- Chat Header -->
+        <!-- Active Chat (Hidden by default) -->
+        <div id="active-chat" style="display: none;">
             <?= view('message/components/chat_header') ?>
-
-            <!-- Message Bubbles -->
-            <?= view('message/components/message_bubble') ?>
-
-            <!-- Chat Input -->
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages loaded via JS -->
+            </div>
             <?= view('message/components/chat_input') ?>
         </div>
     </div>
 </div>
 
 <!-- JavaScript -->
+<script>
+    const BASE_URL = '<?= rtrim(base_url(), '/') ?>';
+    const USER_ID = '<?= $user_id ?>';
+    lucide.createIcons();
+</script>
 <script src="<?= base_url('JS/message.js') ?>"></script>
 
 </body>
