@@ -82,11 +82,18 @@
 .comment-media-container img,
 .comment-media-container video {
     max-width: 100%;
-    max-height: 250px;
+    height: auto;
+    max-height: 300px;
     width: auto;
     display: block;
     object-fit: contain;
     border-radius: 8px;
+}
+
+/* Ensure media doesn't overflow comment bubble */
+.comment-content-wrapper {
+    max-width: 100%;
+    overflow: hidden;
 }
 
 /* Comment Actions */

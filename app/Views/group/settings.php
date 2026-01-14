@@ -11,16 +11,18 @@
     <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/overall.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/group/group_layout.css') ?>">
-    
+        <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/overall.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/group/group_settings.css') ?>">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="<?= base_url('CSS/group/group_manage.css') ?>">
 </head>
 <body class="background">
 
 <?= view('components/user/navbar', ['avatarUrl' => $avatarUrl]) ?>
 
-<div class="settings-container">
+<div class="group-settings-wrapper">
+<div class="settings-card">
     <div class="settings-header">
         <h1>Group Settings</h1>
         <a href="<?= base_url('group/' . $group['id']) ?>" class="back-link"><i data-lucide="arrow-left"></i> Back to Group</a>
@@ -86,7 +88,9 @@
         <!-- Danger Zone -->
         <h3 style="color: #dc3545;">Danger Zone</h3>
         <button class="btn-save" style="background: white; color: #dc3545; border: 1px solid #dc3545;" onclick="deleteGroup()">Delete Group</button>
-    </div>
+        </div>
+</div>
+</div>
 </div>
 
 
