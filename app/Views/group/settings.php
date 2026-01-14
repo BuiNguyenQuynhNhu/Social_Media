@@ -37,6 +37,23 @@
             <textarea id="group-description-input" class="form-input" rows="3"><?= esc($group['description'] ?? '') ?></textarea>
         </div>
         
+        <!-- Group Images -->
+        <div class="form-section">
+            <label>Group Avatar</label>
+            <input type="file" id="group-avatar-input" class="form-input" accept="image/*">
+            <?php if (!empty($group['avatar'])): ?>
+                <img src="<?= $group['avatar'] ?>" alt="Current avatar" style="max-width: 100px; margin-top: 8px; border-radius: 8px;">
+            <?php endif; ?>
+        </div>
+        
+        <div class="form-section">
+            <label>Cover Photo</label>
+            <input type="file" id="group-cover-input" class="form-input" accept="image/*">
+            <?php if (!empty($group['cover_photo'])): ?>
+                <img src="<?= $group['cover_photo'] ?>" alt="Current cover" style="max-width: 200px; margin-top: 8px; border-radius: 8px;">
+            <?php endif; ?>
+        </div>
+        
         <div class="form-section">
             <button class="btn-save" onclick="updateGroupInfo()">Save Changes</button>
         </div>
@@ -72,11 +89,13 @@
     </div>
 </div>
 
-<script src="<?= base_url('JS/group/settings.js') ?>"></script>
+
 <script>
+    const BASE_URL = '<?= rtrim(base_url(), '/') ?>';
     const GROUP_ID = '<?= $group['id'] ?>';
     lucide.createIcons();
 </script>
+<script src="<?= base_url('JS/group/settings.js') ?>"></script>
 
 </body>
 </html>

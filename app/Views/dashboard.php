@@ -32,7 +32,7 @@
             <div class="posts-feed">
                 <?php if (!empty($posts)): ?>
                     <?php foreach ($posts as $post): ?>
-                        <?= view('components/post/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl]) ?>
+                        <?= view('components/post/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl, 'context' => 'dashboard']) ?>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <div class="empty-state">

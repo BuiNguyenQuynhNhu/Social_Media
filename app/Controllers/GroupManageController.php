@@ -54,8 +54,7 @@ class GroupManageController extends BaseController
     }
 
     public function settings($groupId) {
-        $group = $this->checkAccess($groupId, ['owner']); // Only owner or super admin? Let's allow admin for now? Code used to allow admin
-        // Old code: $isOwner || $isAdmin. So let's use checkAccess default.
+        $group = $this->checkAccess($groupId, ['owner']); 
         $group = $this->checkAccess($groupId); 
 
         if (!$group) return redirect()->to("/group/$groupId")->with('error', 'Unauthorized');
@@ -79,9 +78,37 @@ class GroupManageController extends BaseController
         if ($name = $this->request->getPost('name')) $data['name'] = $name;
         if ($description = $this->request->getPost('description')) $data['description'] = $description;
 
+        // Handle avatar upload
+        $avatar = $this->request->getFile('avatar');
+        if ($avatar && $avatar->isValid() && !$avatar->hasMoved()) {
+            try {
+                $cloudinary = new \App\Libraries\Cloudinary();
+                $avatarUrl = $cloudinary->upload($avatar->getTempName(), 'group_avatars');
+                $data['avatar'] = $avatarUrl;
+            } catch (\Exception $e) {
+                log_message('error', 'Group avatar upload failed: ' . $e->getMessage());
+            }
+        }
+
+        // Handle cover photo upload
+        $cover = $this->request->getFile('cover_photo');
+        if ($cover && $cover->isValid() && !$cover->hasMoved()) {
+            try {
+                $cloudinary = new \App\Libraries\Cloudinary();
+                $coverUrl = $cloudinary->upload($cover->getTempName(), 'group_covers');
+                $data['cover_photo'] = $coverUrl;
+            } catch (\Exception $e) {
+                log_message('error', 'Group cover photo upload failed: ' . $e->getMessage());
+            }
+        }
+
+        if (empty($data)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'No data to update']);
+        }
+
         return $this->group->update($groupId, $data) 
             ? $this->response->setJSON(['status' => 'success']) 
-            : $this->response->setJSON(['status' => 'error']);
+            : $this->response->setJSON(['status' => 'error', 'message' => 'Update failed']);
     }
 
     public function updatePrivacy($groupId) {

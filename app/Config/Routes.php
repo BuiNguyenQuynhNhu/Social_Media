@@ -13,6 +13,13 @@ $routes->post('login', 'AuthController::login');
 $routes->get('logout', 'AuthController::logout');
 $routes->post('register', 'AuthController::register');
 
+// Notifications
+$routes->group('notifications', ['filter' => 'auth'], function($routes){
+    $routes->get('/', 'NotificationController::index');
+    $routes->post('read/(:any)', 'NotificationController::markRead/$1');
+    $routes->post('read-all', 'NotificationController::markAllRead');
+});
+
 
 //User
 $routes->group('user', ['filter' => 'auth'], function($routes){
@@ -30,7 +37,7 @@ $routes->group('user', ['filter' => 'auth'], function($routes){
 $routes->group('post', ['filter' => 'auth'], function($routes){
     $routes->post('create_post', 'PostController::create');
     $routes->post('update_post/(:any)', 'PostController::update/$1');
-    $routes->delete('delete_post/(:any)', 'PostController::delete/$1');
+    $routes->post('delete_post/(:any)', 'PostController::delete/$1');
 });
 // Friend Routes
 $routes->group('friend', ['filter' => 'auth'], function($routes){
@@ -100,7 +107,7 @@ $routes->group('group', ['filter' => 'auth'], function($routes){
     $routes->post('update_privacy/(:any)', 'GroupManageController::updatePrivacy/$1');
     $routes->post('update_post_requirements/(:any)', 'GroupManageController::updatePostRequirements/$1');
     $routes->post('(:any)/requirements', 'GroupManageController::setRequire/$1');
-    $routes->delete('(:any)', 'GroupManageController::delete/$1');
+    $routes->post('(:any)/delete', 'GroupManageController::delete/$1'); // POST for body payload support
     
     $routes->post('(:any)/promote/(:any)', 'GroupManageController::promote/$1/$2');
     $routes->post('(:any)/kick/(:any)', 'GroupManageController::kickMember/$1/$2');

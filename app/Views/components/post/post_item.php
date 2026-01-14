@@ -12,31 +12,26 @@
         <?php 
             $currentUserId = session()->get('user_id');
             $isPostOwner = $currentUserId == $post['id_user'];
-            $isGroupAdmin = isset($isAdmin) && $isAdmin;
-            $allowManage = isset($allowManage) && $allowManage;
-
-            // Edit: Only allowed in Profile (allowManage) for the owner. 
-            // Group/Dashboard: No editing allow.
-            // Edit: Only allowed in Profile (allowManage) for the owner. 
-            // Group/Dashboard: No editing allow.
-            $canEdit = $allowManage && $isPostOwner && !(isset($post['group_id'])); // Explicitly disable if group post context
-
-            // Delete: Allowed for Group Admin OR Post Owner.
-            $canDelete = $isGroupAdmin || $isPostOwner;
+            
+            // Context-based delete rules
+            $context = $context ?? 'feed'; // dashboard, profile, group_feed, group_manage
+            
+            $canDelete = false;
+            
+            if ($context === 'dashboard' || $context === 'profile') {
+                // Dashboard & Profile: Owner can delete
+                $canDelete = $isPostOwner;
+            } elseif ($context === 'group_manage') {
+                // Group Manage: Admin/Owner can delete any post
+                $canDelete = isset($isAdmin) && $isAdmin;
+            }
+            // group_feed context: canDelete stays false (no delete buttons)
         ?>
         
         <div style="display: flex; gap: 8px;">
-            <?php if ($canEdit): ?>
-                <button type="button" class="icon-btn-ghost" 
-                        onclick="openEditPostModal('<?= $post['id'] ?>', '<?= esc(addslashes($post['content'])) ?>', '<?= $post['privacy'] ?? 'public' ?>', '<?= (isset($post['avatar']) && strpos($post['avatar'], 'http') === 0) ? $post['avatar'] : ($post['avatar'] ? base_url($post['avatar']) : base_url('ICON/avatar-default.svg')) ?>', '<?= esc($post['firstname'] . ' ' . $post['lastname']) ?>')">
-                    <i data-lucide="edit-2"></i>
-                </button>
-            <?php endif; ?>
-
             <?php if ($canDelete): ?>
                 <form action="<?= base_url('post/delete_post/' . $post['id']) ?>" method="post" onsubmit="return confirm('Do you really want to delete this post?')">
                     <?= csrf_field() ?>
-                    <input type="hidden" name="_method" value="DELETE">
                     <button type="submit" class="icon-btn-ghost"><i data-lucide="trash-2"></i></button>
                 </form>
             <?php endif; ?>

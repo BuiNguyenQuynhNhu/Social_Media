@@ -40,7 +40,7 @@
                     <?php endif; ?>
 
                     <?php foreach ($posts as $post): ?>
-                        <?= view('components/post/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl, 'showDelete' => true, 'allowManage' => true]) ?>
+                        <?= view('components/post/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl, 'context' => 'profile']) ?>
                     <?php endforeach; ?>
                 </div>
 

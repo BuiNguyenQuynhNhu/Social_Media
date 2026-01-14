@@ -4,9 +4,9 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class Nontification extends Model
+class Notification extends Model
 {
-    protected $table            = 'nontifications';
+    protected $table            = 'notifications';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = false;
     protected $returnType       = 'array';

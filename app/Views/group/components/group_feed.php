@@ -7,7 +7,7 @@
     <!-- Posts Feed -->
     <?php if (!empty($posts)): ?>
         <?php foreach ($posts as $post): ?>
-            <?= view('components/post/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl, 'isAdmin' => $is_admin ?? false]) ?>
+            <?= view('components/post/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl, 'context' => 'group_feed']) ?>
         <?php endforeach; ?>
     <?php else: ?>
         <div class="empty-state">
