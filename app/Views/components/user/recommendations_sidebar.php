@@ -1,4 +1,4 @@
-<!-- Friend Recommendations Sidebar Widget - WITH FALLBACK -->
+<!-- Friend Recommendations Sidebar Widget -->
 <div class="friend-recommendations-sidebar">
     <div class="sidebar-header">
         <h3>People You May Know</h3>
@@ -14,49 +14,44 @@
         }
         
         if (isset($_SESSION['user_id'])) {
-            // Try with session user_id first
+            // Use RecommenderController with proper filtering
+            $recommenderController = new \App\Controllers\RecommenderController();
             $userId = $_SESSION['user_id'];
-            $apiUrl = 'http://127.0.0.1:5000/api/recommendations/friends/' . $userId . '?top_k=5';
+            $recommendations = $recommenderController->getFriendRecommendations($userId, 20);
             
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $apiUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+            // Get existing friends and requests to filter
+            $friendshipModel = new \App\Models\FriendShip();
+            $existingFriends = $friendshipModel->listFriend($userId);
+            $pendingSent = $friendshipModel->listSend($userId);
+            $pendingReceived = $friendshipModel->listReceive($userId);
             
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
+            // Build exclude list
+            $excludeIds = [$userId];
+            foreach ($existingFriends as $f) $excludeIds[] = $f['id'];
+            foreach ($pendingSent as $f) $excludeIds[] = $f['id'];
+            foreach ($pendingReceived as $f) $excludeIds[] = $f['id'];
+            $excludeIds = array_unique($excludeIds);
             
-            if ($httpCode === 200 && $response) {
-                $data = json_decode($response, true);
-                if (isset($data['recommendations'])) {
-                    $recs = $data['recommendations'];
+            // Filter and get user details
+            $userModel = new \App\Models\User();
+            $profileModel = new \App\Models\Profile();
+            
+            foreach ($recommendations as $rec) {
+                if (in_array($rec['user_id'], $excludeIds)) continue;
+                
+                $user = $userModel->find($rec['user_id']);
+                if ($user) {
+                    $profile = $profileModel->find($rec['user_id']);
+                    $name = $profile ? ($profile['firstname'] . ' ' . $profile['lastname']) : 'User';
                     
-                    // If no recommendations, try with user ID 1 from dataset as fallback
-                    if (empty($recs) && $userId > 100) {
-                        $apiUrl = 'http://127.0.0.1:5000/api/recommendations/friends/1?top_k=5';
-                        $ch = curl_init();
-                        curl_setopt($ch, CURLOPT_URL, $apiUrl);
-                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                        curl_setopt($ch, CURLOPT_TIMEOUT, 2);
-                        $response = curl_exec($ch);
-                        curl_close($ch);
-                        
-                        if ($response) {
-                            $data = json_decode($response, true);
-                            $recs = $data['recommendations'] ?? [];
-                        }
-                    }
+                    $recommendedFriends[] = [
+                        'id' => $user['id'],
+                        'name' => $name,
+                        'avatar' => $user['avatar'] ?? '',
+                        'score' => $rec['score']
+                    ];
                     
-                    foreach ($recs as $rec) {
-                        $recommendedFriends[] = [
-                            'id' => $rec['user_id'],
-                            'name' => 'User ' . $rec['user_id'],
-                            'mutual_count' => $rec['mutual_friends'] ?? 0,
-                            'profile_picture' => '',
-                            'score' => $rec['score']
-                        ];
-                    }
+                    if (count($recommendedFriends) >= 5) break;
                 }
             }
         }
@@ -67,20 +62,19 @@
                 <div class="recommendation-item" data-user-id="<?= $friend['id'] ?>">
                     <div class="user-info">
                         <a href="/user/profile/<?= $friend['id'] ?>" class="user-avatar">
-                            <div class="avatar-placeholder">
-                                <?= strtoupper(substr($friend['name'], 0, 1)) ?>
-                            </div>
+                            <?php if ($friend['avatar']): ?>
+                                <img src="<?= base_url($friend['avatar']) ?>" alt="<?= htmlspecialchars($friend['name']) ?>">
+                            <?php else: ?>
+                                <div class="avatar-placeholder">
+                                    <?= strtoupper(substr($friend['name'], 0, 1)) ?>
+                                </div>
+                            <?php endif; ?>
                         </a>
                         
                         <div class="user-details">
                             <a href="/user/profile/<?= $friend['id'] ?>" class="user-name">
                                 <?= htmlspecialchars($friend['name']) ?>
                             </a>
-                            <?php if ($friend['mutual_count'] > 0): ?>
-                                <span class="mutual-friends">
-                                    <?= $friend['mutual_count'] ?> mutual
-                                </span>
-                            <?php endif; ?>
                         </div>
                     </div>
                     
@@ -89,7 +83,11 @@
                     </button>
                 </div>
             <?php endforeach;
-        endif; ?>
+        else: ?>
+            <div class="no-recommendations">
+                <p style="color: #65676b; font-size: 13px; text-align: center;">No new recommendations</p>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 

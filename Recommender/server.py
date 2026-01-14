@@ -29,7 +29,7 @@ last_update_time = None
 
 
 def initialize_recommender():
-    """Load trained GNN model"""
+    """Load trained GNN model and graph data from database"""
     global recommender, last_update_time
     
     try:
@@ -48,10 +48,25 @@ def initialize_recommender():
         except FileNotFoundError as e:
             print(f"⚠️  {e}")
             print("Server running without pre-trained models.")
-            print("You can update graph data via POST /api/update-graph")
             return False
         
-        last_update_time = datetime.now()
+        # Try to load graph data from database
+        try:
+            print("Loading graph data from database...")
+            from db_loader import load_all_data
+            
+            users, friendships = load_all_data(use_dummy_if_needed=False)
+            
+            if users and friendships:
+                recommender.update_graph(users, friendships)
+                print(f"✓ Graph loaded: {len(users)} users, {len(friendships)} friendships")
+                last_update_time = datetime.now()
+            else:
+                print("⚠️  No graph data found. Use POST /api/update-graph to load data.")
+        except Exception as e:
+            print(f"⚠️  Could not auto-load graph from database: {e}")
+            print("Use POST /api/update-graph to manually load graph data.")
+        
         return True
         
     except Exception as e:
@@ -76,7 +91,7 @@ def health_check():
 
 
 # Friend recommendations
-@app.route('/api/recommendations/friends/<int:user_id>', methods=['GET'])
+@app.route('/api/recommendations/friends/<user_id>', methods=['GET'])
 def get_friend_recommendations(user_id):
     """Get friend recommendations for a user"""
     if recommender is None:

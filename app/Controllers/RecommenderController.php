@@ -79,18 +79,60 @@ class RecommenderController extends BaseController
         }
         
         $userId = $_SESSION['user_id'];
-        $recommendations = $this->getFriendRecommendations($userId, 10);
+        $recommendations = $this->getFriendRecommendations($userId, 20); // Get more to filter
         
-        // Get user details for each recommendation
+        // Get existing friends and pending requests to filter out
+        $friendshipModel = new FriendShip();
+        
+        // Get all existing friends using the model's method
+        $existingFriends = $friendshipModel->listFriend($userId);
+        
+        // Get pending sent requests
+        $pendingSent = $friendshipModel->listSend($userId);
+        
+        // Get pending received requests
+        $pendingReceived = $friendshipModel->listReceive($userId);
+        
+        // Create a set of user IDs to exclude
+        $excludeIds = [$userId]; // Exclude self
+        
+        // Add existing friends to exclude list
+        foreach ($existingFriends as $friend) {
+            $excludeIds[] = $friend['id'];
+        }
+        
+        // Add pending sent requests to exclude list
+        foreach ($pendingSent as $request) {
+            $excludeIds[] = $request['id'];
+        }
+        
+        // Add pending received requests to exclude list
+        foreach ($pendingReceived as $request) {
+            $excludeIds[] = $request['id'];
+        }
+        
+        $excludeIds = array_unique($excludeIds);
+        
+        // Get user details for each recommendation and filter
         $userModel = new User();
         $recommendedUsers = [];
         
         foreach ($recommendations as $rec) {
+            // Skip if user should be excluded
+            if (in_array($rec['user_id'], $excludeIds)) {
+                continue;
+            }
+            
             $user = $userModel->find($rec['user_id']);
             if ($user) {
                 $user['score'] = $rec['score'];
                 $user['reason'] = $rec['reason'] ?? 'Recommended for you';
                 $recommendedUsers[] = $user;
+                
+                // Stop when we have enough recommendations
+                if (count($recommendedUsers) >= 10) {
+                    break;
+                }
             }
         }
         

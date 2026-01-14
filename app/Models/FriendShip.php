@@ -56,7 +56,29 @@ class FriendShip extends Model
     }
 
 
+
     public function create($currentUserId, $targetUserId) {
+        // Check if friendship already exists in either direction
+        $existing = $this->where('requester_id', $currentUserId)
+                         ->where('receiver_id', $targetUserId)
+                         ->first();
+        
+        if ($existing) {
+            return false; // Already sent request to this user
+        }
+        
+        // Check reverse direction (they sent request to you)
+        $reverse = $this->where('requester_id', $targetUserId)
+                        ->where('receiver_id', $currentUserId)
+                        ->first();
+        
+        if ($reverse) {
+            // If they sent you a request, you must accept/decline it
+            // You cannot send a request back
+            return false;
+        }
+        
+        // Create new friend request
         $data = [
             'id'           => $this->generateUUID(),
             'requester_id' => $currentUserId,

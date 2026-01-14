@@ -148,16 +148,45 @@ class FriendShipController extends BaseController
         if (!$this->userId) return redirect()->to('login');
         if ($this->userId == $receiverId)
             return redirect()->back()->with('error', 'You cannot add yourself.');
+        
         $res = $this->friend->create($this->userId, $receiverId);
         
         if ($res) 
             return redirect()->back()->with('success', 'Friend request sent.');
-        return redirect()->back()->with('error', 'Failed to send request.');
+        
+        // Check if they sent you a request
+        $pendingFromThem = $this->friend->where('requester_id', $receiverId)
+                                        ->where('receiver_id', $this->userId)
+                                        ->where('status', 'pending')
+                                        ->first();
+        
+        if ($pendingFromThem) {
+            return redirect()->back()->with('info', 'This user already sent you a friend request. Check your Friend Requests page to accept it.');
+        }
+        
+        return redirect()->back()->with('error', 'Request already exists or you are already friends.');
     }
 
     public function accept($shipId)
     {
         if (!$this->userId) return redirect()->to('login');
+
+        // Verify the current user is the receiver of this request
+        $friendship = $this->friend->find($shipId);
+        
+        if (!$friendship) {
+            return redirect()->back()->with('error', 'Friend request not found.');
+        }
+        
+        // Only the receiver can accept the request
+        if ($friendship['receiver_id'] !== $this->userId) {
+            return redirect()->back()->with('error', 'You can only accept requests sent to you.');
+        }
+        
+        // Only pending requests can be accepted
+        if ($friendship['status'] !== 'pending') {
+            return redirect()->back()->with('error', 'This request has already been processed.');
+        }
 
         if ($this->friend->accept($shipId))
             return redirect()->back()->with('success', 'Friend request accepted.');
@@ -167,6 +196,19 @@ class FriendShipController extends BaseController
     public function remove($shipId)
     {
         if (!$this->userId) return redirect()->to('login');
+        
+        // Verify the current user is involved in this friendship
+        $friendship = $this->friend->find($shipId);
+        
+        if (!$friendship) {
+            return redirect()->back()->with('error', 'Friendship not found.');
+        }
+        
+        // User must be either the requester or receiver
+        if ($friendship['requester_id'] !== $this->userId && $friendship['receiver_id'] !== $this->userId) {
+            return redirect()->back()->with('error', 'You can only remove your own friendships.');
+        }
+        
         if ($this->friend->delete($shipId))
             return redirect()->back()->with('success', 'Action completed.');
         return redirect()->back()->with('error', 'Action failed.');
