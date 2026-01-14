@@ -93,6 +93,7 @@ $routes->group('chat', ['filter' => 'auth'], function($routes){
     $routes->post('leave/(:any)', 'ChatController::leave/$1');
 });
 
+
 // Groups
 $routes->group('group', ['filter' => 'auth'], function($routes){
     $routes->get('/', 'GroupController::index');

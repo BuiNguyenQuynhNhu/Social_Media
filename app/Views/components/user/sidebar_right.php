@@ -1,4 +1,7 @@
 <div class="sidebar right-sidebar">
+    <!-- Friend Recommendations (AI-Powered) -->
+    <?php include __DIR__ . '/recommendations_sidebar.php'; ?>
+    
     <div class="sidebar-section">
         <div class="section-header">
             <h3>Recent Chats</h3>
