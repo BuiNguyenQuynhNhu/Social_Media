@@ -11,9 +11,9 @@
     <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/overall.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/message/message.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('CSS/message/conversation.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('CSS/message/chat.css') ?>">
-    
+    <link rel="stylesheet" href="<?= base_url('CSS/message/message_components.css') ?>">
+    <!-- <link rel="stylesheet" href="<?= base_url('CSS/message/conversation.css') ?>"> -->
+    <!-- <link rel="stylesheet" href="<?= base_url('CSS/message/chat.css') ?>"> -->
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>

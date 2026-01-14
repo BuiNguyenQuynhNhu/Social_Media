@@ -44,9 +44,42 @@ class Nontification extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    public function create(){
-
+    public function create($data){
+        $data['id'] = $this->generateUUID();
+        $data['created_at'] = date('Y-m-d H:i:s');
+    
+        if ($this->insert($data)) {
+            return $data['id'];
+        }
+        return false;
     }
 
+    public function responsive($data){
+        $data['id'] = $this->generateUUID();
+        $data['updated_at'] = date('Y-m-d H:i:s');
+        $data['status'] = 'responsed';
+        if ($this->insert($data)) {
+            return $data['id'];
+        }
+        return false;
+    }
     
+    public function updated($data){
+        $data['updated_at'] = date('Y-m-d H:i:s');
+        $data['status'] = 'updated';
+        if ($this->insert($data)) {
+            return $data['id'];
+        }
+        return false;
+    }
+
+    public function close($data){
+        //is other 2 status which do this or do not do this
+        $data['updated_at'] = date('Y-m-d H:i:s');
+        if ($this->insert($data)) {
+            return $data['id'];
+        }
+        return false;
+    }
+
 }

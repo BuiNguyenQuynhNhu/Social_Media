@@ -8,7 +8,7 @@ class ChatMember extends Model
 {
     protected $table            = 'chat_members';
     protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
+    protected $useAutoIncrement = false;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
@@ -52,6 +52,7 @@ class ChatMember extends Model
 
     public function add($id, $userId, $role=false){
         return $this->insert([
+            'id' => \Ramsey\Uuid\Uuid::uuid4()->toString(),
             'chat_id' => $id,
             'user_id' => $userId,
             'role' => $role,

@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use App\Libraries\MongoDB;
+use App\Libraries\Cloudinary;
 use MongoDB\BSON\ObjectId;
+use App\Models\User;
+use App\Models\Profile;
 
 class Comment
 {
@@ -15,6 +18,26 @@ class Comment
         $this->collection = $mongo->getCollection('comments');
     }
 
+    public function addWithMedia($data, $file = null)
+    {
+        // Handle Media Upload
+        if ($file && $file->isValid()) {
+            try {
+                $cloudinary = new Cloudinary();
+                $res = $cloudinary->uploadPost($file->getTempName(), 'comments');
+                $data['media'] = [
+                    'url'       => $res['secure_url'],
+                    'type'      => $res['resource_type'],
+                    'public_id' => $res['public_id']
+                ];
+            } catch (\Exception $e) {
+                log_message('error', 'Comment Media Upload Error: ' . $e->getMessage());
+            }
+        }
+
+        return $this->add($data);
+    }
+
     public function add($data)
     {
         $depth = 0;
@@ -22,7 +45,6 @@ class Comment
             $parent = $this->collection->findOne(['_id' => new ObjectId($data['parent_id'])]);
             if ($parent) {
                 $parentDepth = $parent['depth'] ?? 0;
-                // Cap at depth 2, don't allow deeper nesting
                 $depth = min(2, $parentDepth + 1);
             }
         }
@@ -34,6 +56,7 @@ class Comment
             'parent_id'  => $data['parent_id'] ?? null,
             'depth'      => $depth,
             'likes'      => [],
+            'media'      => $data['media'] ?? null,
             'created_at' => date('Y-m-d H:i:s')
         ];
 
@@ -45,6 +68,57 @@ class Comment
         }
         
         return false;
+    }
+
+    public function getThread($postId, $currentUserId = null)
+    {
+        $comments = $this->collection->find(['post_id' => $postId], ['sort' => ['created_at' => 1]])->toArray();
+        if (empty($comments)) return [];
+
+        $userIds = array_unique(array_column($comments, 'user_id'));
+        $users = $this->fetchUsers($userIds);
+
+        $result = [];
+        foreach ($comments as $comment) {
+            $uid = $comment['user_id'];
+            $result[] = [
+                'id' => (string)$comment['_id'],
+                'post_id' => $comment['post_id'],
+                'content' => $comment['content'],
+                'parent_id' => $comment['parent_id'] ?? null,
+                'depth' => $comment['depth'] ?? 0,
+                'created_at' => $comment['created_at'] ?? date('Y-m-d H:i:s'),
+                'user' => $users[$uid] ?? ['name' => 'Unknown', 'avatar' => base_url('ICON/avatar-default.svg')],
+                'likes_count' => count($comment['likes'] ?? []),
+                'is_liked' => $currentUserId ? in_array($currentUserId, (array)($comment['likes'] ?? [])) : false,
+                'can_delete' => ($uid == $currentUserId),
+                'media' => $comment['media'] ?? null
+            ];
+        }
+        return $result;
+    }
+
+    private function fetchUsers($userIds)
+    {
+        $userModel = new User();
+        $profileModel = new Profile();
+        
+        // Optimize with whereIn if possible, or loop (SQL)
+        $users = [];
+        foreach ($userIds as $uid) {
+            $u = $userModel->find($uid);
+            $p = $profileModel->find($uid);
+            
+            $avatar = $u['avatar'] ?? 'ICON/avatar-default.svg';
+            if(strpos($avatar, 'http') !== 0) $avatar = base_url($avatar);
+
+            $users[$uid] = [
+                'id' => $uid,
+                'avatar' => $avatar,
+                'name' => $p ? $p['firstname'] . ' ' . $p['lastname'] : 'Unknown'
+            ];
+        }
+        return $users;
     }
 
     public function get($postId)

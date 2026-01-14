@@ -34,20 +34,22 @@
         ]) ?>
         
         <div class="group-content-area">
-            <!-- Feed Tab -->
-            <?= view('group/components/group_feed', [
-                'posts' => $posts ?? [],
-                'is_member' => $is_member ?? false,
-                'avatarUrl' => $avatarUrl
-            ]) ?>
-            
-            <!-- Members Tab -->
-            <?= view('group/components/group_members', [
-                'is_member' => $is_member ?? false
-            ]) ?>
-            
-            <!-- About Tab -->
-            <?= view('group/components/group_about', ['group' => $group]) ?>
+            <?php 
+                $tab = $active_tab ?? 'feed';
+                if ($tab === 'feed') {
+                    echo view('group/components/group_feed', [
+                        'posts' => $posts ?? [],
+                        'is_member' => $is_member ?? false,
+                        'avatarUrl' => $avatarUrl
+                    ]);
+                } elseif ($tab === 'members') {
+                    echo view('group/components/group_members', [
+                        'is_member' => $is_member ?? false
+                    ]);
+                } elseif ($tab === 'about') {
+                    echo view('group/components/group_about', ['group' => $group]);
+                }
+            ?>
         </div>
         
         <!-- Group Settings Modal (Admin Only) -->

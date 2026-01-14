@@ -27,48 +27,19 @@ class PostController extends BaseController
             return redirect()->back()->with('error', 'Post content is required.');
         }
 
-        $db = \Config\Database::connect();
-        $db->transStart();
-
-        $postId = $this->post->create([
+        $data = [
             'content' => $content,
             'id_user' => $this->userId,
             'privacy' => $this->request->getPost('privacy') ?? 'public',
-        ]);
+        ];
 
-        if ($postId) {
-            // Handle Group Post
-            $groupId = $this->request->getPost('group_id');
-            if (!empty($groupId)) {
-                $db->table('group_posts')->insert([
-                    'id' => Uuid::uuid4()->toString(),
-                    'group_id' => $groupId,
-                    'post_id' => $postId,
-                    'status' => 'pending' // Or 'accepted' depending on group settings
-                ]);
-            }
+        $files = $this->request->getFileMultiple('images');
+        $groupId = $this->request->getPost('group_id');
 
-            // Handle media upload if files are present
-            $files = $this->request->getFileMultiple('images');
-            if ($files && $files[0]->isValid()) {
-                try {
-                    $mediaService = new Media();
-                    $mediaItems = $mediaService->uploadMultiple($files, 'posts');
-                    $mediaService->storeMetadata($postId, $mediaItems, 'post_media');
-                } catch (\Exception $e) {
-                    log_message('error', 'Media upload failed: ' . $e->getMessage());
-                    // Continue even if media upload fails
-                }
-            }
-            
-            $db->transComplete();
-            
-            if ($db->transStatus() === false) {
-                 return redirect()->back()->with('error', 'Failed to create post.');
-            }
-
+        if ($this->post->createPost($data, $files, $groupId)) {
             return redirect()->back()->with('success', 'Posted successfully!');
         }
+
         return redirect()->back()->with('error', 'Failed to create post.');
     }
 
@@ -80,50 +51,47 @@ class PostController extends BaseController
             return redirect()->back()->with('error', 'Unauthorized access.');
         }
 
-        $mongo = new MongoDB();
-        $mediaCollection = $mongo->getCollection('post_media');
-        $mediaData = $mediaCollection->findOne(['post_id' => $postId]);
-
-        if ($mediaData) {
-            $cloudinary = new Cloudinary();
-            foreach ($mediaData['items'] as $item) {
-                $cloudinary->destroy($item['public_id']); 
-            }
-            $mediaCollection->deleteOne(['post_id' => $postId]);
-        }
-
-        if ($this->post->delete($postId)) {
+        if ($this->post->deleteWithMedia($postId)) {
             return redirect()->back()->with('success', 'Post deleted.');
         }
         return redirect()->back()->with('error', 'Could not delete post.');
     }
 
+
+    public function update($postId) {
+        if (!$this->userId) return redirect()->to('login');
+
+        $post = $this->post->find($postId);
+        if (!$post || $post['id_user'] !== $this->userId) {
+            return redirect()->back()->with('error', 'Unauthorized access.');
+        }
+
+        $content = $this->request->getPost('content');
+        $privacy = $this->request->getPost('privacy');
+
+        $data = [];
+        if (!empty($content)) $data['content'] = $content;
+        if (!empty($privacy)) $data['privacy'] = $privacy;
+
+        if (!empty($data) && $this->post->update($postId, $data)) {
+            return redirect()->back()->with('success', 'Post updated.');
+        }
+
+        return redirect()->back()->with('error', 'Failed to update post.');
+    }
+
     public function listAll() {
-        $sqlPosts = $this->post->list();
-        return $this->mergeMedia($sqlPosts);
+        return $this->post->list();
     }
 
     public function listFeed($userId) {
-        $sqlPosts = $this->post->getFeed($userId);
-        return $this->mergeMedia($sqlPosts);
+        return $this->post->getFeed($userId);
     }
 
     public function listUserPosts($id) {
-        $sqlPosts = $this->post->getPostByUser($id);
-        return $this->mergeMedia($sqlPosts);
+        return $this->post->getPostByUser($id);
     }
 
-    private function mergeMedia($posts) {
-        if (empty($posts)) return [];
 
-        $mongo = new MongoDB();
-        $mediaCollection = $mongo->getCollection('post_media');
 
-        foreach ($posts as &$post) {
-            $media = $mediaCollection->findOne(['entity_id' => $post['id']]);
-            $post['media'] = $media ? (array)$media['items'] : [];
-        }
-
-        return $posts;
-    }
 }

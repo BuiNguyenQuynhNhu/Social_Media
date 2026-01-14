@@ -28,10 +28,10 @@
                     Leave Group
                 </button>
                 <?php if ($is_admin): ?>
-                    <button class="btn-primary" onclick="openGroupSettings()">
+                    <a href="<?= base_url("group/{$group['id']}/manage") ?>" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
                         <i data-lucide="settings"></i>
-                        Settings
-                    </button>
+                        Manage
+                    </a>
                 <?php endif; ?>
             <?php else: ?>
                 <button class="btn-primary" onclick="joinGroup()">
@@ -43,17 +43,17 @@
     </div>
     
     <div class="group-nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('feed')" data-tab="feed">
+        <a href="<?= base_url("group/{$group['id']}/feed") ?>" class="group-nav-tab <?= ($active_tab ?? '') === 'feed' ? 'active' : '' ?>">
             <i data-lucide="newspaper"></i>
             Feed
-        </button>
-        <button class="tab-btn" onclick="switchTab('members')" data-tab="members">
+        </a>
+        <a href="<?= base_url("group/{$group['id']}/members") ?>" class="group-nav-tab <?= ($active_tab ?? '') === 'members' ? 'active' : '' ?>">
             <i data-lucide="users"></i>
             Members
-        </button>
-        <button class="tab-btn" onclick="switchTab('about')" data-tab="about">
+        </a>
+        <a href="<?= base_url("group/{$group['id']}/about") ?>" class="group-nav-tab <?= ($active_tab ?? '') === 'about' ? 'active' : '' ?>">
             <i data-lucide="info"></i>
             About
-        </button>
+        </a>
     </div>
 </div>

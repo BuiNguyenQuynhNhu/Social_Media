@@ -15,17 +15,36 @@ function toggleComments(postId) {
 
 function addComment(input, postId) {
     const content = input.value.trim();
-    if (!content) return;
+    const fileInput = document.getElementById('comment-file-' + postId);
+    const file = fileInput ? fileInput.files[0] : null;
 
-    $.post(BASE_URL + '/comment/add/' + postId, { content: content }, function (res) {
-        if (res.status === 'success') {
-            input.value = '';
-            loadComments(postId);
-        } else {
-            alert(res.message || 'Failed to add comment');
+    if (!content && !file) return;
+
+    const formData = new FormData();
+    formData.append('content', content);
+    if (file) {
+        formData.append('media', file);
+    }
+
+    $.ajax({
+        url: BASE_URL + '/comment/add/' + postId,
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (res) {
+            if (res.status === 'success') {
+                input.value = '';
+                if (fileInput) fileInput.value = ''; // Clear file input
+                clearCommentMedia(postId); // Clear preview
+                loadComments(postId);
+            } else {
+                alert(res.message || 'Failed to add comment');
+            }
+        },
+        error: function () {
+            alert('Failed to add comment. Please try again.');
         }
-    }).fail(function () {
-        alert('Failed to add comment. Please try again.');
     });
 }
 
@@ -82,6 +101,11 @@ function renderComment(c, container) {
                 <div class="comment-content-wrapper">
                     <div class="comment-bubble">
                         <a href="${profileUrl}" class="comment-author">${c.user.name}</a>
+                        ${c.media ? `<div class="comment-media-container" style="margin-top:4px;">
+                            ${c.media.type === 'video'
+                ? `<video src="${c.media.url}" controls></video>`
+                : `<img src="${c.media.url}" alt="Comment Media">`}
+                        </div>` : ''}
                         <p>${escapeHtml(c.content)}</p>
                     </div>
                     <div class="comment-actions">
@@ -183,5 +207,46 @@ function deleteComment(commentId, postId) {
         error: function () {
             alert('Failed to delete comment');
         }
+    });
+}
+
+function previewCommentMedia(input, postId) {
+    const previewContainer = $(`#comment-preview-${postId}`);
+
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            let html = '';
+            if (file.type.startsWith('video')) {
+                html = `<div style="position:relative; display:inline-block;">
+                            <video src="${e.target.result}" style="max-height:150px; border-radius:8px; display:block;" controls></video>
+                            <button onclick="clearCommentMedia('${postId}')" style="position:absolute; top:-8px; right:-8px; background:#fff; color:#050505; border:1px solid #ddd; border-radius:50%; width:24px; height:24px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 2px rgba(0,0,0,0.1);">&times;</button>
+                        </div>`;
+            } else {
+                html = `<div style="position:relative; display:inline-block;">
+                            <img src="${e.target.result}" style="max-height:150px; border-radius:8px; display:block;" alt="Preview">
+                            <button onclick="clearCommentMedia('${postId}')" style="position:absolute; top:-8px; right:-8px; background:#fff; color:#050505; border:1px solid #ddd; border-radius:50%; width:24px; height:24px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 2px rgba(0,0,0,0.1);">&times;</button>
+                        </div>`;
+            }
+            previewContainer.html(html).slideDown(200);
+        };
+
+        reader.onerror = function () {
+            console.error('Error reading file for preview');
+        };
+
+        reader.readAsDataURL(file);
+    } else {
+        previewContainer.hide().empty();
+    }
+}
+
+function clearCommentMedia(postId) {
+    const input = document.getElementById(`comment-file-${postId}`);
+    if (input) input.value = '';
+    $(`#comment-preview-${postId}`).slideUp(200, function () {
+        $(this).empty();
     });
 }

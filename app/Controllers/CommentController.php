@@ -25,9 +25,9 @@ class CommentController extends BaseController
         }
 
         $content = $this->request->getPost('content');
-        $parentId = $this->request->getPost('parent_id') ?? null;
+        $file = $this->request->getFile('media');
         
-        if (empty($content)) {
+        if (empty($content) && (!$file || !$file->isValid())) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Content cannot be empty']);
         }
 
@@ -35,16 +35,19 @@ class CommentController extends BaseController
             'post_id' => $postId,
             'user_id' => $this->userId,
             'content' => $content,
-            'parent_id' => $parentId
+            'parent_id' => $this->request->getPost('parent_id') ?? null
         ];
 
-        $result = $this->comment->add($data);
+        $result = $this->comment->addWithMedia($data, $file);
 
         if ($result) {
-            $userModel = new User();
-            $profileModel = new Profile();
-            $user = $userModel->find($this->userId);
-            $profile = $profileModel->find($this->userId);
+            // Need to fetch enriched user data for immediate display
+            // Can modify addWithMedia to return enriched data or just fetch here quickly
+            // For now, let's reuse fetchUsers logic or simple single fetch since it's just one user (self)
+            
+            $db = \Config\Database::connect();
+            $user = $db->table('users')->where('id', $this->userId)->get()->getRowArray();
+            $profile = $db->table('profiles')->where('id', $this->userId)->get()->getRowArray();
             
             $avatar = $user['avatar'] ?? 'ICON/avatar-default.svg';
             if(strpos($avatar, 'http') !== 0) $avatar = base_url($avatar);
@@ -54,6 +57,7 @@ class CommentController extends BaseController
                 'data' => [
                     'id' => $result['id'],
                     'content' => $result['content'],
+                    'media' => $result['media'] ?? null,
                     'parent_id' => $result['parent_id'],
                     'depth' => $result['depth'],
                     'likes_count' => 0,
@@ -72,79 +76,28 @@ class CommentController extends BaseController
 
     public function delete($commentId)
     {
-        if (!$this->userId) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
-        }
+        if (!$this->userId) return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
 
         $comment = $this->comment->find($commentId);
-        
         if (!$comment || $comment['user_id'] !== $this->userId) {
              return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized or Not Found']);
         }
 
         $result = $this->comment->delete($commentId);
-
-        if ($result->getDeletedCount() > 0) {
-            return $this->response->setJSON(['status' => 'success']);
-        }
-
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to delete']);
+        return $this->response->setJSON(['status' => $result->getDeletedCount() > 0 ? 'success' : 'error']);
     }
 
     public function like($commentId)
     {
-        if (!$this->userId) {
-            return $this->response->setJSON(['status' => 'error']);
-        }
+        if (!$this->userId) return $this->response->setJSON(['status' => 'error']);
         
         $result = $this->comment->toggleLike($commentId, $this->userId);
-        
-        if ($result) {
-            return $this->response->setJSON(['status' => 'success', 'action' => $result['action'], 'count' => $result['count']]);
-        }
-        
-        return $this->response->setJSON(['status' => 'error', 'message' => 'Not found']);
+        return $result ? $this->response->setJSON(['status' => 'success'] + $result) : $this->response->setJSON(['status' => 'error']);
     }
 
     public function getComments($postId)
     {
-        $comments = $this->comment->get($postId);
-        
-        $result = [];
-        $userModel = new User();
-        $profileModel = new Profile();
-        $usersCache = []; 
-        
-        foreach ($comments as $comment) {
-            $uid = $comment['user_id'];
-            if (!isset($usersCache[$uid])) {
-                $u = $userModel->find($uid);
-                $p = $profileModel->find($uid);
-                
-                $avatar = $u['avatar'] ?? 'ICON/avatar-default.svg';
-                if(strpos($avatar, 'http') !== 0) $avatar = base_url($avatar);
-
-                $usersCache[$uid] = [
-                    'id' => $uid,
-                    'avatar' => $avatar,
-                    'name' => $p ? $p['firstname'] . ' ' . $p['lastname'] : 'Unknown'
-                ];
-            }
-            
-            $result[] = [
-                'id' => (string)$comment['_id'],
-                'post_id' => $comment['post_id'],
-                'content' => $comment['content'],
-                'parent_id' => $comment['parent_id'] ?? null,
-                'depth' => $comment['depth'] ?? 0,
-                'created_at' => $comment['created_at'] ?? date('Y-m-d H:i:s'), // Ensure created_at is present
-                'user' => $usersCache[$uid],
-                'likes_count' => count($comment['likes'] ?? []),
-                'is_liked' => in_array($this->userId, (array)($comment['likes'] ?? [])),
-                'can_delete' => ($uid == $this->userId)
-            ];
-        }
-
+        $result = $this->comment->getThread($postId, $this->userId);
         return $this->response->setJSON(['status' => 'success', 'data' => $result]);
     }
 }

@@ -36,11 +36,11 @@
             <div class="right-column">
                 <div id="posts-container" class="tab-content active">
                     <?php if($isOwnProfile): ?>
-                        <?= view('components/user/create_post', ['user' => $user, 'avatarUrl' => $avatarUrl]) ?>
+                        <?= view('components/post/create_post', ['user' => $user, 'avatarUrl' => $avatarUrl]) ?>
                     <?php endif; ?>
 
                     <?php foreach ($posts as $post): ?>
-                        <?= view('components/user/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl, 'showDelete' => true]) ?>
+                        <?= view('components/post/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl, 'showDelete' => true, 'allowManage' => true]) ?>
                     <?php endforeach; ?>
                 </div>
 

@@ -22,12 +22,17 @@
 
     <div class="sidebar-section">
         <h3>Your Groups</h3>
-        <!-- Dynamic Group List will go here -->
-        <a href="#" class="menu-item group-item">
-            <img src="<?= base_url('ICON/group-default.png') ?>" class="group-icon">
-            <span>CodeIgniter Developers</span>
-        </a>
-        <a href="<?= base_url('group/create') ?>" class="menu-item create-group">
+        <?php if (!empty($myGroups)): ?>
+            <?php foreach ($myGroups as $group): ?>
+                <a href="<?= base_url('group/' . $group['id']) ?>" class="menu-item group-item">
+                    <img src="<?= $group['avatar'] ?>" class="group-icon" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
+                    <span><?= esc($group['name']) ?></span>
+                </a>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p style="padding: 0 8px; color: #65676b; font-size: 14px;">No groups yet</p>
+        <?php endif; ?>
+        <a href="<?= base_url('group/create-view') ?>" class="menu-item create-group">
             <div class="icon-circle"><i data-lucide="plus"></i></div>
             <span>Create New Group</span>
         </a>

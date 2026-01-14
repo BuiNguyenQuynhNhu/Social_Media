@@ -7,12 +7,6 @@
         </div>
     </div>
     <div class="chat-actions">
-        <button class="icon-btn" title="Audio Call">
-            <i data-lucide="phone"></i>
-        </button>
-        <button class="icon-btn" title="Video Call">
-            <i data-lucide="video"></i>
-        </button>
         <button class="icon-btn" title="Conversation Info">
             <i data-lucide="info"></i>
         </button>

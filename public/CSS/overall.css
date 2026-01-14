@@ -10,7 +10,42 @@
 .background{
     color: #e9f1fc,
 }
+/* Base button styling */
+.btn-blue {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* Spacing between icon and text */
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 50px; /* Pill shape */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
 
+/* Hover effect */
+.btn-blue:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-2px); /* Slight lift */
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+}
+
+/* Active/Click effect */
+.btn-blue:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Lucide Icon sizing */
+.btn-blue i {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5px;
+}
 :root {
     --fb-bg: #f0f2f5;
     --fb-white: #ffffff;

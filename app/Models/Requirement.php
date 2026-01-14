@@ -57,4 +57,22 @@ class Requirement extends Model
         ];
         return $this->insert($data) ? $requestId : false;
     }
+
+    public function setConfig($groupId, $questions)
+    {
+        $mongo = new \App\Libraries\MongoDB();
+        $mongo->getCollection('requirement_configs')->replaceOne(
+            ['_id' => $groupId],
+            ['_id' => $groupId, 'questions' => $questions, 'updated_at' => date('Y-m-d H:i:s')],
+            ['upsert' => true]
+        );
+        return true;
+    }
+
+    public function getConfig($groupId)
+    {
+        $mongo = new \App\Libraries\MongoDB();
+        $config = $mongo->getCollection('requirement_configs')->findOne(['_id' => $groupId]);
+        return $config['questions'] ?? [];
+    }
 }

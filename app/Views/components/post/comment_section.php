@@ -3,15 +3,26 @@
     <!-- Comment Input -->
     <div class="comment-input-container">
         <img src="<?= $avatarUrl ?>" class="avatar-xs">
-        <div class="comment-input-wrapper">
-            <input type="text" 
-                   id="comment-input-<?= $post['id'] ?>" 
-                   placeholder="Write a comment..." 
-                   onkeydown="if(event.key==='Enter') addComment(this, '<?= $post['id'] ?>')">
-            <button onclick="addComment(document.getElementById('comment-input-<?= $post['id'] ?>'), '<?= $post['id'] ?>')" 
-                    class="comment-send-btn">
-                <i data-lucide="send"></i>
-            </button>
+        <div class="comment-input-wrapper-col" style="flex:1; display:flex; flex-direction:column; background:#f0f2f5; border-radius:18px; padding:8px 12px;">
+            <div id="comment-preview-<?= $post['id'] ?>" class="comment-media-preview" style="display:none; margin-bottom:8px;"></div>
+            
+            <div style="display:flex; align-items:center;">
+                <input type="text" 
+                       id="comment-input-<?= $post['id'] ?>" 
+                       style="flex:1; border:none; background:transparent; outline:none; font-size:15px;"
+                       placeholder="Write a comment..." 
+                       onkeydown="if(event.key==='Enter') addComment(this, '<?= $post['id'] ?>')">
+                
+                <label for="comment-file-<?= $post['id'] ?>" class="comment-icon-btn" style="cursor:pointer; color:#65676b; padding:4px;">
+                    <i data-lucide="camera"></i>
+                </label>
+                <input type="file" id="comment-file-<?= $post['id'] ?>" hidden accept="image/*,video/*" onchange="previewCommentMedia(this, '<?= $post['id'] ?>')">
+
+                <button onclick="addComment(document.getElementById('comment-input-<?= $post['id'] ?>'), '<?= $post['id'] ?>')" 
+                        class="comment-send-btn" style="background:none; border:none; cursor:pointer; color:#1877f2; padding:4px;">
+                    <i data-lucide="send"></i>
+                </button>
+            </div>
         </div>
     </div>
     
@@ -56,6 +67,23 @@
     padding: 4px;
     display: flex;
     align-items: center;
+}
+
+.comment-icon-btn {
+    cursor: pointer;
+    color: #65676b;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.comment-icon-btn:hover {
+    color: #1877f2;
+}
+
+.comment-icon-btn i {
+    width: 18px;
+    height: 18px;
 }
 
 .comment-send-btn:hover {

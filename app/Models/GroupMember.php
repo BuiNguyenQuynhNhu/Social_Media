@@ -45,9 +45,17 @@ class GroupMember extends Model
     protected $afterDelete    = [];
 
     public function promote($groupId, $userId) {
-        return $this->where(['group_id' => $groupId, 'user_id' => $userId])
-                    ->set(['role' => 'moderator'])
-                    ->update();
+        // SQL Role Update
+        $this->where(['group_id' => $groupId, 'user_id' => $userId])
+             ->set(['role' => 'admin']) // Simplified to admin for now, or pass role
+             ->update();
+             
+        // Chat Role Update (Mongo)
+        (new \App\Models\ChatMember())->where(['chat_id' => $groupId, 'user_id' => $userId])
+            ->set(['role' => 'admin'])
+            ->update();
+
+        return true;
     }
 
     public function add($groupId, $userId, $role = 'member')
@@ -81,8 +89,13 @@ class GroupMember extends Model
                     ->update();
     }
 
-    public function deleteMember($id, $userID){
-        return $this->where(['group_id' => $id, 'user_id' => $userID])
-                    ->delete();
+    public function kick($groupId, $userId) {
+        // SQL Delete
+        $this->where(['group_id' => $groupId, 'user_id' => $userId])->delete();
+        
+        // Mongo Chat Delete
+        (new \App\Models\ChatMember())->where(['chat_id' => $groupId, 'user_id' => $userId])->delete();
+
+        return true;
     }
 }

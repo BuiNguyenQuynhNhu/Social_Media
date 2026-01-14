@@ -39,7 +39,8 @@ function loadConversations() {
                     ? `<span class="unread-badge">${conv.unread_count}</span>`
                     : '';
 
-                const itemClass = conv.unread_count > 0 ? 'conversation-item unread' : 'conversation-item';
+                const isActive = (currentFriendId === conv.friend_id) ? 'active' : '';
+                const itemClass = conv.unread_count > 0 ? `conversation-item unread ${isActive}` : `conversation-item ${isActive}`;
 
                 list.append(`
                     <div class="${itemClass}" onclick="openChat('${conv.friend_id}', '${escapeHtml(conv.name)}', '${conv.avatar}')">
@@ -52,6 +53,15 @@ function loadConversations() {
                     </div>
                 `);
             });
+
+            // Auto-load first chat if none selected
+            if (!currentFriendId && res.data.length > 0) {
+                const first = res.data[0];
+                // Only if not mobile (optional check, but good for UX)
+                if (window.innerWidth > 768) {
+                    openChat(first.friend_id, first.name, first.avatar);
+                }
+            }
 
             lucide.createIcons();
         }

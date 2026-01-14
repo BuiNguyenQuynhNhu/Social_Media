@@ -26,13 +26,13 @@
         <!-- Main Feed -->
         <div class="main-feed">
             <!-- Create Post -->
-            <?= view('components/user/create_post', ['avatarUrl' => $avatarUrl, 'user' => $user]) ?>
+            <?= view('components/post/create_post', ['avatarUrl' => $avatarUrl, 'user' => $user]) ?>
 
             <!-- Posts -->
             <div class="posts-feed">
                 <?php if (!empty($posts)): ?>
                     <?php foreach ($posts as $post): ?>
-                        <?= view('components/user/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl]) ?>
+                        <?= view('components/post/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl]) ?>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <div class="empty-state">
@@ -67,5 +67,9 @@
     <script src="<?= base_url('JS/post/reactions.js') ?>"></script>
     <script src="<?= base_url('JS/post/comments.js') ?>"></script>
     <script src="<?= base_url('JS/post.js') ?>"></script>
+    
+    <!-- Lightbox Component -->
+    <?= view('components/post/lightbox') ?>
+<?= view('components/post/edit_post') ?>
 </body>
 </html>

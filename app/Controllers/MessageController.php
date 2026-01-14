@@ -159,7 +159,40 @@ class MessageController extends BaseController {
             'read_at'     => null
         ];
 
+        // Handle media upload
+        $file = $this->request->getFile('media');
+        $mediaData = null;
+        
+        if ($file && $file->isValid()) {
+            $cloudinary = new \App\Libraries\Cloudinary();
+            $folder = 'messages';
+            try {
+                $res = $cloudinary->uploadPost($file->getTempName(), $folder);
+                $mediaData = [
+                    'url'       => $res['secure_url'],
+                    'type'      => $res['resource_type'], 
+                    'public_id' => $res['public_id']
+                ];
+            } catch (\Exception $e) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Media upload failed']);
+            }
+        }
+
+        $data = [
+            'sender_id'   => $this->userId,
+            'receiver_id' => $receiverId,
+            'chat_type'   => $chatType,
+            'content'     => $content,
+            'media'       => $mediaData,
+            'reply_to'    => $replyTo ? $replyTo : null,
+            'reactions'   => [],
+            'created_at'  => date('Y-m-d H:i:s'),
+            'read_at'     => null
+        ];
+
         if ($this->msg->save($data)) {
+            // Include sender info for immediate UI update if needed
+            $data['is_mine'] = true; 
             return $this->response->setJSON(['status' => 'success', 'data' => $data]);
         }
     }

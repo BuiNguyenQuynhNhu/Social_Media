@@ -20,13 +20,14 @@
 
         <form action="<?= base_url('post/create_post') ?>" method="POST" enctype="multipart/form-data">
             <?= csrf_field() ?>
-            <input type="hidden" name="group_id" id="modal-group-id" value="">
+            <input type="hidden" name="group_id" id="modal-group-id" value="<?= $groupId ?? '' ?>">
             
             <div class="modal-body">
                 <div class="user-micro">
                     <img src="<?= $avatarUrl ?>" class="avatar-medium" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                     <div>
                         <strong><?= esc($user['firstname'] . ' ' . $user['lastname']) ?></strong>
+                        <?php if (empty($groupId)): ?>
                         <div class="privacy-selector">
                             <i id="privacy-icon" data-lucide="globe" style="width: 12px; height: 12px;"></i>
                             <select name="privacy" onchange="updatePrivacyIcon(this)" style="border: none; background: #e4e6eb; padding: 2px 6px; border-radius: 4px; font-size: 13px;">
@@ -35,6 +36,7 @@
                                 <option value="private" data-icon="lock">Only me</option>
                             </select>
                         </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -81,42 +83,3 @@ function updatePrivacyIcon(select) {
 }
 </script>
 
-<style>
-.create-post-card {
-    background: white;
-    border-radius: 8px;
-    padding: 12px 16px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    margin-bottom: 16px;
-}
-
-.create-post-input {
-    flex: 1;
-    background: #f0f2f5;
-    padding: 10px 12px;
-    border-radius: 50px;
-    color: #65676b;
-}
-
-.create-post-input:hover {
-    background: #e4e6eb;
-}
-
-.create-post-icons {
-    display: flex;
-    gap: 8px;
-}
-
-.privacy-selector {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 4px;
-    font-size: 13px;
-    color: #65676b;
-}
-</style>

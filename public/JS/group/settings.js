@@ -91,13 +91,20 @@ function updatePostRequirements() {
 /**
  * Delete group
  */
+/**
+ * Delete group
+ */
 function deleteGroup() {
     if (!GROUP_ID) return;
 
     if (confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
+        const password = prompt("Please enter your password to confirm deletion:");
+        if (!password) return; // User cancelled
+
         $.ajax({
             url: BASE_URL + '/group/' + GROUP_ID,
             type: 'DELETE',
+            data: { password: password }, // Send password
             success: function (res) {
                 if (res.status === 'success') {
                     window.location.href = BASE_URL + '/group';

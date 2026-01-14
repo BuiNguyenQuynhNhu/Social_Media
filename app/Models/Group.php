@@ -49,14 +49,50 @@ class Group extends Model
         return Uuid::uuid4()->toString();
     }
 
-    public function create($data) {
-        $data['id'] = $this->generateUUID();
+    public function createGroup($data, $userId) {
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        $groupId = $this->generateUUID();
+        $data['id'] = $groupId;
         $data['created_at'] = date('Y-m-d H:i:s');
         
-        if ($this->insert($data)) {
-            return $data['id'];
-        }
-        return false;
+        $this->insert($data);
+
+        // Add creator as Admin
+        (new \App\Models\GroupMember())->add($groupId, $userId, 'admin');
+
+        // Create Chat
+        $isPrivate = ($data['privacy'] === 'private');
+        (new \App\Models\Chat())->insert([
+            'id' => $groupId, 
+            'name' => $data['name'], 
+            'owner_id' => $userId,
+            'privacy' => $isPrivate ? 1 : 0
+        ]);
+        (new \App\Models\ChatMember())->add($groupId, $userId, 'admin');
+
+        $db->transComplete();
+
+        return $db->transStatus() ? $groupId : false;
+    }
+
+    public function deleteGroup($groupId) {
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        $this->delete($groupId);
+        // Delete Members
+        $db->table('group_members')->where('group_id', $groupId)->delete();
+        // Delete Group Posts associations (posts themselves might remain or soft delete, depends on policy)
+        $db->table('group_posts')->where('group_id', $groupId)->delete();
+        
+        // Delete Chat
+        (new \App\Models\Chat())->delete($groupId);
+        (new \App\Models\ChatMember())->where('chat_id', $groupId)->delete();
+
+        $db->transComplete();
+        return $db->transStatus();
     }
 
     public function changeOwner($group_id, $nOwner_id){
@@ -66,11 +102,12 @@ class Group extends Model
         return $this->update($groupId, ['privacy' => $privacy]);
     }
 
-    public function getInfo($id) {
-        return $this->select('groups.*, COUNT(group_members.user_id) as member_count')
-                    ->join('group_members', 'group_members.group_id = groups.id', 'left')
-                    ->where('chats.id', $id)
-                    ->groupBy('chats.id')
-                    ->first();
+    public function getStats($groupId) {
+        $db = \Config\Database::connect();
+        return [
+            'member_count' => $db->table('group_members')->where('group_id', $groupId)->countAllResults(),
+            'pending_posts_count' => $db->table('group_posts')->where(['group_id' => $groupId, 'status' => 'pending'])->countAllResults(),
+            // Add more stats as needed
+        ];
     }
 }

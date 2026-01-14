@@ -81,14 +81,84 @@ class GroupController extends BaseController
             // TODO: Get group posts
         }
 
-        return view('group/index', [
+        return redirect()->to("/group/$groupId/feed");
+    }
+
+    public function feed($groupId) {
+        if (!$this->user_id) return redirect()->to('/login');
+        return $this->renderGroupPage($groupId, 'feed');
+    }
+
+    public function membersView($groupId) {
+        if (!$this->user_id) return redirect()->to('/login');
+        return $this->renderGroupPage($groupId, 'members');
+    }
+
+    public function aboutView($groupId) {
+        if (!$this->user_id) return redirect()->to('/login');
+        return $this->renderGroupPage($groupId, 'about');
+    }
+
+    private function renderGroupPage($groupId, $page) {
+        $db = \Config\Database::connect();
+        $user = $db->table('users')
+            ->select('users.*, profiles.firstname, profiles.lastname')
+            ->join('profiles', 'profiles.id = users.id')
+            ->where('users.id', $this->user_id)
+            ->get()->getRowArray();
+        $avatarUrl = $user['avatar'] ?? base_url('ICON/avatar-default.png');
+
+        $group = $this->group->find($groupId);
+        if (!$group) return redirect()->to('/group');
+
+        // Check membership
+        $membership = $db->table('group_members')
+            ->where(['group_id' => $groupId, 'user_id' => $this->user_id])
+            ->get()->getRowArray();
+        
+        $is_member = !empty($membership);
+        $is_admin = $membership && ($membership['role'] === 'admin' || $group['owner_id'] === $this->user_id);
+
+        // Get member count
+        $group['member_count'] = $db->table('group_members')->where('group_id', $groupId)->countAllResults();
+
+        // Data specific to page
+        $data = [
             'user_id' => $this->user_id,
+            'user' => $user,
             'avatarUrl' => $avatarUrl,
             'group' => $group,
             'is_member' => $is_member,
             'is_admin' => $is_admin,
-            'posts' => $posts
-        ]);
+            'active_tab' => $page
+        ];
+
+        if ($page === 'feed') {
+            $postModel = new \App\Models\Post();
+            $posts = $postModel->getPostsByGroup($groupId);
+            $data['posts'] = $postModel->attachMediaToPosts($posts);
+        }
+
+        return view("group/$page", $data);
+    }
+
+    public function create(){
+        $data = [
+            'name' => $this->request->getPost('name'),
+            'owner_id' => $this->user_id,
+            'privacy' => $this->request->getPost('privacy') ?? 'public'
+        ];
+
+        try {
+            $groupId = $this->group->createGroup($data, $this->user_id);
+            if (!$groupId) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to create group']);
+            }
+            return $this->response->setJSON(['status' => 'success', 'group_id' => $groupId]);
+        } catch (\Exception $e) {
+            log_message('error', 'Group Create Error: ' . $e->getMessage());
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Server Error']);
+        }
     }
 
     public function myGroups() {
@@ -104,20 +174,10 @@ class GroupController extends BaseController
             $group = $this->group->find($membership['group_id']);
             if (!$group) continue;
 
-            // Get member count
-            $memberCount = $db->table('group_members')
-                ->where('group_id', $group['id'])
-                ->countAllResults();
-
-            $group['member_count'] = $memberCount;
+            $group['member_count'] = $db->table('group_members')->where('group_id', $group['id'])->countAllResults();
             
-            // Set default images if null
-            if (empty($group['cover_photo'])) {
-                $group['cover_photo'] = base_url('ICON/background-default.jpg');
-            }
-            if (empty($group['avatar'])) {
-                $group['avatar'] = base_url('ICON/group-default.png');
-            }
+            if (empty($group['cover_photo'])) $group['cover_photo'] = base_url('ICON/background-default.jpg');
+            if (empty($group['avatar'])) $group['avatar'] = base_url('ICON/group-default.png');
             
             $groups[] = $group;
         }
@@ -128,7 +188,6 @@ class GroupController extends BaseController
     public function suggested() {
         if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
 
-        // Get public groups that user is not a member of
         $db = \Config\Database::connect();
         $allGroups = $this->group->where('privacy', 'public')->findAll(10);
 
@@ -139,28 +198,22 @@ class GroupController extends BaseController
                 ->countAllResults() > 0;
 
             if (!$isMember) {
-                $memberCount = $db->table('group_members')
-                    ->where('group_id', $group['id'])
-                    ->countAllResults();
-                $group['member_count'] = $memberCount;
+                $group['member_count'] = $db->table('group_members')->where('group_id', $group['id'])->countAllResults();
                 $groups[] = $group;
             }
         }
-
         return $this->response->setJSON(['status' => 'success', 'data' => $groups]);
     }
 
     public function getMembers($groupId) {
         if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
-
-        $db = \Config\Database::connect();
-        $members = $db->table('group_members')
-            ->select('group_members.*, users.avatar, profiles.firstname, profiles.lastname')
-            ->join('users', 'users.id = group_members.user_id')
-            ->join('profiles', 'profiles.id = group_members.user_id')
-            ->where('group_members.group_id', $groupId)
-            ->get()->getResultArray();
-
+        $members = (new GroupMember())->getMembers($groupId); // This model method already does joins? Let's check model... yes
+        
+        // Wait, Model getMembers exists but returns array. Let's format it.
+        // Actually model getMembers returns raw array with joins.
+        // Let's stick to inline build or use model if it formats.
+        // Model getMembers lines 70-76 returns joined data.
+        
         $result = [];
         foreach ($members as $member) {
             $result[] = [
@@ -170,150 +223,7 @@ class GroupController extends BaseController
                 'role' => $member['role']
             ];
         }
-
         return $this->response->setJSON(['status' => 'success', 'data' => $result]);
     }
-
-    public function join($groupId) {
-        if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
-
-        $group = $this->group->find($groupId);
-        if (!$group) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Group not found']);
-        }
-
-        $groupMember = new GroupMember();
-        if ($groupMember->isMember($groupId, $this->user_id)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Already a member']);
-        }
-
-        if ($groupMember->add($groupId, $this->user_id)) {
-            return $this->response->setJSON(['status' => 'success']);
-        }
-
-        return $this->response->setJSON(['status' => 'error']);
-    }
-
-    public function leave($groupId) {
-        if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
-
-        $group = $this->group->find($groupId);
-        if ($group && $group['owner_id'] === $this->user_id) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Owner cannot leave group']);
-        }
-
-        $groupMember = new GroupMember();
-        if ($groupMember->deleteMember($groupId, $this->user_id)) {
-            return $this->response->setJSON(['status' => 'success']);
-        }
-
-        return $this->response->setJSON(['status' => 'error']);
-    }
-
-    public function update($groupId) {
-        if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
-
-        $group = $this->group->find($groupId);
-        if (!$group || $group['owner_id'] !== $this->user_id) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
-        }
-
-        $data = [];
-        if ($name = $this->request->getPost('name')) {
-            $data['name'] = $name;
-        }
-        if ($description = $this->request->getPost('description')) {
-            $data['description'] = $description;
-        }
-
-        if (!empty($data) && $this->group->update($groupId, $data)) {
-            return $this->response->setJSON(['status' => 'success']);
-        }
-
-        return $this->response->setJSON(['status' => 'error']);
-    }
-
-    public function updatePrivacy($groupId) {
-        if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
-
-        $group = $this->group->find($groupId);
-        if (!$group || $group['owner_id'] !== $this->user_id) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
-        }
-
-        $privacy = $this->request->getPost('privacy');
-        if ($privacy && $this->group->changePrivacy($groupId, $privacy)) {
-            return $this->response->setJSON(['status' => 'success']);
-        }
-
-        return $this->response->setJSON(['status' => 'error']);
-    }
-
-    public function updatePostRequirements($groupId) {
-        if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
-
-        $group = $this->group->find($groupId);
-        if (!$group || $group['owner_id'] !== $this->user_id) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
-        }
-
-        $requireApproval = $this->request->getPost('require_approval');
-        // TODO: Implement post requirement logic in database
-
-        return $this->response->setJSON(['status' => 'success']);
-    }
-
-    public function delete($groupId) {
-        if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
-
-        $group = $this->group->find($groupId);
-        if (!$group || $group['owner_id'] !== $this->user_id) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
-        }
-
-        if ($this->group->delete($groupId)) {
-            // Also delete all members
-            $db = \Config\Database::connect();
-            $db->table('group_members')->where('group_id', $groupId)->delete();
-
-            return $this->response->setJSON(['status' => 'success']);
-        }
-
-        return $this->response->setJSON(['status' => 'error']);
-    }
-
-    public function create(){
-        $data = [
-            'name' => $this->request->getPost('name'),
-            'owner_id' => $this->user_id,
-            'privacy' => $this->request->getPost('privacy') ?? 'public'
-        ];
-
-        $groupId = $this->group->create($data);
-
-        (new GroupMember())->add($groupId, $this->user_id, 'admin');
-        (new Chat())->insert(['id' => $groupId, 'name' => $data['name'], 'owner_id' => $this->user_id]);
-        (new ChatMember())->add($groupId, $this->user_id, 'admin');
-        return $this->response->setJSON(['status' => 'success', 'group_id' => $groupId]);
-    }
-
-    public function setRequire($groupId){
-        $questions = $this->request->getPost('questions');
-        
-        $this->mongo->getCollection('requirement_configs')->replaceOne(
-            ['_id' => $groupId],
-            ['_id' => $groupId, 'questions' => $questions, 'updated_at' => date('Y-m-d H:i:s')],
-            ['upsert' => true]
-        );
-
-        return $this->response->setJSON(['status' => 'success']);
-    }
-    
-    public function promote($groupId, $targetUserId) {
-        $group = $this->group->find($groupId);
-        if ($group['owner_id'] !== $this->user_id) return $this->response->setJSON(['status' => 'error']);
-
-        (new GroupMember())->promote($groupId, $targetUserId);
-        return $this->response->setJSON(['status' => 'success']);
-    }
 }
+

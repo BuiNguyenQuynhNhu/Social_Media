@@ -242,6 +242,28 @@
     border-bottom-color: #1877f2;
 }
 
+/* Scoped Sidebar Nav Items */
+.sidebar-nav .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: #65676b;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.sidebar-nav .nav-item:hover {
+    background: #e4e6eb;
+}
+
+.sidebar-nav .nav-item.active {
+    background: #e7f3ff;
+    color: #1877f2;
+}
+
 /* Group Content Area */
 .group-content-area {
     max-width: 1200px;
@@ -383,4 +405,5 @@
         overflow-x: auto;
         padding: 0 16px;
     }
+
 }

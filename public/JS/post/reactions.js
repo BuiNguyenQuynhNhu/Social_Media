@@ -35,8 +35,8 @@ function updateReactionButton(postId, action, type) {
             'wow': 'Wow', 'sad': 'Sad', 'angry': 'Angry'
         };
         const colorMap = {
-            'like': '#1877f2', 'love': '#e41e3f', 'haha': '#f7b928',
-            'wow': '#f7b928', 'sad': '#f7b928', 'angry': '#e41e3f'
+            'like': '#1877f2', 'love': '#e41e3f', 'haha': '#ffe815ff',
+            'wow': '#f7b928', 'sad': '#e29e00ff', 'angry': '#e41e3f'
         };
         btnText.innerText = typeMap[type] || 'Like';
         btn.classList.add('active');
