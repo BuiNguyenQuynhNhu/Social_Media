@@ -71,4 +71,7 @@
             </div>
         </div>
     </div>
+    
+    <script src="<?= base_url('JS/notifications.js') ?>"></script>
+    <script src="<?= base_url('JS/search.js') ?>"></script>
 </nav>

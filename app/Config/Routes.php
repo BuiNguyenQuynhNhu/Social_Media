@@ -12,6 +12,12 @@ $routes->get('login', 'AuthController::loginView');
 $routes->post('login', 'AuthController::login');
 $routes->get('logout', 'AuthController::logout');
 $routes->post('register', 'AuthController::register');
+
+// Search
+$routes->group('search', ['filter' => 'auth'], function($routes){
+    $routes->get('/', 'SearchController::index');
+    $routes->get('live', 'SearchController::liveSearch');
+});
 // Message Routes
 $routes->group('message', ['filter' => 'auth'], function($routes){
     $routes->get('/', 'MessageController::index');
@@ -23,6 +29,7 @@ $routes->group('message', ['filter' => 'auth'], function($routes){
 
 // Notifications
 $routes->group('notifications', ['filter' => 'auth'], function($routes){
+    $routes->get('setup', 'NotificationController::setup');
     $routes->get('/', 'NotificationController::index');
     $routes->post('read/(:any)', 'NotificationController::markRead/$1');
     $routes->post('read-all', 'NotificationController::markAllRead');
@@ -31,14 +38,6 @@ $routes->group('notifications', ['filter' => 'auth'], function($routes){
 
 //User
 $routes->group('user', ['filter' => 'auth'], function($routes){
-<<<<<<< HEAD
-    $routes->get('profile', 'UserController::index');
-    $routes->get('profile/(:segment)', 'UserController::index/$1');
-    $routes->post('update_profile', 'UserController::updateProfile');
-    $routes->post('change_password', 'UserController::changePassword');
-    // $routes->post('upload_avatar', 'UserController::updateAvatar');
-    $routes->post('delete_account', 'UserController::deleteAccount');
-=======
     $routes->get('dashboard', 'UserController::index');
     $routes->get('profile/(:any)', 'UserController::profile/$1');
     $routes->post('update_profile/(:any)', 'UserController::updateProfile/$1');
@@ -47,7 +46,6 @@ $routes->group('user', ['filter' => 'auth'], function($routes){
     $routes->get('list_friend/(:any)', 'FriendShipController::listFriend/$1');
     $routes->get('list_receive/(:any)', 'FriendShipController::listReceive/$1');
     $routes->get('list_request/(:any)', 'FriendShipController::listRequest/$1');
->>>>>>> admin
 });
 
 //Post

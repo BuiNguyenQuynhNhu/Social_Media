@@ -6,14 +6,9 @@ use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\Profile;
 use App\Models\User;
-<<<<<<< HEAD
-use App\Models\PostModel;
-use App\Models\FriendshipModel;
-=======
 use App\Models\Post;
 use App\Models\FriendShip;
 use App\Libraries\Cloudinary;
->>>>>>> admin
 
 class UserController extends BaseController
 {
@@ -30,74 +25,16 @@ class UserController extends BaseController
 
     public function index($profileId = null)
     {
-<<<<<<< HEAD
-        $currentUserId = $this->id; 
-        
-        if (!$currentUserId) {
-            return redirect()->to('authentication');
-        }
-
-
-        $targetId = $profileId ?? $currentUserId; 
-
-        $user = $this->user->find($targetId);
-        $profile = $this->profile->where('id', $targetId)->first();
-
-        $currentUser = $this->user->find($currentUserId);
-        $myAvatarPath = $currentUser['avatar'] ?? 'ICON/avatar-default.svg';
-        $data['myAvatar'] = str_starts_with($myAvatarPath, 'http') ? $myAvatarPath : base_url($myAvatarPath);
-=======
         if (!$this->id)
             return redirect()->to('login');
         $user = $this->user->find($this->id);
         $profile = $this->profile->where('id', $this->id)->first();
->>>>>>> admin
 
         if (!$user || !$profile) {
-            if ($targetId == $currentUserId) {
-                session()->destroy();
-                return redirect()->to('/login');
-            }
-            return redirect()->to('/')->with('error', 'User not found');
-        }
-<<<<<<< HEAD
-
-        $friendStatus = 'self'; 
-    
-        if ($currentUserId != $targetId) {
-            $friendModel = new FriendshipModel();
-            $friendStatus = $friendModel->checkFriendshipStatus($currentUserId, $targetId);
+            session()->destroy();
+            return redirect()->to('/login');
         }
 
-        $friendModel = $friendModel ?? new FriendshipModel();
-        $friendsCount = $friendModel->countFriends($targetId);
-
-        $postModel = new PostModel();
-        $posts = $postModel->getPostsByUserId($targetId, 5, 0);
-
-        $data['user'] = array_merge($user, $profile);
-        
-        $userAvatarPath = $user['avatar'] ?? 'ICON/avatar-default.svg';
-        $data['avatarUrl'] = str_starts_with($userAvatarPath, 'http') ? $userAvatarPath : base_url($userAvatarPath);
-        
-        $data['posts'] = $posts;
-        $data['errors'] = session()->get('errors');
-        
-        $data['friendsCount'] = $friendsCount;
-
-        $data['friendStatus'] = $friendStatus; 
-        $data['profileId']    = $targetId;     
-
-        return view('user/profile', $data);
-    }
-
-    public function updateProfile(){
-        if (!$this->id) return redirect()->to('/login');
-        
-        $id = session()->get('user_id');
-
-        $profileData = [
-=======
         $data['user'] = array_merge($user, $profile);
         $data['user_id'] = $this->id; 
         $data['keyword'] = $this->request->getGet('q') ?? '';
@@ -202,45 +139,12 @@ class UserController extends BaseController
 
         $profileData = [
             'id'        => $targetId,
->>>>>>> admin
             'firstname' => $this->request->getPost('firstname'),
             'lastname'  => $this->request->getPost('lastname'),
             'birth'     => $this->request->getPost('birth'),
             'gender'    => $this->request->getPost('gender'),
         ];
 
-<<<<<<< HEAD
-        if (!$this->profile->update($id, $profileData)) {
-            return redirect()->back()->with('error', 'Update profile info failed');
-        }
-
-        $file = $this->request->getFile('avatar');
-        if ($file && $file->isValid() && !$file->hasMoved()) {
-            $cloudinary = new \App\Libraries\CloudinaryLib();
-            $uploadedUrl = $cloudinary->uploadImage($file->getTempName(), 'social_avatars');
-
-            if ($uploadedUrl) {
-                $this->user->update($id, ['avatar' => $uploadedUrl]);
-                $currentUser = $this->user->find($id);
-                if (!empty($currentUser['avatar']) && !str_starts_with($currentUser['avatar'], 'http') && file_exists(FCPATH . $currentUser['avatar'])) {
-                    unlink(FCPATH . $currentUser['avatar']);
-                }
-            }
-        }
-
-        $bgFile = $this->request->getFile('background');
-        if ($bgFile && $bgFile->isValid() && !$bgFile->hasMoved()) {
-            $cloudinary = new \App\Libraries\CloudinaryLib();
-            
-            $bgUrl = $cloudinary->uploadImage($bgFile->getTempName(), 'social_backgrounds');
-
-            if ($bgUrl) {
-                $this->profile->update($id, ['background' => $bgUrl]);
-            }
-        }
-
-        return redirect()->to('user/profile')->with('success', 'Profile updated successfully');
-=======
         $cover = $this->request->getFile('cover');
         if ($cover && $cover->isValid()) {
             $profileData['background'] = $cloudinary->upload($cover->getTempName(), 'covers');
@@ -256,7 +160,6 @@ class UserController extends BaseController
         }
 
         return redirect()->back()->with('error', 'Update failed');
->>>>>>> admin
     }
 
     public function changePassword(){

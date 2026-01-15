@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\FriendShip;
 use App\Models\User;
 use App\Models\Profile;
+use App\Models\Notification;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\Post;
 
@@ -151,8 +152,15 @@ class FriendShipController extends BaseController
         
         $res = $this->friend->create($this->userId, $receiverId);
         
-        if ($res) 
+        if ($res) {
+            // Send notification to receiver
+            Notification::createNotification(
+                'friend_request',
+                $this->userId,
+                $receiverId
+            );
             return redirect()->back()->with('success', 'Friend request sent.');
+        }
         
         // Check if they sent you a request
         $pendingFromThem = $this->friend->where('requester_id', $receiverId)
@@ -188,8 +196,15 @@ class FriendShipController extends BaseController
             return redirect()->back()->with('error', 'This request has already been processed.');
         }
 
-        if ($this->friend->accept($shipId))
+        if ($this->friend->accept($shipId)) {
+            // Send notification to requester that their request was accepted
+            Notification::createNotification(
+                'friend_accept',
+                $this->userId,
+                $friendship['requester_id']
+            );
             return redirect()->back()->with('success', 'Friend request accepted.');
+        }
         return redirect()->back()->with('error', 'Could not accept request.');
     }
 

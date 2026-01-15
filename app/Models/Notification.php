@@ -82,4 +82,35 @@ class Notification extends Model
         return false;
     }
 
+    /**
+     * Create a new notification with standardized format
+     * @param string $type Type of notification (friend_request, group_invite, etc.)
+     * @param string $requesterId User ID who triggered the notification  
+     * @param string $receiverId User ID who should receive the notification
+     * @param array $contextData Additional context data (group_id, group_name, etc.)
+     * @return string|false Notification ID or false on failure
+     */
+    public static function createNotification($type, $requesterId, $receiverId, $contextData = [])
+    {
+        $model = new self();
+        
+        $context = array_merge(['type' => $type], $contextData);
+        
+        $data = [
+            'id' => $model->generateUUID(),
+            'requester_id' => $requesterId,
+            'receiver_id' => $receiverId,
+            'status' => 'unread',
+            'context' => json_encode($context),
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+        
+        if ($model->insert($data)) {
+            return $data['id'];
+        }
+        
+        return false;
+    }
+
 }

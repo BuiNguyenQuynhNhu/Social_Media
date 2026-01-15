@@ -2,51 +2,6 @@
 
 namespace App\Controllers;
 
-<<<<<<< HEAD
-use App\Models\NotificationModel;
-use App\Models\FriendshipModel;
-
-class NotificationController extends BaseController
-{
-    public function getLatest()
-    {
-        if (!session()->get('logged_in')) return $this->response->setJSON([]);
-
-        $userId = session()->get('user_id');
-        $notifModel = new NotificationModel();
-
-        $data = $notifModel->getNotifications($userId, 10);
-        $unreadCount = $notifModel->where('user_id', $userId)->where('is_read', 0)->countAllResults();
-
-        $friendModel = new FriendshipModel();
-        $pendingRequestCount = $friendModel->where('receiver_id', $userId)
-                                           ->where('status', 'pending')
-                                           ->countAllResults();
-
-        return $this->response->setJSON([
-            'status' => 'success',
-            'data'   => $data,
-            'unread' => $unreadCount,
-            'pending_friends' => $pendingRequestCount 
-        ]);
-    }
-
-    public function markItemRead($id)
-    {
-        if (!session()->get('logged_in')) return;
-        
-        $userId = session()->get('user_id');
-        $notifModel = new NotificationModel();
-        
-        $notifModel->where('user_id', $userId)
-                   ->where('id', $id)
-                   ->set(['is_read' => 1])
-                   ->update();
-        
-        return $this->response->setJSON(['status' => 'success']);
-    }
-}
-=======
 use App\Models\Notification;
 
 class NotificationController extends BaseController
@@ -59,35 +14,62 @@ class NotificationController extends BaseController
         $this->user_id = session()->get('user_id');
     }
 
+    public function setup() {
+        $db = \Config\Database::connect();
+        
+        $db->query("DROP TABLE IF EXISTS `notifications`");
+        
+        $sql = "CREATE TABLE `notifications` (
+            `id` VARCHAR(36) NOT NULL,
+            `context` TEXT,
+            `status` ENUM('unread', 'read', 'pending', 'responsed', 'approved', 'updated', 'done', 'cancelled') DEFAULT 'unread',
+            `requester_id` CHAR(36) NOT NULL,
+            `receiver_id` CHAR(36) NOT NULL,
+            `created_at` DATETIME NULL,
+            `updated_at` DATETIME NULL,
+            PRIMARY KEY (`id`)
+        )";
+        
+        $db->query($sql);
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Table created (no FK)']);
+    }
+
     public function index() {
         if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
 
-        $notifications = $this->notification
-            ->where('receiver_id', $this->user_id)
-            ->orderBy('created_at', 'DESC')
-            ->findAll(20); // Limit 20
+        try {
+            $notifications = $this->notification
+                ->where('receiver_id', $this->user_id)
+                ->orderBy('created_at', 'DESC')
+                ->findAll(20); // Limit 20
 
-        // Enrich with user data if needed (requester info)
-        $db = \Config\Database::connect();
-        $enriched = [];
-        
-        foreach ($notifications as $n) {
-            $sender = $db->table('users')
-                ->select('users.avatar, profiles.firstname, profiles.lastname')
-                ->join('profiles', 'profiles.id = users.id')
-                ->where('users.id', $n['requester_id'])
-                ->get()->getRowArray();
+            // Enrich with user data if needed (requester info)
+            $db = \Config\Database::connect();
+            $enriched = [];
+            
+            foreach ($notifications as $n) {
+                // ... (rest of the loop)
+                $sender = $db->table('users')
+                    ->select('users.avatar, profiles.firstname, profiles.lastname')
+                    ->join('profiles', 'profiles.id = users.id')
+                    ->where('users.id', $n['requester_id'])
+                    ->get()->getRowArray();
+                    
+                $n['sender_name'] = $sender ? $sender['firstname'] . ' ' . $sender['lastname'] : 'Unknown';
+                $n['sender_avatar'] = (isset($sender['avatar']) && strpos($sender['avatar'], 'http') === 0) 
+                ? $sender['avatar'] 
+                : (isset($sender['avatar']) ? base_url($sender['avatar']) : base_url('ICON/avatar-default.svg'));
                 
-            $n['sender_name'] = $sender ? $sender['firstname'] . ' ' . $sender['lastname'] : 'Unknown';
-            $n['sender_avatar'] = $sender['avatar'] ?? base_url('ICON/avatar-default.svg');
-            
-            // Format time (simplified, ideally usage relative time helper)
-            $n['time_ago'] = $this->timeAgo($n['created_at']);
-            
-            $enriched[] = $n;
-        }
+                // Format time (simplified, ideally usage relative time helper)
+                $n['time_ago'] = $this->timeAgo($n['created_at']);
+                
+                $enriched[] = $n;
+            }
 
-        return $this->response->setJSON(['status' => 'success', 'data' => $enriched]);
+            return $this->response->setJSON(['status' => 'success', 'data' => $enriched]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
+        }
     }
 
     public function markRead($id) {
@@ -118,4 +100,3 @@ class NotificationController extends BaseController
         return date('M d', $time);
     }
 }
->>>>>>> admin

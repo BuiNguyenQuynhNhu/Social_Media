@@ -44,16 +44,12 @@ class AuthController extends BaseController
 
         $res = $this->user->createAccount($userData, $profileData);
         if ($res['status']){
-<<<<<<< HEAD
-            return redirect()->to('/login')->with('success', 'Registration successful! Please login.');
-=======
             session()->set([
                 'user_id' => $res['id'],
                 'username' => $userData['email'],
                 'logged_in' => true,
             ]);
             return redirect()->to('user/dashboard')->with('success', 'Sign up completed successfully');
->>>>>>> admin
         }
         return redirect()->back()->withInput()->with('error_register', $res['message']);
     
@@ -71,12 +67,9 @@ class AuthController extends BaseController
 
         session()->set([
             'user_id' => $exist['id'],
-<<<<<<< HEAD
             'username' => $exist['email'],
-=======
             'email' => $exist['email'],
             'type'      => $exist['type'],
->>>>>>> admin
             'logged_in' => true,
         ]);
         if ($exist['type'] === '1') {
