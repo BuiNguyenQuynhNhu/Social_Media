@@ -14,18 +14,14 @@
             $isPostOwner = $currentUserId == $post['id_user'];
             
             // Context-based delete rules
+            // Context-based delete rules
             $context = $context ?? 'feed'; // dashboard, profile, group_feed, group_manage
             
             $canDelete = false;
             
-            if ($context === 'dashboard' || $context === 'profile') {
-                // Dashboard & Profile: Owner can delete
-                $canDelete = $isPostOwner;
-            } elseif ($context === 'group_manage') {
-                // Group Manage: Admin/Owner can delete any post
-                $canDelete = isset($isAdmin) && $isAdmin;
+            if ($context === 'group_manage' && isset($isAdmin) && $isAdmin) {
+                $canDelete = true;
             }
-            // group_feed context: canDelete stays false (no delete buttons)
         ?>
         
         <div style="display: flex; gap: 8px;">

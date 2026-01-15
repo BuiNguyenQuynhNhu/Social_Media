@@ -226,5 +226,63 @@ class GroupController extends BaseController
             ->setContentType('application/json')
             ->setJSON(['status' => 'success', 'data' => $result]);
     }
+
+    public function join($groupId) {
+        if (!$this->user_id) return $this->response->setJSON(['status' => 'error', 'message' => 'Login required']);
+        
+        $group = $this->group->find($groupId);
+        if (!$group) return $this->response->setJSON(['status' => 'error', 'message' => 'Group not found']);
+
+        $memberModel = new GroupMember();
+        if ($memberModel->isMember($groupId, $this->user_id)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Already a member']);
+        }
+
+        // Check privacy and requirements
+        // If private -> Pending
+        // If has questions -> Need answers (Front-end should handle asking)
+        // For simple logic now:
+        
+        // If questions exists and no answers provided? (Simplified: Allow join for now or handle later)
+        
+        $role = ($group['privacy'] === 'public') ? 'member' : 'pending';
+        
+        // Use Model's add method
+        $memberModel->add($groupId, $this->user_id, $role);
+        
+        // Notify Admins if pending
+        if ($role === 'pending') {
+            $admins = $memberModel->where('group_id', $groupId)->where('role', 'admin')->findAll();
+            // Also notify owner
+            $ownerId = $group['owner_id'];
+            \App\Models\Notification::createNotification('new_join_request', $this->user_id, $ownerId, $groupId);
+            
+            foreach ($admins as $admin) {
+                if ($admin['user_id'] !== $ownerId) {
+                    \App\Models\Notification::createNotification('new_join_request', $this->user_id, $admin['user_id'], $groupId);
+                }
+            }
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Request sent']);
+        } else {
+             // Notify Owner just for info? Optional.
+        }
+
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Joined successfully']);
+    }
+
+    public function leave($groupId) {
+        if (!$this->user_id) return $this->response->setJSON(['status' => 'error', 'message' => 'Login required']);
+        
+        $group = $this->group->find($groupId);
+        if ($group['owner_id'] === $this->user_id) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Owner cannot leave group']);
+        }
+
+        $memberModel = new GroupMember();
+        $memberModel->where(['group_id' => $groupId, 'user_id' => $this->user_id])->delete();
+        
+        return $this->response->setJSON(['status' => 'success']);
+    }
+
 }
 

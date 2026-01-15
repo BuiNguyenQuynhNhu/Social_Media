@@ -177,9 +177,6 @@ class GroupManageController extends BaseController
     }
 
     public function approvePost($postId) {
-        // We only have postId, need to find group to check permissions... 
-        // Or assume route middleware handles?
-        // Let's look up group for this post
         $db = \Config\Database::connect();
         $groupPost = $db->table('group_posts')->where('post_id', $postId)->get()->getRowArray();
         if (!$groupPost) return $this->response->setJSON(['status' => 'error']);
@@ -187,6 +184,13 @@ class GroupManageController extends BaseController
         if (!$this->checkAccess($groupPost['group_id'])) return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
         
         $db->table('group_posts')->where('post_id', $postId)->update(['status' => 'accepted']);
+        
+        // Notify Author
+        $post = (new Post())->find($postId);
+        if ($post) {
+            \App\Models\Notification::createNotification('post_approved', $this->user_id, $post['id_user'], $groupPost['group_id']); 
+        }
+
         return $this->response->setJSON(['status' => 'success']);
     }
 
@@ -199,6 +203,32 @@ class GroupManageController extends BaseController
 
         $db->table('group_posts')->where('post_id', $postId)->delete();
         (new Post())->deleteWithMedia($postId);
+        
+        // Notify Author? (Optional, maybe "Your post was declined")
+        
+        return $this->response->setJSON(['status' => 'success']);
+    }
+
+    public function approveMember($groupId, $userId) {
+        if (!$this->checkAccess($groupId)) return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
+        
+        $memberModel = new GroupMember();
+        $memberModel->where(['group_id' => $groupId, 'user_id' => $userId])
+                    ->set(['role' => 'member'])
+                    ->update();
+                    
+        // Notify User
+        \App\Models\Notification::createNotification('group_accept', $this->user_id, $userId, $groupId);
+        
+        return $this->response->setJSON(['status' => 'success']);
+    }
+
+    public function rejectMember($groupId, $userId) {
+        if (!$this->checkAccess($groupId)) return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
+        
+        $memberModel = new GroupMember();
+        $memberModel->where(['group_id' => $groupId, 'user_id' => $userId])->delete();
+        
         return $this->response->setJSON(['status' => 'success']);
     }
 
@@ -241,9 +271,17 @@ class GroupManageController extends BaseController
                 ->join('users', 'users.id = group_members.user_id')
                 ->join('profiles', 'profiles.id = group_members.user_id')
                 ->where('group_members.group_id', $groupId)
+                ->where('group_members.role !=', 'pending')
                 ->orderBy('group_members.role', 'ASC')
                 ->get()->getResultArray();
-            $data['requests'] = []; 
+                
+            $data['requests'] = $db->table('group_members')
+                ->select('group_members.*, users.avatar, profiles.firstname, profiles.lastname')
+                ->join('users', 'users.id = group_members.user_id')
+                ->join('profiles', 'profiles.id = group_members.user_id')
+                ->where('group_members.group_id', $groupId)
+                ->where('group_members.role', 'pending')
+                ->get()->getResultArray();
         }
 
         if ($page === 'requirements') {

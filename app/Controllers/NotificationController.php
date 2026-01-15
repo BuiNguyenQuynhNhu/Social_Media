@@ -14,26 +14,6 @@ class NotificationController extends BaseController
         $this->user_id = session()->get('user_id');
     }
 
-    public function setup() {
-        $db = \Config\Database::connect();
-        
-        $db->query("DROP TABLE IF EXISTS `notifications`");
-        
-        $sql = "CREATE TABLE `notifications` (
-            `id` VARCHAR(36) NOT NULL,
-            `context` TEXT,
-            `status` ENUM('unread', 'read', 'pending', 'responsed', 'approved', 'updated', 'done', 'cancelled') DEFAULT 'unread',
-            `requester_id` CHAR(36) NOT NULL,
-            `receiver_id` CHAR(36) NOT NULL,
-            `created_at` DATETIME NULL,
-            `updated_at` DATETIME NULL,
-            PRIMARY KEY (`id`)
-        )";
-        
-        $db->query($sql);
-        return $this->response->setJSON(['status' => 'success', 'message' => 'Table created (no FK)']);
-    }
-
     public function index() {
         if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
 

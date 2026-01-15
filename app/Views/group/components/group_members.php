@@ -2,12 +2,6 @@
     <div class="card-container">
         <div class="members-header">
             <h2>Members <span class="count-badge" id="members-count-badge"></span></h2>
-            <?php if ($is_member): ?>
-                <button class="btn-primary" onclick="openInviteFriendsModal()">
-                    <i data-lucide="user-plus"></i>
-                    Invite Friends
-                </button>
-            <?php endif; ?>
         </div>
         
         <div class="members-search-wrapper">

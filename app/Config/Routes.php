@@ -29,7 +29,6 @@ $routes->group('message', ['filter' => 'auth'], function($routes){
 
 // Notifications
 $routes->group('notifications', ['filter' => 'auth'], function($routes){
-    $routes->get('setup', 'NotificationController::setup');
     $routes->get('/', 'NotificationController::index');
     $routes->post('read/(:any)', 'NotificationController::markRead/$1');
     $routes->post('read-all', 'NotificationController::markAllRead');
@@ -139,9 +138,15 @@ $routes->group('group', ['filter' => 'auth'], function($routes){
     
     $routes->post('(:any)/promote/(:any)', 'GroupManageController::promote/$1/$2');
     $routes->post('(:any)/kick/(:any)', 'GroupManageController::kickMember/$1/$2');
+    $routes->post('(:any)/approve_member/(:any)', 'GroupManageController::approveMember/$1/$2');
+    $routes->post('(:any)/reject_member/(:any)', 'GroupManageController::rejectMember/$1/$2');
     
     $routes->post('approve_post/(:any)', 'GroupManageController::approvePost/$1');
     $routes->post('reject_post/(:any)', 'GroupManageController::rejectPost/$1');
+    
+    $routes->post('(:any)/join', 'GroupController::join/$1');
+    $routes->post('(:any)/leave', 'GroupController::leave/$1');
+
     $routes->get('(:any)', 'GroupController::show/$1'); // Redirects to feed
 });
 
@@ -181,8 +186,7 @@ $routes->get('search/live', 'UserController::liveSearch', ['filter' => 'auth']);
 
 $routes->get('dashboard', 'DashboardController::index');
 
-$routes->get('chat', 'ChatController::index');
-$routes->get('chat/with/(:num)', 'ChatController::chatWith/$1');
+
 
 $routes->get('notifications/get', 'NotificationController::getLatest');
 $routes->post('notifications/read', 'NotificationController::markRead');

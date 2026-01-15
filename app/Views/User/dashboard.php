@@ -10,7 +10,7 @@
         const APP_CONFIG = {
             baseURL: '<?= base_url() ?>',
             userId: '<?= session()->get('user_id') ?>',
-            myAvatar: '<?= $avatarUrl ?>',
+            myAvatar: '<?= $avatarUrl ?? base_url("ICON/avatar-default.svg") ?>',
             csrfTokenName: '<?= csrf_token() ?>',     
             csrfHash: '<?= csrf_hash() ?>'
         };
@@ -82,13 +82,13 @@
 </head>
 <body class="background">
 
-    <?= view('templates/UserNavbar', ['avatarUrl' => $avatarUrl]) ?>
+    <?= view('templates/UserNavbar', ['avatarUrl' => $avatarUrl ?? base_url("ICON/avatar-default.svg")]) ?>
 
     <div class="dashboard-container">
         
         <div class="sidebar-left">
             <a href="<?= base_url('user/profile') ?>" class="menu-item">
-                <img src="<?= $avatarUrl ?>" class="menu-img">
+                <img src="<?= $avatarUrl ?? base_url("ICON/avatar-default.svg") ?>" class="menu-img">
                 <span><?= esc($user['firstname'] . ' ' . $user['lastname']) ?></span>
             </a>
             <a href="<?= base_url('friends') ?>" class="menu-item">
@@ -110,7 +110,7 @@
             <div class="fb-card create-post">
                 <div class="create-post-trigger" onclick="openPostModal()" style="display: flex; align-items: center; cursor: pointer; padding: 10px;">
                     <div class="trigger-avatar" style="margin-right: 10px;">
-                        <img src="<?= $avatarUrl ?>" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        <img src="<?= $avatarUrl ?? base_url("ICON/avatar-default.svg") ?>" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                     </div>
                     <div class="trigger-input" style="background: #f0f2f5; padding: 10px 15px; border-radius: 20px; flex-grow: 1; color: #65676b;">
                         What's on your mind, <?= esc($user['firstname']) ?>?
@@ -151,7 +151,7 @@
                         $fAvatar = $friend['avatar'] ?? 'ICON/avatar-default.svg';
                         $fAvatarUrl = str_starts_with($fAvatar, 'http') ? $fAvatar : base_url($fAvatar);
                     ?>
-                    <a href="<?= base_url('chat/with/'.$friend['user_id']) ?>" class="contact-item">
+                    <a href="<?= base_url('message/chat/'.$friend['user_id']) ?>" class="contact-item">
                         <div style="position: relative;">
                             <img src="<?= $fAvatarUrl ?>" class="contact-avatar">
                             <div class="online-dot"></div>

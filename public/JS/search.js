@@ -15,7 +15,7 @@ function liveSearch(query) {
 
     // Debounce search - wait 300ms after user stops typing
     searchTimeout = setTimeout(() => {
-        fetch(`${BASE_URL}/search/live?q=${encodeURIComponent(query)}`)
+        fetch(`${APP_CONFIG.baseURL}/search/live?q=${encodeURIComponent(query)}`)
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
@@ -48,14 +48,29 @@ function renderSearchResults(results) {
             ? '<span class="privacy-badge">Private</span>'
             : '';
 
+        let actionBtn = '';
+        if (result.type === 'user' && result.status !== 'self') {
+            if (result.status === 'none') {
+                actionBtn = `<button onclick="sendFriendRequest(event, '${result.id}')" class="btn-xs-primary class-add-friend" style="margin-left:auto; z-index:2;">Add Friend</button>`;
+            } else if (result.status === 'pending') {
+                actionBtn = `<span class="badge-pending" style="margin-left:auto; font-size:11px; color:#666;">Pending</span>`;
+            } else if (result.status === 'friend') {
+                actionBtn = `<span class="badge-friend" style="margin-left:auto; font-size:11px; color:#1877f2;">Friend</span>`;
+            }
+            // Incoming handled as pending or distinct if needed
+        }
+
         html += `
-            <a href="${result.url}" class="search-result-item">
-                <img src="${result.avatar}" alt="${result.name}" class="search-avatar">
-                <div class="search-info">
-                    <div class="search-name">${escapeHtml(result.name)}</div>
-                    <div class="search-type">${result.type === 'user' ? 'User' : 'Group'} ${badge}</div>
-                </div>
-            </a>
+            <div class="search-result-wrapper" style="display:flex; align-items:center;">
+                <a href="${result.url}" class="search-result-item" style="flex:1;">
+                    <img src="${result.avatar}" alt="${result.name}" class="search-avatar">
+                    <div class="search-info">
+                        <div class="search-name">${escapeHtml(result.name)}</div>
+                        <div class="search-type">${result.type === 'user' ? 'User' : 'Group'} ${badge}</div>
+                    </div>
+                </a>
+                ${actionBtn}
+            </div>
         `;
     });
 
@@ -94,3 +109,35 @@ document.addEventListener('click', function (event) {
         dropdown.style.display = 'none';
     }
 });
+
+// Make global
+window.sendFriendRequest = function (e, userId) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Check if clicked button
+    const btn = e.target;
+    btn.innerHTML = 'Sending...';
+    btn.disabled = true;
+
+    fetch(`${APP_CONFIG.baseURL}/friend/add/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                btn.innerHTML = 'Sent';
+                btn.className = 'badge-pending';
+                btn.style.border = 'none';
+                btn.style.background = 'transparent';
+                btn.style.color = '#666';
+            } else {
+                btn.innerHTML = 'Add Friend';
+                btn.disabled = false;
+                alert(data.message || 'Failed to send request');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btn.innerHTML = 'Add Friend';
+            btn.disabled = false;
+        });
+};

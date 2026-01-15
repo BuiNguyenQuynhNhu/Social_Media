@@ -41,11 +41,54 @@ class SearchController extends BaseController
                 ->get()->getResultArray();
 
             foreach ($users as $u) {
+                // Check friend status
+                $isFriend = $db->table('friendships')
+                    ->groupStart()
+                        ->groupStart()
+                            ->where('requester_id', $this->userId)
+                            ->where('receiver_id', $u['id'])
+                        ->groupEnd()
+                        ->orGroupStart()
+                            ->where('requester_id', $u['id'])
+                            ->where('receiver_id', $this->userId)
+                        ->groupEnd()
+                    ->groupEnd()
+                    ->where('status', 'accepted')
+                    ->countAllResults() > 0;
+                
+                $isRequested = $db->table('friendships')
+                    ->where('requester_id', $this->userId)
+                    ->where('receiver_id', $u['id'])
+                    ->where('status', 'pending')
+                    ->countAllResults() > 0;
+
+                $hasRequested = $db->table('friendships')
+                    ->where('requester_id', $u['id'])
+                    ->where('receiver_id', $this->userId)
+                     ->where('status', 'pending')
+                    ->countAllResults() > 0;
+
+                $status = 'none';
+                if ($u['id'] === $this->userId) $status = 'self';
+                else if ($isFriend) $status = 'friend';
+                else if ($isRequested) $status = 'pending';
+                else if ($hasRequested) $status = 'incoming';
+
+                // Fix avatar
+                $avatar = $u['avatar'] ?? '';
+                if (empty($avatar)) {
+                    $avatar = base_url('ICON/avatar-default.svg');
+                } elseif (strpos($avatar, 'http') !== 0) {
+                    $avatar = base_url($avatar);
+                }
+
                 $results['users'][] = [
                     'id' => $u['id'],
                     'name' => $u['firstname'] . ' ' . $u['lastname'],
-                    'avatar' => $u['avatar'] ?? base_url('ICON/avatar-default.svg'),
-                    'type' => 'user'
+                    'avatar' => $avatar,
+                    'type' => 'user',
+                    'url' => base_url('user/profile/' . $u['id']),
+                    'status' => $status
                 ];
             }
 
@@ -57,12 +100,21 @@ class SearchController extends BaseController
                 ->get()->getResultArray();
 
             foreach ($groups as $g) {
+                // Fix avatar
+                $avatar = $g['avatar'] ?? '';
+                if (empty($avatar)) {
+                    $avatar = base_url('ICON/group-default.png');
+                } elseif (strpos($avatar, 'http') !== 0) {
+                    $avatar = base_url($avatar);
+                }
+
                 $results['groups'][] = [
                     'id' => $g['id'],
                     'name' => $g['name'],
-                    'avatar' => $g['avatar'] ?? base_url('ICON/group-default.png'),
+                    'avatar' => $avatar,
                     'privacy' => $g['privacy'],
-                    'type' => 'group'
+                    'type' => 'group',
+                    'url' => base_url('group/' . $g['id'])
                 ];
             }
         }
@@ -101,12 +153,54 @@ class SearchController extends BaseController
             ->get()->getResultArray();
 
         foreach ($users as $user) {
+            // Check friend status
+            $isFriend = $db->table('friendships')
+                ->groupStart()
+                    ->groupStart()
+                        ->where('requester_id', $this->userId)
+                        ->where('receiver_id', $user['id'])
+                    ->groupEnd()
+                    ->orGroupStart()
+                        ->where('requester_id', $user['id'])
+                        ->where('receiver_id', $this->userId)
+                    ->groupEnd()
+                ->groupEnd()
+                ->where('status', 'accepted')
+                ->countAllResults() > 0;
+            
+            $isRequested = $db->table('friendships')
+                ->where('requester_id', $this->userId)
+                ->where('receiver_id', $user['id'])
+                ->where('status', 'pending')
+                ->countAllResults() > 0;
+
+            $hasRequested = $db->table('friendships')
+                ->where('requester_id', $user['id'])
+                ->where('receiver_id', $this->userId)
+                 ->where('status', 'pending')
+                ->countAllResults() > 0;
+
+            $status = 'none';
+            if ($user['id'] === $this->userId) $status = 'self';
+            else if ($isFriend) $status = 'friend';
+            else if ($isRequested) $status = 'pending';
+            else if ($hasRequested) $status = 'incoming';
+
+            // Fix avatar URL
+            $avatar = $user['avatar'];
+            if (empty($avatar)) {
+                $avatar = base_url('ICON/avatar-default.svg');
+            } elseif (strpos($avatar, 'http') !== 0) {
+                $avatar = base_url($avatar);
+            }
+
             $results[] = [
                 'id' => $user['id'],
                 'name' => $user['firstname'] . ' ' . $user['lastname'],
-                'avatar' => $user['avatar'] ?? base_url('ICON/avatar-default.svg'),
+                'avatar' => $avatar,
                 'type' => 'user',
-                'url' => base_url('user/profile/' . $user['id'])
+                'url' => base_url('user/profile/' . $user['id']),
+                'status' => $status
             ];
         }
 
@@ -118,10 +212,18 @@ class SearchController extends BaseController
             ->get()->getResultArray();
 
         foreach ($groups as $group) {
+            // Fix group avatar
+            $avatar = $group['avatar'];
+            if (empty($avatar)) {
+                $avatar = base_url('ICON/group-default.png');
+            } elseif (strpos($avatar, 'http') !== 0) {
+                $avatar = base_url($avatar);
+            }
+
             $results[] = [
                 'id' => $group['id'],
                 'name' => $group['name'],
-                'avatar' => $group['avatar'] ?? base_url('ICON/group-default.png'),
+                'avatar' => $avatar,
                 'type' => 'group',
                 'privacy' => $group['privacy'],
                 'url' => base_url('group/' . $group['id'])

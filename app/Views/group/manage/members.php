@@ -13,7 +13,21 @@
             </div>
         <?php else: ?>
             <div class="requests-list">
-                <!-- Loop through requests here -->
+                <?php foreach ($requests as $r): ?>
+                <div class="member-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img src="<?= (isset($r['avatar']) && strpos($r['avatar'], 'http') === 0) ? $r['avatar'] : ($r['avatar'] ? base_url($r['avatar']) : base_url('ICON/avatar-default.svg')) ?>" class="avatar-small">
+                        <div>
+                            <div style="font-weight: 600;"><?= esc($r['firstname'] . ' ' . $r['lastname']) ?></div>
+                            <div style="font-size: 13px; color: #65676b;">Requesting to join</div>
+                        </div>
+                    </div>
+                    <div class="actions" style="display: flex; gap: 8px;">
+                        <button onclick="approveMember('<?= $r['user_id'] ?>')" class="btn-primary" style="padding: 6px 12px; font-size: 13px;">Approve</button>
+                        <button onclick="rejectMember('<?= $r['user_id'] ?>')" class="btn-secondary" style="padding: 6px 12px; font-size: 13px;">Reject</button>
+                    </div>
+                </div>
+                <?php endforeach; ?>
             </div>
         <?php endif; ?>
     </div>
@@ -56,6 +70,21 @@
 </div>
 
 <script>
+function approveMember(userId) {
+    $.post(BASE_URL + '/group/' + GROUP_ID + '/approve_member/' + userId, function(res) {
+        if (res.status === 'success') location.reload();
+        else alert(res.message || 'Failed');
+    });
+}
+
+function rejectMember(userId) {
+    if (!confirm('Reject this request?')) return;
+    $.post(BASE_URL + '/group/' + GROUP_ID + '/reject_member/' + userId, function(res) {
+        if (res.status === 'success') location.reload();
+        else alert(res.message || 'Failed');
+    });
+}
+
 function kickMember(userId) {
     if (!confirm('Remove this member from the group?')) return;
     $.post(BASE_URL + '/group/' + GROUP_ID + '/kick/' + userId, function(res) {

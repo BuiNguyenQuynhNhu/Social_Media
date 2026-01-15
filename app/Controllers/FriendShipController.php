@@ -146,9 +146,14 @@ class FriendShipController extends BaseController
 
     public function send($receiverId)
     {
-        if (!$this->userId) return redirect()->to('login');
-        if ($this->userId == $receiverId)
-            return redirect()->back()->with('error', 'You cannot add yourself.');
+        if (!$this->userId) {
+             if($this->request->isAJAX()) return $this->response->setJSON(['status'=>'error', 'message'=>'Unauthorized']);
+             return redirect()->to('login');
+        }
+        if ($this->userId == $receiverId) {
+             if($this->request->isAJAX()) return $this->response->setJSON(['status'=>'error', 'message'=>'You cannot add yourself']);
+             return redirect()->back()->with('error', 'You cannot add yourself.');
+        }
         
         $res = $this->friend->create($this->userId, $receiverId);
         
@@ -159,6 +164,7 @@ class FriendShipController extends BaseController
                 $this->userId,
                 $receiverId
             );
+            if($this->request->isAJAX()) return $this->response->setJSON(['status'=>'success', 'message'=>'Friend request sent.']);
             return redirect()->back()->with('success', 'Friend request sent.');
         }
         
@@ -169,9 +175,11 @@ class FriendShipController extends BaseController
                                         ->first();
         
         if ($pendingFromThem) {
+            if($this->request->isAJAX()) return $this->response->setJSON(['status'=>'info', 'message'=>'This user already sent you a friend request.']);
             return redirect()->back()->with('info', 'This user already sent you a friend request. Check your Friend Requests page to accept it.');
         }
         
+        if($this->request->isAJAX()) return $this->response->setJSON(['status'=>'error', 'message'=>'Request already exists or you are already friends.']);
         return redirect()->back()->with('error', 'Request already exists or you are already friends.');
     }
 

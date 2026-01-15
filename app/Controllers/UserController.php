@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Controllers\PostController;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\Profile;
 use App\Models\User;

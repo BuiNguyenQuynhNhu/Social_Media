@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-/* =========================================
-   CORE: CSRF & REQUEST HANDLING
-   ========================================= */
+
 
 function getCookie(name) {
     if (!name) return null;
@@ -15,7 +12,7 @@ async function sendRequest(url, formData = null) {
         formData = new FormData();
     }
 
-    const COOKIE_NAME = 'csrf_cookie_name'; 
+    const COOKIE_NAME = 'csrf_cookie_name';
 
     let tokenValue = getCookie(COOKIE_NAME);
 
@@ -33,7 +30,7 @@ async function sendRequest(url, formData = null) {
             method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': tokenValue 
+                'X-CSRF-TOKEN': tokenValue
             },
             body: formData
         });
@@ -72,7 +69,7 @@ function previewImage(input) {
     const container = document.getElementById('image-preview-container');
     if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             preview.src = e.target.result;
             container.style.display = 'block';
         }
@@ -89,7 +86,7 @@ function removeImage() {
     if (preview) preview.src = "#";
 }
 
-window.onclick = function(event) {
+window.onclick = function (event) {
     const editModal = document.getElementById('edit-modal');
     const postModal = document.getElementById('postModal');
     const reactorModal = document.getElementById('reactorsModal');
@@ -107,7 +104,7 @@ function addFriend(targetId) {
     data.append('receiver_id', targetId);
 
     sendRequest(APP_CONFIG.baseURL + '/friend/add', data).then(res => {
-        if(res.status === 'success') location.reload();
+        if (res.status === 'success') location.reload();
         else alert(res.message);
     });
 }
@@ -117,12 +114,12 @@ function acceptFriend(requesterId) {
     data.append('requester_id', requesterId);
 
     sendRequest(APP_CONFIG.baseURL + '/friend/accept', data).then(res => {
-        if(res.status === 'success') location.reload();
+        if (res.status === 'success') location.reload();
     });
 }
 
 function unfriendUser(targetId) {
-    if(!confirm("Are you sure you want to unfriend?")) return;
+    if (!confirm("Are you sure you want to unfriend?")) return;
     cancelRequest(targetId);
 }
 
@@ -131,7 +128,7 @@ function cancelRequest(targetId) {
     data.append('target_id', targetId);
 
     sendRequest(APP_CONFIG.baseURL + '/friend/remove', data).then(res => {
-        if(res.status === 'success') location.reload();
+        if (res.status === 'success') location.reload();
     });
 }
 
@@ -145,8 +142,8 @@ function sendReaction(postId, type) {
     formData.append('reaction', type);
 
     sendRequest(APP_CONFIG.baseURL + '/post/react', formData).then(res => {
-        if(res.status === 'added' || res.status === 'removed' || res.status === 'updated') {
-            location.reload(); 
+        if (res.status === 'added' || res.status === 'removed' || res.status === 'updated') {
+            location.reload();
         }
     });
 }
@@ -163,27 +160,27 @@ function toggleCommentBox(postId) {
 
 function loadComments(postId) {
     fetch(APP_CONFIG.baseURL + '/post/comments/' + postId)
-    .then(res => res.json())
-    .then(res => {
-        if(res.status === 'success') {
-            const list = document.getElementById('comment-list-' + postId);
-            list.innerHTML = '';
-            res.data.forEach(cmt => appendCommentHTML(list, cmt));
-        }
-    });
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === 'success') {
+                const list = document.getElementById('comment-list-' + postId);
+                list.innerHTML = '';
+                res.data.forEach(cmt => appendCommentHTML(list, cmt));
+            }
+        });
 }
 
 function sendComment(postId) {
     const input = document.getElementById('input-comment-' + postId);
     const content = input.value.trim();
-    if(!content) return;
+    if (!content) return;
 
     let formData = new FormData();
     formData.append('post_id', postId);
     formData.append('content', content);
 
     sendRequest(APP_CONFIG.baseURL + '/post/comment/add', formData).then(res => {
-        if(res.status === 'success') {
+        if (res.status === 'success') {
             input.value = '';
 
             const list = document.getElementById('comment-list-' + postId);
@@ -199,7 +196,7 @@ function sendComment(postId) {
 }
 
 function handleEnter(e, postId) {
-    if(e.key === 'Enter') sendComment(postId);
+    if (e.key === 'Enter') sendComment(postId);
 }
 
 function appendCommentHTML(container, data) {
@@ -224,11 +221,11 @@ function submitCreatePost(event) {
 
 
     sendRequest(APP_CONFIG.baseURL + '/post/create', formData).then(res => {
-        if(res.status === 'success') {
-            location.reload(); 
+        if (res.status === 'success') {
+            location.reload();
         } else {
             alert(res.message || 'Error creating post');
-            if(res.errors) console.log(res.errors);
+            if (res.errors) console.log(res.errors);
         }
     });
 }
@@ -239,28 +236,28 @@ function submitCreatePost(event) {
 function showReactors(postId) {
     const modal = document.getElementById('reactorsModal');
     const list = document.getElementById('reactors-list');
-    
-    if(modal) modal.style.display = 'flex';
-    if(list) list.innerHTML = '<div style="text-align:center; padding:20px;">Loading...</div>';
+
+    if (modal) modal.style.display = 'flex';
+    if (list) list.innerHTML = '<div style="text-align:center; padding:20px;">Loading...</div>';
 
     fetch(APP_CONFIG.baseURL + '/post/reactors/' + postId)
-    .then(res => res.json())
-    .then(res => {
-        if(res.status === 'success') {
-            list.innerHTML = '';
-            if (res.data.length === 0) {
-                list.innerHTML = '<div style="text-align:center; padding:20px;">No reactions yet.</div>';
-                return;
-            }
-            const iconMap = { 'like': '👍', 'love': '❤️', 'haha': '😆', 'wow': '😮', 'sad': '😢', 'angry': '😡' };
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === 'success') {
+                list.innerHTML = '';
+                if (res.data.length === 0) {
+                    list.innerHTML = '<div style="text-align:center; padding:20px;">No reactions yet.</div>';
+                    return;
+                }
+                const iconMap = { 'like': '👍', 'love': '❤️', 'haha': '😆', 'wow': '😮', 'sad': '😢', 'angry': '😡' };
 
-            res.data.forEach(user => {
-                const name = user.firstname + ' ' + user.lastname;
-                const avatar = getImageUrl(user.avatar);
-                const icon = iconMap[user.reaction] || '👍';
-                const isSelf = (user.user_id == APP_CONFIG.userId);
+                res.data.forEach(user => {
+                    const name = user.firstname + ' ' + user.lastname;
+                    const avatar = getImageUrl(user.avatar);
+                    const icon = iconMap[user.reaction] || '👍';
+                    const isSelf = (user.user_id == APP_CONFIG.userId);
 
-                const html = `
+                    const html = `
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: 8px; transition: 0.2s;" onmouseover="this.style.background='#f0f2f5'" onmouseout="this.style.background='white'">
                         <a href="${APP_CONFIG.baseURL}/user/profile/${user.user_id}" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: black;">
                             <div style="position: relative;">
@@ -272,10 +269,10 @@ function showReactors(postId) {
                         ${!isSelf ? `<button class="btn btn-secondary" onclick="addFriend('${user.user_id}')" style="padding: 6px 12px; font-size: 13px; border: none; background: #e4e6eb; border-radius: 6px; cursor: pointer; font-weight: 600;">Add Friend</button>` : ''}
                     </div>
                 `;
-                list.insertAdjacentHTML('beforeend', html);
-            });
-        }
-    });
+                    list.insertAdjacentHTML('beforeend', html);
+                });
+            }
+        });
 }
 
 /* =========================================
@@ -284,7 +281,7 @@ function showReactors(postId) {
 
 function togglePostMenu(postId) {
     document.querySelectorAll('.menu-dropdown').forEach(el => el.style.display = 'none');
-    
+
     const menu = document.getElementById('menu-' + postId);
     if (menu) menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
 }
@@ -292,7 +289,7 @@ function togglePostMenu(postId) {
 function openEditPostModal(postId, content, privacy) {
     const modal = document.getElementById('editPostModal');
     const form = document.getElementById('editPostForm');
-    
+
     document.getElementById('edit-content').value = content;
     document.getElementById('edit-privacy').value = privacy;
 
@@ -303,15 +300,15 @@ function openEditPostModal(postId, content, privacy) {
 }
 
 function deleteComment(commentId) {
-    if(!confirm('Delete this comment?')) return;
-    
+    if (!confirm('Delete this comment?')) return;
+
     let formData = new FormData();
     formData.append('comment_id', commentId);
-    
+
     sendRequest(APP_CONFIG.baseURL + '/post/comment/delete', formData).then(res => {
-        if(res.status === 'success') {
+        if (res.status === 'success') {
             const el = document.getElementById('comment-item-' + commentId);
-            if(el) el.remove();
+            if (el) el.remove();
 
         } else {
             alert('Error: ' + (res.message || 'Cannot delete'));
@@ -319,7 +316,7 @@ function deleteComment(commentId) {
     });
 }
 
-window.addEventListener('click', function(e) {
+window.addEventListener('click', function (e) {
     if (!e.target.closest('.post-menu')) {
         document.querySelectorAll('.menu-dropdown').forEach(el => el.style.display = 'none');
     }
@@ -330,8 +327,8 @@ function timeAgo(dateString) {
 
     let t = dateString.split(/[- :]/);
 
-    let date = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
-    
+    let date = new Date(t[0], t[1] - 1, t[2], t[3], t[4], t[5]);
+
     let now = new Date();
     let seconds = Math.floor((now - date) / 1000);
 
@@ -339,19 +336,19 @@ function timeAgo(dateString) {
 
     let interval = seconds / 31536000;
     if (interval > 1) return Math.floor(interval) + " years ago";
-    
+
     interval = seconds / 2592000;
     if (interval > 1) return Math.floor(interval) + " months ago";
-    
+
     interval = seconds / 86400;
     if (interval > 1) return Math.floor(interval) + " days ago";
-    
+
     interval = seconds / 3600;
     if (interval > 1) return Math.floor(interval) + " hours ago";
-    
+
     interval = seconds / 60;
     if (interval > 1) return Math.floor(interval) + " minutes ago";
-    
+
     return "Just now";
 }
 
@@ -365,7 +362,7 @@ function appendCommentHTML(container, data) {
     let actionBtns = '';
     if (isOwner) {
         const safeContent = data.content.replace(/'/g, "\\'");
-        
+
         actionBtns = `
             <span id="btn-edit-cmt-${data.id}" onclick="enableEditComment(${data.id}, '${safeContent}')" 
                   style="font-size:11px; color:#65676b; cursor:pointer; margin-left:8px; font-weight:600;">Edit</span>
@@ -395,18 +392,18 @@ function appendCommentHTML(container, data) {
 }
 
 function previewAvatar(input) {
-        const preview = document.getElementById('edit-avatar-preview');
-        
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-            }
+    const preview = document.getElementById('edit-avatar-preview');
 
-            reader.readAsDataURL(input.files[0]);
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            preview.src = e.target.result;
         }
+
+        reader.readAsDataURL(input.files[0]);
     }
+}
 
 function enableEditComment(commentId, oldContent) {
     const contentDiv = document.getElementById(`comment-content-${commentId}`);
@@ -437,7 +434,7 @@ function cancelEditComment(commentId) {
 function submitEditComment(commentId) {
     const input = document.getElementById(`input-edit-${commentId}`);
     const newContent = input.value.trim();
-    
+
     if (!newContent) {
         alert("Content cannot be empty");
         return;
@@ -453,7 +450,7 @@ function submitEditComment(commentId) {
             contentDiv.innerHTML = newContent;
 
             const editBtn = document.getElementById(`btn-edit-cmt-${commentId}`);
-            if(editBtn) {
+            if (editBtn) {
 
                 editBtn.setAttribute('onclick', `enableEditComment(${commentId}, '${newContent.replace(/'/g, "\\'")}')`);
             }
@@ -467,40 +464,40 @@ function loadPage(page, renderPosts = true) {
     const targetId = APP_CONFIG.targetId;
 
     fetch(`${APP_CONFIG.baseURL}/post/get_posts_paging?user_id=${targetId}&page=${page}`)
-    .then(res => res.json())
-    .then(res => {
-        if(res.status === 'success') {
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === 'success') {
 
-            if (renderPosts) {
-                const container = document.getElementById('feed-container');
-                container.innerHTML = ''; 
-                
-                if (res.data.length === 0) {
-                    container.innerHTML = '<div class="fb-card" style="padding:20px;text-align:center">No posts found.</div>';
-                } else {
-                    res.data.forEach(post => {
-                        const html = generatePostHTML(post);
-                        container.insertAdjacentHTML('beforeend', html);
-                    });
-                    lucide.createIcons();
+                if (renderPosts) {
+                    const container = document.getElementById('feed-container');
+                    container.innerHTML = '';
+
+                    if (res.data.length === 0) {
+                        container.innerHTML = '<div class="fb-card" style="padding:20px;text-align:center">No posts found.</div>';
+                    } else {
+                        res.data.forEach(post => {
+                            const html = generatePostHTML(post);
+                            container.insertAdjacentHTML('beforeend', html);
+                        });
+                        lucide.createIcons();
+                    }
+
+                    document.querySelector('.profile-body').scrollIntoView({ behavior: 'smooth' });
                 }
 
-                document.querySelector('.profile-body').scrollIntoView({ behavior: 'smooth' });
+                renderPaginationControls(res.currentPage, res.totalPages);
             }
-
-            renderPaginationControls(res.currentPage, res.totalPages);
-        }
-    })
-    .catch(err => console.error(err));
+        })
+        .catch(err => console.error(err));
 }
 
 function renderPaginationControls(current, total) {
     const container = document.getElementById('pagination-controls');
     if (!container) return;
-    
+
     container.innerHTML = '';
 
-    if (total <= 1) return; 
+    if (total <= 1) return;
 
     // Nút Previous (<)
     if (current > 1) {
@@ -521,14 +518,14 @@ function renderPaginationControls(current, total) {
     if (current < total) {
         container.innerHTML += `<button onclick="loadPage(${current + 1})" class="btn-page"><i data-lucide="chevron-right" width="20"></i></button>`;
     }
-    
+
     lucide.createIcons();
 }
 
 function getImageUrl(path) {
-    if (!path) return APP_CONFIG.baseURL + '/ICON/avatar-default.svg'; 
-    if (path.startsWith('http')) return path; 
-    return APP_CONFIG.baseURL + '/' + path; 
+    if (!path) return APP_CONFIG.baseURL + '/ICON/avatar-default.svg';
+    if (path.startsWith('http')) return path;
+    return APP_CONFIG.baseURL + '/' + path;
 }
 
 function generatePostHTML(post) {
@@ -537,11 +534,16 @@ function generatePostHTML(post) {
     const isOwner = (post.user_id == APP_CONFIG.userId);
 
     let privacyIcon = '<i data-lucide="lock" width="12"></i>';
-    if(post.privacy === 'public') privacyIcon = '<i data-lucide="globe" width="12"></i>';
-    else if(post.privacy === 'friends') privacyIcon = '<i data-lucide="users" width="12"></i>';
+    if (post.privacy === 'public') privacyIcon = '<i data-lucide="globe" width="12"></i>';
+    else if (post.privacy === 'friends') privacyIcon = '<i data-lucide="users" width="12"></i>';
 
     let menuHtml = '';
-    if(isOwner) {
+
+    // Action Buttons (Edit/Delete)
+    let ownerActions = '';
+
+    if (isOwner) {
+        // Edit in menu
         menuHtml = `
         <div class="post-menu" style="position: relative;">
             <button onclick="togglePostMenu(${post.id})" style="background: none; border: none; cursor: pointer; padding: 5px; color: #65676b;"><i data-lucide="more-horizontal"></i></button>
@@ -549,12 +551,26 @@ function generatePostHTML(post) {
                 <a href="javascript:void(0)" onclick="openEditPostModal(${post.id}, '${post.content.replace(/'/g, "\\'")}', '${post.privacy}')" style="display: flex; align-items: center; gap: 10px; padding: 10px;">
                     <i data-lucide="edit-2" width="16"></i> Edit Post
                 </a>
-                <a href="${APP_CONFIG.baseURL}/post/delete/${post.id}" onclick="return confirm('Delete?')" style="display: flex; align-items: center; gap: 10px; padding: 10px; color: red;">
-                    <i data-lucide="trash-2" width="16"></i> Delete Post
-                </a>
             </div>
         </div>`;
+
+        // Delete button directly visible (Ghost button style)
+        ownerActions = `
+            <a href="${APP_CONFIG.baseURL}/post/delete/${post.id}" onclick="return confirm('Do you really want to delete this post?')" 
+               style="background:none; border:none; cursor:pointer; color:#65676b; padding:5px; display:flex; align-items:center;" title="Delete Post">
+                <i data-lucide="trash-2" width="18"></i>
+            </a>
+            <div style="width:1px; height:20px; background:#ddd; margin:0 5px;"></div>
+        `;
     }
+
+    // Combine actions
+    const rightSide = `
+        <div style="display:flex; align-items:center;">
+            ${ownerActions}
+            ${menuHtml}
+        </div>
+    `;
 
     const myReact = post.my_reaction;
     const btnClass = myReact ? 'btn-reacted-' + myReact : '';
@@ -575,7 +591,7 @@ function generatePostHTML(post) {
                     <span class="time">${timeAgo(post.created_at)} ${privacyIcon}</span>
                 </div>
             </div>
-            ${menuHtml}
+            ${rightSide}
         </div>
 
         <div class="post-content">
@@ -640,8 +656,8 @@ function submitEditPost(event) {
     event.preventDefault();
 
     const form = document.getElementById('editPostForm');
-    const postId = form.getAttribute('data-post-id'); 
-    
+    const postId = form.getAttribute('data-post-id');
+
     if (!postId) {
         alert("Error: No post ID found.");
         return;
@@ -650,21 +666,14 @@ function submitEditPost(event) {
     const formData = new FormData(form);
 
     sendRequest(APP_CONFIG.baseURL + '/post/update/' + postId, formData).then(res => {
-        if(res.status === 'success') {
+        if (res.status === 'success') {
             location.reload();
         } else {
             alert(res.message || 'Error updating post');
         }
     });
 }
-=======
-// =========================================
-// POST MAIN MODULE
-// Coordinates all post-related functionality
-// Dependencies: reactions.js, comments.js, utils.js
-// =========================================
 
-// Initialize on page load
 $(document).ready(function () {
     // Load initial likes and comments for all visible posts
     $('.post-card').each(function () {
@@ -675,4 +684,4 @@ $(document).ready(function () {
         }
     });
 });
->>>>>>> admin
+

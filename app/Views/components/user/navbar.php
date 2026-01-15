@@ -56,12 +56,12 @@
             <div class="nav-user">
                 <div class="icon-circle notification" title="Notifications" onclick="toggleNotifications()" style="position: relative;">
                     <i data-lucide="bell"></i>
-                    <span id="notif-dot" class="notif-dot" style="display: none;"></span>
+                    <span id="notif-count" class="nav-badge" style="display: none; right: -5px; top: -5px;"></span>
                 </div>
 
                 <div class="user-profile">
                     <a href="<?= base_url('user/profile/') . session()->get('user_id')?>" class="avatar-link" title="Your Profile">
-                        <img src="<?= $avatarUrl ?>" class="search-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        <img src="<?= $navbarAvatarUrl ?? $avatarUrl ?? base_url('ICON/avatar-default.svg') ?>" class="search-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                     </a>
                 </div>
 
@@ -74,4 +74,5 @@
     
     <script src="<?= base_url('JS/notifications.js') ?>"></script>
     <script src="<?= base_url('JS/search.js') ?>"></script>
+    <script src="<?= base_url('JS/navbar.js') ?>"></script>
 </nav>
