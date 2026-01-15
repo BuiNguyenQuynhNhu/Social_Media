@@ -64,6 +64,7 @@ class Comment
         
         if ($result->getInsertedCount() > 0) {
             $comment['id'] = (string)$result->getInsertedId();
+            // Ensure compatibility with controller expectation
             return $comment;
         }
         
@@ -136,10 +137,29 @@ class Comment
 
     public function delete($idOrFilter)
     {
+        $filter = [];
         if (is_array($idOrFilter)) {
-            return $this->collection->deleteOne($idOrFilter);
+            $filter = $idOrFilter;
+        } else {
+            $filter = ['_id' => new ObjectId($idOrFilter)];
         }
-        return $this->collection->deleteOne(['_id' => new ObjectId($idOrFilter)]);
+
+        // Find the comment to get its ID (if passed as filter)
+        $comment = $this->collection->findOne($filter);
+        if (!$comment) return false;
+
+        $commentId = (string)$comment['_id'];
+
+        // Find children
+        $children = $this->collection->find(['parent_id' => $commentId])->toArray();
+
+        // Recursively delete children
+        foreach ($children as $child) {
+            $this->delete((string)$child['_id']);
+        }
+
+        // Delete the comment itself
+        return $this->collection->deleteOne(['_id' => new ObjectId($commentId)]);
     }
 
     public function toggleLike($commentId, $userId)

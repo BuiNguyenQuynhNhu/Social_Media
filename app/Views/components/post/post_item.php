@@ -7,6 +7,10 @@
         </a>
             <div class="post-info">
                 <a href="<?= base_url('user/profile/'.$post['id_user']) ?>" class="author-name"><?= esc($post['firstname'] . ' ' . $post['lastname']) ?></a>
+                <?php if (!empty($post['group_name'])): ?>
+                    <i data-lucide="chevron-right" style="width:16px; height:16px; margin:0 2px; color:#65676b;"></i>
+                    <a href="<?= base_url('group/' . $post['group_id']) ?>" class="author-name"><?= esc($post['group_name']) ?></a>
+                <?php endif; ?>
                 <span class="timestamp"><?= date('M d, Y', strtotime($post['created_at'])) ?></span>
             </div>
         </div>
@@ -14,23 +18,40 @@
             $currentUserId = session()->get('user_id');
             $isPostOwner = $currentUserId == $post['id_user'];
             
-            // Context-based delete rules
-            // Context-based delete rules
+            // STRICT Context-based delete rules
             $context = $context ?? 'feed'; // dashboard, profile, group_feed, group_manage
             
             $canDelete = false;
             
-            if ($context === 'group_manage' && isset($isAdmin) && $isAdmin) {
+            // Rule 1: In PROFILE context, only owner can delete
+            if ($context === 'profile' && $isPostOwner) {
                 $canDelete = true;
             }
+            
+            // Rule 2: In GROUP contexts, only admins can delete
+            if (($context === 'group_feed' || $context === 'group_manage') && isset($isAdmin) && $isAdmin) {
+                $canDelete = true;
+            }
+            
+            // Dashboard and other contexts: NO delete option
         ?>
         
-        <div style="display: flex; gap: 8px;">
+        <div class="post-menu-container" style="position: relative;">
             <?php if ($canDelete): ?>
-                <form action="<?= base_url('post/delete_post/' . $post['id']) ?>" method="post" onsubmit="return confirm('Do you really want to delete this post?')">
+            <button onclick="togglePostMenu('<?= $post['id'] ?>')" class="menu-trigger icon-btn-ghost">
+                <i data-lucide="more-horizontal"></i>
+            </button>
+            <div id="menu-<?= $post['id'] ?>" class="menu-dropdown" style="display: none; position: absolute; right: 0; top: 100%; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; width: 200px; z-index: 100; padding: 5px;">
+                
+                <!-- Edit functionality removed as per user request -->
+
+                <form action="<?= base_url('post/delete_post/' . $post['id']) ?>" method="post" onsubmit="return confirm('Are you sure you want to delete this post?');">
                     <?= csrf_field() ?>
-                    <button type="submit" class="icon-btn-ghost"><i data-lucide="trash-2"></i></button>
+                    <button type="submit" class="menu-item" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px; background: none; border: none; cursor: pointer; text-align: left; font-size: 14px; border-radius: 5px; transition: background 0.2s; color: #e41e3f;">
+                        <i data-lucide="trash-2" style="width: 18px;"></i> Delete Post
+                    </button>
                 </form>
+            </div>
             <?php endif; ?>
         </div>
     </div>

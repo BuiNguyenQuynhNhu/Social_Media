@@ -27,6 +27,7 @@ class SearchController extends BaseController
         $results = [
             'users' => [],
             'groups' => [],
+            'posts' => [],
             'query' => $query
         ];
 
@@ -117,6 +118,28 @@ class SearchController extends BaseController
                     'url' => base_url('group/' . $g['id'])
                 ];
             }
+
+            // Search posts
+            /*
+             * Optimization: limit search to public posts or friend posts if possible.
+             * For now, simplistic search on content.
+             */
+            $postModel = new \App\Models\Post();
+            $posts = $postModel->select("posts.*, profiles.firstname, profiles.lastname, users.avatar")
+                ->join('profiles', 'profiles.id = posts.id_user')
+                ->join('users', 'users.id = posts.id_user')
+                ->like('posts.content', $query)
+                ->orderBy('posts.created_at', 'DESC')
+                ->limit(20)
+                ->findAll();
+
+            // Attach media/counts (reusing model function)
+            $posts = $postModel->attachMediaToPosts($posts);
+
+            // Refine for display
+             foreach ($posts as $p) {
+                 $results['posts'][] = $p;
+             }
         }
 
         return view('search/results', [

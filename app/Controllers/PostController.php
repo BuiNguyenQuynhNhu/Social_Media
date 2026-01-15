@@ -47,7 +47,31 @@ class PostController extends BaseController
         if (!$this->userId) return redirect()->to('login');
 
         $post = $this->post->find($postId);
-        if (!$post || $post['id_user'] !== $this->userId) {
+        if (!$post) {
+            return redirect()->back()->with('error', 'Post not found.');
+        }
+
+        $canDelete = ($post['id_user'] === $this->userId);
+
+        // Check if user is admin of the group this post belongs to
+        if (!$canDelete) {
+            $db = \Config\Database::connect();
+            $groupPost = $db->table('group_posts')->where('post_id', $postId)->get()->getRowArray();
+            
+            if ($groupPost) {
+                $isAdmin = $db->table('group_members')
+                    ->where('group_id', $groupPost['group_id'])
+                    ->where('user_id', $this->userId)
+                    ->where('role', 'admin')
+                    ->countAllResults() > 0;
+                
+                if ($isAdmin) {
+                    $canDelete = true;
+                }
+            }
+        }
+
+        if (!$canDelete) {
             return redirect()->back()->with('error', 'Unauthorized access.');
         }
 

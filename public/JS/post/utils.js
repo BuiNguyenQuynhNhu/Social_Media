@@ -3,6 +3,13 @@
 // Helper functions for post system
 // =========================================
 
+function getCookie(name) {
+    if (!name) return null;
+    let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    if (match) return decodeURIComponent(match[2]);
+    return null;
+}
+
 function escapeHtml(text) {
     const map = {
         '&': '&amp;',

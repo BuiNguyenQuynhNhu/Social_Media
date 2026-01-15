@@ -24,12 +24,14 @@
         window.USER_ID = '<?= $user_id ?>';
         window.GROUP_ID = '<?= $group['id'] ?? '' ?>';
         
-        // APP_CONFIG for search.js compatibility if needed (though we use BASE_URL now)
-        const APP_CONFIG = {
+        window.APP_CONFIG = {
             baseURL: window.BASE_URL,
-            userId: window.USER_ID
+            userId: window.USER_ID,
+            csrfTokenName: '<?= csrf_token() ?>',     
+            csrfHash: '<?= csrf_hash() ?>'
         };
     </script>
+    <script src="<?= base_url('JS/post/init.js') ?>"></script>
 </head>
 <body class="background">
 

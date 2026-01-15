@@ -71,9 +71,11 @@ class Post extends Model
     }
 
     public function getPostByUser($id){
-        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
+        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar, groups.name as group_name, groups.id as group_id")
                     ->join('profiles', 'profiles.id = posts.id_user')
                     ->join('users', 'users.id = posts.id_user')
+                    ->join('group_posts', 'group_posts.post_id = posts.id', 'left')
+                    ->join('groups', 'groups.id = group_posts.group_id', 'left')
                     ->where('posts.id_user', $id)
                     ->orderBy('posts.created_at', 'DESC')
                     ->findAll();
@@ -85,13 +87,17 @@ class Post extends Model
     }
 
     public function getFeed($userId) {
-        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
+        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar, groups.name as group_name, groups.id as group_id")
             ->join('profiles', 'profiles.id = posts.id_user')
             ->join('users', 'users.id = posts.id_user')
+            ->join('group_posts', 'group_posts.post_id = posts.id', 'left')
+            ->join('groups', 'groups.id = group_posts.group_id', 'left')
             ->groupStart()
                 ->where('posts.id_user', $userId)
                 ->orWhere("posts.id_user IN (SELECT receiver_id FROM friendships WHERE requester_id = '$userId' AND status = 'accepted')", null, false)
                 ->orWhere("posts.id_user IN (SELECT requester_id FROM friendships WHERE receiver_id = '$userId' AND status = 'accepted')", null, false)
+                // Include posts from joined groups
+                ->orWhere("posts.id IN (SELECT post_id FROM group_posts WHERE group_id IN (SELECT group_id FROM group_members WHERE user_id = '$userId') AND status = 'accepted')", null, false)
             ->groupEnd()
             ->orderBy('posts.created_at', 'DESC')
             ->findAll();
@@ -99,18 +105,21 @@ class Post extends Model
     }
 
     public function list() {
-        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
+        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar, groups.name as group_name, groups.id as group_id")
                     ->join('profiles', 'profiles.id= posts.id_user')
                     ->join('users', 'users.id = posts.id_user')
+                    ->join('group_posts', 'group_posts.post_id = posts.id', 'left')
+                    ->join('groups', 'groups.id = group_posts.group_id', 'left')
                     ->orderBy('posts.created_at', 'DESC')
                     ->findAll();
         return $this->attachMediaToPosts($posts);
     }
     public function getPostsByGroup($groupId) {
-        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
+        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar, groups.name as group_name, groups.id as group_id")
             ->join('group_posts', 'group_posts.post_id = posts.id')
             ->join('profiles', 'profiles.id = posts.id_user')
             ->join('users', 'users.id = posts.id_user')
+            ->join('groups', 'groups.id = group_posts.group_id')
             ->where('group_posts.group_id', $groupId)
             ->where('group_posts.status', 'accepted')
             ->orderBy('posts.created_at', 'DESC')
@@ -214,6 +223,10 @@ class Post extends Model
             }
             $mediaCollection->deleteOne(['post_id' => $postId]);
         }
+
+        // Clean up group_posts
+        $db = \Config\Database::connect();
+        $db->table('group_posts')->where('post_id', $postId)->delete();
 
         return $this->delete($postId);
     }

@@ -194,9 +194,13 @@ function likeComment(commentId) {
 function deleteComment(commentId, postId) {
     if (!confirm('Delete this comment?')) return;
 
+    // Use jQuery AJAX which has global CSRF setup from init.js
     $.ajax({
         url: window.BASE_URL + '/comment/delete/' + commentId,
         type: 'DELETE',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         success: function (res) {
             if (res.status === 'success') {
                 loadComments(postId);
@@ -204,8 +208,9 @@ function deleteComment(commentId, postId) {
                 alert(res.message || 'Failed to delete');
             }
         },
-        error: function () {
-            alert('Failed to delete comment');
+        error: function (xhr) {
+            console.error('Delete error:', xhr);
+            alert('Failed to delete comment. Status: ' + xhr.status);
         }
     });
 }

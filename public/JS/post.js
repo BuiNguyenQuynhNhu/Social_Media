@@ -114,18 +114,10 @@ function removeFriend(id) {
 
 
 /* =========================================
-   POST INTERACTION 
-   ========================================= */
-/* =========================================
    POST INTERACTION & COMMENTS
    ========================================= */
 
-// NOTE: Specific interaction and comment logic is handled in 
-// JS/post/reactions.js and JS/post/comments.js
-// which are loaded before this file in dashboard.js.
-
-// We keep showReactors here if it's not in modules.
-
+// Logic delegated to reactions.js and comments.js
 
 /* =========================================
    SHOW REACTORS 
@@ -173,60 +165,55 @@ function showReactors(postId) {
 }
 
 /* =========================================
-   EDIT POST & DELETE COMMENT & MENU
+   EDIT POST & MENU
    ========================================= */
 
 function togglePostMenu(postId) {
-    document.querySelectorAll('.menu-dropdown').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.menu-dropdown').forEach(el => {
+        if (el.id !== 'menu-' + postId) el.style.display = 'none';
+    });
 
     const menu = document.getElementById('menu-' + postId);
-    if (menu) menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    if (menu) {
+        menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    }
 }
+
+// Close menu when clicking outside
+window.addEventListener('click', function (e) {
+    if (!e.target.matches('.menu-trigger') && !e.target.closest('.menu-trigger')) {
+        document.querySelectorAll('.menu-dropdown').forEach(el => el.style.display = 'none');
+    }
+});
 
 function openEditPostModal(postId, content, privacy) {
     const modal = document.getElementById('editPostModal');
-    const form = document.getElementById('editPostForm');
+    if (!modal) return;
 
     document.getElementById('edit-content').value = content;
     document.getElementById('edit-privacy').value = privacy;
+    document.getElementById('editPostForm').setAttribute('data-post-id', postId);
 
-    form.setAttribute('data-post-id', postId);
-
-    togglePostMenu(postId);
+    togglePostMenu(postId); // Close menu
     modal.style.display = 'flex';
 }
 
 function submitEditPost(event) {
     event.preventDefault();
-
     const form = document.getElementById('editPostForm');
     const postId = form.getAttribute('data-post-id');
 
-    if (!postId) {
-        alert("Error: No post ID found.");
-        return;
-    }
+    if (!postId) return;
 
     const formData = new FormData(form);
 
-    sendRequest(window.BASE_URL + '/post/update/' + postId, formData).then(res => {
+    sendRequest(window.BASE_URL + '/post/update_post/' + postId, formData).then(res => {
         if (res.status === 'success') {
             location.reload();
         } else {
             alert(res.message || 'Error updating post');
         }
     });
-}
-
-
-function getImageUrl(path) {
-    if (!path) return window.BASE_URL + '/ICON/avatar-default.svg';
-    if (path.startsWith('http')) return path;
-    return window.BASE_URL + '/' + path;
-}
-
-function updateLikes(postId) {
-    // Optional: Fetch new counts and update DOM
 }
 
 function generatePostHTML(post) {
