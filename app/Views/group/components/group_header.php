@@ -9,12 +9,12 @@
             <div class="group-title-section">
                 <h1 id="group-name"><?= esc($group['name']) ?></h1>
                 <div class="group-meta">
-                    <span class="privacy-badge" id="group-privacy">
+                    <span class="privacy-badge">
                         <i data-lucide="<?= $group['privacy'] === 'public' ? 'globe' : 'lock' ?>"></i>
                         <?= ucfirst($group['privacy']) ?> Group
                     </span>
-                    <span class="member-count" id="group-member-count">
-                        <i data-lucide="users"></i>
+                    <span class="meta-separator">•</span>
+                    <span class="member-count">
                         <?= $group['member_count'] ?? 0 ?> members
                     </span>
                 </div>

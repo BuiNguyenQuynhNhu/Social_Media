@@ -4,8 +4,18 @@
     box-sizing: border-box;
 }
 
+/* Global Variables */
+:root {
+    --header-height: 70px;
+    --primary-color: #1877f2;
+    --bg-color: #f0f2f5;
+}
+
 body.background {
-    background: #e9f1fc;
+    background: var(--bg-color);
+    padding-top: var(--header-height);
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 /* NAVBAR */
@@ -64,22 +74,27 @@ body.background {
 
 .nav-line {
     position: absolute;
-    bottom: -10px;
-    /* Adjust based on your navbar height */
+    bottom: 0;
     height: 3px;
     background: #0051ff;
+    border-radius: 2px 2px 0 0;
     transition: all 0.3s cubic-bezier(.4, 0, .2, 1);
+    pointer-events: none;
+    z-index: 10;
+    /* Ensure it sits above items */
 }
 
 .navbar {
     background: whitesmoke;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     padding: 12px 30px;
-    position: sticky;
+    position: fixed;
+    /* Fixed to ensure it stays on top */
+    width: 100%;
     top: 0;
+    left: 0;
     z-index: 9999;
-    /* Increased z-index */
-    height: var(--header-height, 70px);
+    height: var(--header-height);
 }
 
 .container {
@@ -103,14 +118,7 @@ body.background {
     height: 26px;
 }
 
-.nav-line {
-    position: absolute;
-    bottom: 0;
-    height: 3px;
-    background: #0051ff;
-    border-radius: 2px;
-    transition: width 0.5s cubic-bezier(.4, 0, .2, 1);
-}
+
 
 .nav-item:hover {
     color: #0051ff;

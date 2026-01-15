@@ -28,20 +28,23 @@
 
         <div class="nav-section center">
             <div class="nav-menu">
-                <a href="<?= base_url('user/dashboard') ?>" class="nav-item <?= (strpos(uri_string(), 'dashboard') !== false || uri_string() == '/' || uri_string() == '') ? 'active' : '' ?>" title="Home">
+                <?php 
+                    $currentUri = uri_string(); 
+                ?>
+                <a href="<?= base_url('user/dashboard') ?>" class="nav-item <?= ($currentUri == '' || $currentUri == '/' || strpos($currentUri, 'dashboard') !== false) ? 'active' : '' ?>" title="Home">
                     <i data-lucide="home"></i>
                 </a>
 
-                <a href="<?= base_url('friends') ?>" class="nav-item <?= (strpos(uri_string(), 'friends') !== false) ? 'active' : '' ?>" style="position: relative;" title="Friends">
+                <a href="<?= base_url('friends') ?>" class="nav-item <?= (strpos($currentUri, 'friend') !== false) ? 'active' : '' ?>" style="position: relative;" title="Friends">
                     <i data-lucide="users"></i>
                     <span id="friend-badge" class="nav-badge"></span>
                 </a>
                 
-                <a href="<?= base_url('group') ?>" class="nav-item <?= (strpos(uri_string(), 'group') !== false) ? 'active' : '' ?>" title="Groups">
+                <a href="<?= base_url('group') ?>" class="nav-item <?= (strpos($currentUri, 'group') !== false) ? 'active' : '' ?>" title="Groups">
                     <i data-lucide="users-2"></i>
                 </a>
                 
-                <a href="<?= base_url('message') ?>" class="nav-item <?= (strpos(uri_string(), 'message') !== false) ? 'active' : '' ?>" title="Messages">
+                <a href="<?= base_url('message') ?>" class="nav-item <?= (strpos($currentUri, 'message') !== false || strpos($currentUri, 'chat') !== false) ? 'active' : '' ?>" title="Messages">
                     <i data-lucide="message-square"></i>
                 </a>
                 

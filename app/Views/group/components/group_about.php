@@ -1,4 +1,4 @@
-<div class="group-about" id="group-about-content" style="display: none;">
+<div class="group-about" id="group-about-content">
     <div class="card-container about-card">
         <div class="about-header">
             <h2>About this group</h2>

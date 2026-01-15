@@ -9,7 +9,6 @@
     <title><?= isset($group) ? esc($group['name']) : 'Groups' ?> | Social Media</title>
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/overall.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/group/group_layout.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/group/group_common.css') ?>">
@@ -18,6 +17,7 @@
     <link rel="stylesheet" href="<?= base_url('CSS/group/group_about.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/post/post.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/post/comment.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -57,6 +57,8 @@
 <script src="<?= base_url('JS/group/actions.js') ?>"></script>
 <script src="<?= base_url('JS/group/settings.js') ?>"></script>
 <script src="<?= base_url('JS/group.js') ?>"></script>
+<script src="<?= base_url('JS/navbar.js') ?>?v=<?= time() ?>"></script>
+
 
 </body>
 </html>

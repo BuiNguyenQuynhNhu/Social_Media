@@ -3,7 +3,9 @@
 /* Chat Page Container */
 .chat-page-container {
     display: flex;
-    height: calc(100vh - 56px);
+    height: calc(100vh - var(--header-height));
+    margin-top: 0;
+    /* body padding takes care of offset */
     background: #f0f2f5;
 }
 

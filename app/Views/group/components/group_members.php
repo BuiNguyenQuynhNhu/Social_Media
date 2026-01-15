@@ -1,4 +1,4 @@
-<div class="group-members" id="group-members-content" style="display: none;">
+<div class="group-members" id="group-members-content">
     <div class="card-container">
         <div class="members-header">
             <h2>Members <span class="count-badge" id="members-count-badge"></span></h2>

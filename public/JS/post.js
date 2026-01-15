@@ -14,6 +14,4 @@ $(document).ready(function () {
             loadComments(postId);
         }
     });
-
-    console.log('Post interaction system initialized');
 });

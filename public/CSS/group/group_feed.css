@@ -1,8 +1,9 @@
 /* Group Feed Styles */
-
 .group-feed {
-    max-width: 680px;
-    margin: 0 auto;
+    width: 100%;
+    /* Let grid control width, just fill container */
+    max-width: none;
+    margin: 0;
 }
 
 .group-create-post {

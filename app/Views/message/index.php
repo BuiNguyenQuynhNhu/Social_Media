@@ -46,6 +46,7 @@
     lucide.createIcons();
 </script>
 <script src="<?= base_url('JS/message.js') ?>"></script>
+<script src="<?= base_url('JS/navbar.js') ?>?v=<?= time() ?>"></script>
 
 </body>
 </html>

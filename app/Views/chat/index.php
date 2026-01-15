@@ -8,9 +8,9 @@
     <title>Chats | Social Media</title>
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/overall.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/chat/chat_components.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -72,6 +72,7 @@
 
 <!-- JavaScript -->
 <script src="<?= base_url('JS/chat.js') ?>"></script>
+<script src="<?= base_url('JS/navbar.js') ?>?v=<?= time() ?>"></script>
 
 </body>
 </html>

@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $title ?? 'Friends' ?> | Social Media</title>
     
-    <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/overall.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/friends/friends_layout.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -24,21 +24,21 @@
         </div>
         
         <nav class="friends-nav">
-            <a href="<?= base_url('friends/requests') ?>" class="friends-nav-item <?= ($active_tab ?? '') === 'requests' ? 'active' : '' ?>">
+            <a href="#requests" class="friends-nav-item" onclick="document.getElementById('requests').scrollIntoView({behavior: 'smooth'})">
                 <div class="friends-nav-icon">
                     <i data-lucide="user-plus"></i>
                 </div>
                 <span>Friend Requests</span>
             </a>
             
-            <a href="<?= base_url('friends/suggestions') ?>" class="friends-nav-item <?= ($active_tab ?? '') === 'suggestions' ? 'active' : '' ?>">
+            <a href="#suggestions" class="friends-nav-item" onclick="document.getElementById('suggestions').scrollIntoView({behavior: 'smooth'})">
                 <div class="friends-nav-icon">
                     <i data-lucide="user-check"></i>
                 </div>
                 <span>Suggestions</span>
             </a>
             
-            <a href="<?= base_url('friends/list') ?>" class="friends-nav-item <?= ($active_tab ?? '') === 'all' ? 'active' : '' ?>">
+            <a href="#list" class="friends-nav-item" onclick="document.getElementById('list').scrollIntoView({behavior: 'smooth'})">
                 <div class="friends-nav-icon">
                     <i data-lucide="users"></i>
                 </div>
@@ -61,6 +61,8 @@
         $('.alert').fadeOut('slow');
     }, 3000);
 </script>
+<script src="<?= base_url('JS/navbar.js') ?>?v=<?= time() ?>"></script>
+
 
 </body>
 </html>

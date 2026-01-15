@@ -73,6 +73,7 @@
 <script src="<?= base_url('JS/group/actions.js') ?>"></script>
 <script src="<?= base_url('JS/group/settings.js') ?>"></script>
 <script src="<?= base_url('JS/group.js') ?>"></script>
+<script src="<?= base_url('JS/navbar.js') ?>?v=<?= time() ?>"></script>
 
 </body>
 </html>

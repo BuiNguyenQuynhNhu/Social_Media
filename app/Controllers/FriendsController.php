@@ -30,55 +30,24 @@ class FriendsController extends BaseController
 
     public function index()
     {
-        return $this->requests(); // Default to requests or home of friends
-    }
-
-    public function requests()
-    {
         if (!$this->userId) return redirect()->to('login');
         
         $data = $this->getUserData();
-        $data['title'] = 'Friend Requests';
-        $data['active_tab'] = 'requests';
+        $data['title'] = 'Friends';
         $data['requests'] = $this->friendModel->listReceive($this->userId);
-        
-        return view('friends/layout', [
-            'content' => view('friends/requests', $data),
-            'active_tab' => 'requests',
-            'avatarUrl' => $data['avatarUrl']
-        ]);
-    }
-
-    public function suggestions()
-    {
-        if (!$this->userId) return redirect()->to('login');
-
-        $data = $this->getUserData();
-        $data['title'] = 'People You May Know';
-        $data['active_tab'] = 'suggestions';
-        // Placeholder for suggestions logic
-        $data['suggestions'] = []; 
-        
-        return view('friends/layout', [
-            'content' => view('friends/suggestions', $data),
-            'active_tab' => 'suggestions',
-            'avatarUrl' => $data['avatarUrl']
-        ]);
-    }
-
-    public function list()
-    {
-        if (!$this->userId) return redirect()->to('login');
-
-        $data = $this->getUserData();
-        $data['title'] = 'All Friends';
-        $data['active_tab'] = 'all';
+        $data['suggestions'] = []; // Implement logic later
         $data['friends'] = $this->friendModel->listFriend($this->userId);
-
+        
+        // Pass all data to a combined view
         return view('friends/layout', [
-            'content' => view('friends/list', $data),
-            'active_tab' => 'all',
+            'content' => view('friends/combined', $data), // We will create this
+            'active_tab' => 'all', // Not strictly needed for scroll spy but good for default
             'avatarUrl' => $data['avatarUrl']
         ]);
     }
+
+    // Keep these as API endpoints or specific redirects if needed
+    public function requests() { return redirect()->to('friends#requests'); }
+    public function suggestions() { return redirect()->to('friends#suggestions'); }
+    public function list() { return redirect()->to('friends#list'); }
 }
