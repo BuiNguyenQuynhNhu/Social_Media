@@ -32,8 +32,8 @@
                     <i data-lucide="home"></i>
                 </a>
 
-                <a href="<?= base_url('friend/requests') ?>" class="nav-item <?= (strpos(uri_string(), 'friend/requests') !== false) ? 'active' : '' ?>" style="position: relative;" title="Friend Requests">
-                    <i data-lucide="user-plus"></i>
+                <a href="<?= base_url('friends') ?>" class="nav-item <?= (strpos(uri_string(), 'friends') !== false) ? 'active' : '' ?>" style="position: relative;" title="Friends">
+                    <i data-lucide="users"></i>
                     <span id="friend-badge" class="nav-badge"></span>
                 </a>
                 

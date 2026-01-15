@@ -104,6 +104,7 @@
 .comment-author:hover {
     text-decoration: underline;
 }
+
 /* Reactions Box (interaction.css) */
 .reaction-wrapper {
     position: relative;
@@ -117,13 +118,15 @@
     background: #fff;
     padding: 4px 8px;
     border-radius: 50px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     display: none;
     gap: 8px;
     z-index: 10;
 }
 
-.reaction-wrapper:hover .reaction-box { display: flex; }
+.reaction-wrapper:hover .reaction-box {
+    display: flex;
+}
 
 /* Comment Threading (comment.css) */
 .comment-item {
@@ -137,23 +140,42 @@
     padding: 8px 12px;
     border-radius: 18px;
     max-width: 85%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .comment-author {
     font-weight: 600;
     font-size: 13px;
     display: block;
+    color: var(--text-main, #050505);
+    margin-bottom: 2px;
 }
 
 /* Indentation for replies */
-.comment[data-depth="1"] { margin-left: 45px; }
-.comment[data-depth="2"] { margin-left: 90px; }
+.comment[data-depth="1"] {
+    margin-left: 45px;
+}
+
+.comment[data-depth="2"] {
+    margin-left: 90px;
+}
 
 .comment-bubble p {
     margin: 2px 0 0;
     font-size: 14px;
     line-height: 1.4;
     color: #050505;
+}
+
+/* Media Resizing Fix */
+.comment-bubble img,
+.comment-bubble video {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin-top: 8px;
+    display: block;
 }
 
 .comment-actions {

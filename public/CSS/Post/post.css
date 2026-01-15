@@ -55,6 +55,12 @@
     line-height: 1.4;
 }
 
+/* Safety constraint for any images in post content */
+.post-content img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
 /* Post Stats */
 .post-stats {
     display: flex;
@@ -171,13 +177,13 @@
 .post-media-grid {
     display: grid;
     gap: 2px;
-    /* Tighter gap like Facebook */
     margin-top: 10px;
     width: 100%;
+    max-width: 100% !important;
     background: #fff;
     border: 1px solid #e1e3e8;
-    /* Subtle border container */
-    overflow: hidden;
+    overflow: hidden !important;
+    position: relative;
 }
 
 /* Default fixed height for multi-image grids to ensure consistency */
@@ -186,14 +192,13 @@
 .grid-4,
 .grid-5 {
     height: 360px;
-    /* Standard fixed height for multi-image posts */
+    max-height: 360px !important;
 }
 
 .grid-1 {
     grid-template-columns: 1fr;
     height: auto;
-    /* Allow single images to determine height, but capped */
-    max-height: 600px;
+    max-height: 500px !important;
 }
 
 .grid-2 {
@@ -224,29 +229,26 @@
     position: relative;
 }
 
-/* For 5+ items, classic FB style: Top half split 2, Bottom half split 3? Or Top 2, Bottom 2 + overlay */
 /* Helper to make images cover efficiently */
 .media-item {
     position: relative;
     width: 100%;
     height: 100%;
-    overflow: hidden;
+    overflow: hidden !important;
     cursor: pointer;
 }
 
 .media-item img,
 .media-item video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* Crucial for the grid look */
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
     display: block;
     transition: transform 0.2s;
 }
 
 .media-item:hover img {
     transform: scale(1.02);
-    /* Subtle zoom on hover */
 }
 
 /* More Overlay */

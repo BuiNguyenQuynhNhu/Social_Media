@@ -71,29 +71,39 @@
 
 /* Comment Media */
 .comment-media-container {
-    max-width: 100%;
-    overflow: hidden;
+    max-width: 300px !important;
+    width: 100% !important;
+    overflow: hidden !important;
     border-radius: 12px;
     margin-top: 8px;
     background-color: var(--fb-gray-bg, #f0f2f5);
-    display: inline-block;
+    display: block !important;
 }
 
 .comment-media-container img,
 .comment-media-container video {
-    max-width: 100%;
-    height: auto;
-    max-height: 300px;
-    width: auto;
-    display: block;
-    object-fit: contain;
+    width: 100% !important;
+    max-width: 300px !important;
+    height: auto !important;
+    max-height: 200px !important;
+    display: block !important;
+    object-fit: cover !important;
     border-radius: 8px;
 }
 
 /* Ensure media doesn't overflow comment bubble */
 .comment-content-wrapper {
-    max-width: 100%;
-    overflow: hidden;
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Additional safety constraint for any img inside comments */
+.comment img,
+.comment-bubble img,
+.comments-section img {
+    max-width: 300px !important;
+    max-height: 200px !important;
+    object-fit: cover !important;
 }
 
 /* Comment Actions */

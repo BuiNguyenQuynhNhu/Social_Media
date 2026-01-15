@@ -56,6 +56,15 @@ $routes->group('friend', ['filter' => 'auth'], function($routes){
     $routes->get('accept/(:any)', 'FriendshipController::accept/$1');
     $routes->get('remove/(:any)', 'FriendshipController::remove/$1');
 });
+
+// Dedicated Friends Page Routes
+$routes->group('friends', ['filter' => 'auth'], function($routes){
+    $routes->get('/', 'FriendsController::index');
+    $routes->get('requests', 'FriendsController::requests');
+    $routes->get('suggestions', 'FriendsController::suggestions');
+    $routes->get('list', 'FriendsController::list');
+});
+
 $routes->get('user/friends', 'FriendshipController::index', ['filter' => 'auth']); // Alias
 
 // Interactions
