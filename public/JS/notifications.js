@@ -32,7 +32,9 @@ function createNotificationDropdown() {
 }
 
 function loadNotifications() {
-    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL;
+    const baseUrl = window.BASE_URL;
+    if (!baseUrl) return;
+
     fetch(`${baseUrl}/notifications/`)
         .then(response => response.json())
         .then(data => {
@@ -95,7 +97,7 @@ function getNotificationMessage(type, senderName, context) {
 
 function getNotificationLink(context) {
     const type = context.type;
-    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL; // fallback
+    const baseUrl = window.BASE_URL;
 
     if (type === 'friend_request' || type === 'friend_accept') {
         return `${baseUrl}/friends`;
@@ -112,9 +114,13 @@ function getNotificationLink(context) {
 }
 
 function markAsRead(notifId) {
-    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL;
+    const baseUrl = window.BASE_URL;
     fetch(`${baseUrl}/notifications/read/${notifId}`, {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': window.APP_CONFIG ? window.APP_CONFIG.csrfHash : ''
+        }
     })
         .then(response => response.json())
         .then(data => {
@@ -126,9 +132,13 @@ function markAsRead(notifId) {
 }
 
 function markAllRead() {
-    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL;
+    const baseUrl = window.BASE_URL;
     fetch(`${baseUrl}/notifications/read-all`, {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': window.APP_CONFIG ? window.APP_CONFIG.csrfHash : ''
+        }
     })
         .then(response => response.json())
         .then(data => {
@@ -155,7 +165,9 @@ function updateNotificationDot(notifications) {
 }
 
 function checkUnreadNotifications() {
-    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL;
+    const baseUrl = window.BASE_URL;
+    if (!baseUrl) return;
+
     fetch(`${baseUrl}/notifications/`)
         .then(response => response.json())
         .then(data => {

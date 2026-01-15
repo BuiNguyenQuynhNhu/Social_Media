@@ -2,7 +2,8 @@
     <div class="post-header">
         <div class="header-left" style="display:flex; gap:10px; align-items:center; flex:1;">
         <a href="<?= base_url('user/profile/'.$post['id_user']) ?>">
-            <img src="<?= (isset($post['avatar']) && strpos($post['avatar'], 'http') === 0) ? $post['avatar'] : ($post['avatar'] ? base_url($post['avatar']) : base_url('ICON/avatar-default.svg')) ?>" class="avatar-medium">
+            <?php $pAvatar = trim($post['avatar'] ?? ''); ?>
+            <img src="<?= (strpos($pAvatar, 'http') === 0) ? $pAvatar : ($pAvatar ? base_url($pAvatar) : base_url('ICON/avatar-default.svg')) ?>" class="avatar-medium">
         </a>
             <div class="post-info">
                 <a href="<?= base_url('user/profile/'.$post['id_user']) ?>" class="author-name"><?= esc($post['firstname'] . ' ' . $post['lastname']) ?></a>

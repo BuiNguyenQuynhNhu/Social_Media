@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="base_url" content="<?= rtrim(base_url(), '/') ?>">
-    <meta name="user_id" content="<?= $user_id ?>">
     <title>Create Group | Social Media</title>
     
     <!-- Stylesheets -->
@@ -14,6 +12,15 @@
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        window.BASE_URL = '<?= rtrim(base_url(), '/') ?>';
+        const APP_CONFIG = {
+            baseURL: window.BASE_URL,
+            userId: '<?= $user_id ?>',
+            csrfTokenName: '<?= csrf_token() ?>',     
+            csrfHash: '<?= csrf_hash() ?>'
+        };
+    </script>
     
     <link rel="stylesheet" href="<?= base_url('CSS/group/group_create.css') ?>">
 </head>
@@ -101,41 +108,41 @@
 </div>
 
 <script>
-const BASE_URL = $('meta[name="base_url"]').attr('content');
-
-function selectPrivacy(value, element) {
-    document.querySelectorAll('.privacy-option').forEach(opt => {
-        opt.classList.remove('selected');
-    });
-    element.classList.add('selected');
-    element.querySelector('input[type="radio"]').checked = true;
-}
-
-$('#create-group-form').on('submit', function(e) {
-    e.preventDefault();
+    // Config handled in head
     
-    const formData = new FormData(this);
-    
-    $.ajax({
-        url: BASE_URL + '/group/create',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(res) {
-            if (res.status === 'success') {
-                window.location.href = BASE_URL + '/group/' + res.group_id;
-            } else {
-                alert(res.message || 'Failed to create group');
+    function selectPrivacy(value, element) {
+        document.querySelectorAll('.privacy-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        element.classList.add('selected');
+        element.querySelector('input[type="radio"]').checked = true;
+    }
+
+    $('#create-group-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: window.BASE_URL + '/group/create',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
+                if (res.status === 'success') {
+                    window.location.href = window.BASE_URL + '/group/' + res.group_id;
+                } else {
+                    alert(res.message || 'Failed to create group');
+                }
+            },
+            error: function() {
+                alert('Failed to create group. Please try again.');
             }
-        },
-        error: function() {
-            alert('Failed to create group. Please try again.');
-        }
+        });
     });
-});
 
-lucide.createIcons();
+    lucide.createIcons();
 </script>
 
 </body>

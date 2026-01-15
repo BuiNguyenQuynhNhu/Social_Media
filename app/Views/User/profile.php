@@ -1,5 +1,6 @@
 <?php 
     $isOwnProfile = (session()->get('user_id') == $user['id']); 
+    $coverUrl = $coverUrl ?? base_url('ICON/background-default.jpg');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,12 +18,28 @@
     <link rel="stylesheet" href="<?= base_url('CSS/post/comment.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/post/interaction.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/dashboard.css') ?>">
+    <script>
+        window.BASE_URL = '<?= rtrim(base_url(), '/') ?>';
+        window.APP_CONFIG = {
+            baseURL: window.BASE_URL,
+            userId: '<?= session()->get('user_id') ?>',
+            csrfTokenName: '<?= csrf_token() ?>',     
+            csrfHash: '<?= csrf_hash() ?>'
+        };
+    </script>
 </head>
 
 <body class="background">
-    <?= view('components/user/navbar', ['avatarUrl' => $avatarUrl]) ?>
+    <?= view('components/user/navbar', ['avatarUrl' => $navbarAvatarUrl ?? $avatarUrl]) ?>
     <div class="profile-container">
-        <?= view('components/user/header') ?>
+        <!-- Pass necessary data to header -->
+        <?= view('components/user/header', [
+            'user' => $user, 
+            'friends' => $friends ?? [], 
+            'posts' => $posts ?? [], 
+            'avatarUrl' => $avatarUrl, 
+            'coverUrl' => $coverUrl
+        ]) ?>
 
         <div class="profile-body-layout">
             <div class="left-column">
@@ -40,9 +57,13 @@
                         <?= view('components/post/create_post', ['user' => $user, 'avatarUrl' => $avatarUrl]) ?>
                     <?php endif; ?>
 
-                    <?php foreach ($posts as $post): ?>
-                        <?= view('components/post/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl, 'context' => 'profile']) ?>
-                    <?php endforeach; ?>
+                    <?php if(!empty($posts)): ?>
+                        <?php foreach ($posts as $post): ?>
+                            <?= view('components/post/post_item', ['post' => $post, 'avatarUrl' => $avatarUrl, 'context' => 'profile']) ?>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="fb-card" style="padding:20px; text-align:center; color:#65676b;">No posts yet.</div>
+                    <?php endif; ?>
                 </div>
 
                 <div id="friends-container" class="tab-content">
@@ -59,11 +80,11 @@
                 </div>
             </div>
 
-            <div id="reactors-list" style="overflow-y: auto; padding: 10px; flex: 1;">
-                </div>
+            <div id="reactors-list" style="overflow-y: auto; padding: 10px; flex: 1;"></div>
         </div>
     </div>
 
+    <!-- Modals -->
     <div id="editPostModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header" style="padding: 15px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between;">
@@ -86,13 +107,23 @@
             </form>
         </div>
     </div>
+    
+    <!-- Reactors Modal -->
+    <div id="reactorsModal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 2000;">
+        <div class="modal-content" style="width: 400px; max-height: 80vh; display: flex; flex-direction: column;">
+             <div class="modal-header">
+                <h3 style="margin: 0; font-size: 18px;">People who reacted</h3>
+                 <button onclick="document.getElementById('reactorsModal').style.display='none'" class="close-btn"><i data-lucide="x"></i></button>
+            </div>
+            <div id="reactors-list-modal" class="modal-body" style="overflow-y: auto;"></div>
+             <!-- Note: id reactors-list duplicated in main layout? Fixed above to reactors-list-modal or similar if conflict -->
+        </div>
+    </div>
+
     <script>
-        const BASE_URL = "<?= rtrim(base_url(), '/') ?>";
         lucide.createIcons();
     </script>
-    <script src="<?= base_url('JS/post/utils.js') ?>"></script>
-    <script src="<?= base_url('JS/post/reactions.js') ?>"></script>
-    <script src="<?= base_url('JS/post/comments.js') ?>"></script>
+    <!-- Use standard post.js which handles reactions/comments/modals -->
     <script src="<?= base_url('JS/post.js') ?>"></script>
 </body>
 </html>

@@ -9,10 +9,10 @@
 function joinGroup() {
     if (!window.GROUP_ID) return;
 
-    $.ajax({
-        url: window.BASE_URL + '/group/' + window.GROUP_ID + '/join',
-        type: 'POST',
-        success: function (res) {
+    // Use sendRequest (from post.js) which handles CSRF
+    // Use window.BASE_URL
+    sendRequest(window.BASE_URL + '/group/' + window.GROUP_ID + '/join')
+        .then(res => {
             if (res.status === 'success') {
                 location.reload();
             } else if (res.code === 'REQUIREMENTS_NEEDED') {
@@ -20,8 +20,7 @@ function joinGroup() {
             } else {
                 alert(res.message || 'Failed to join group');
             }
-        }
-    });
+        });
 }
 
 function showRequirementsModal(questions) {
@@ -56,28 +55,21 @@ function showRequirementsModal(questions) {
 
     $('#req-form').on('submit', function (e) {
         e.preventDefault();
-        const answers = $(this).serializeArray();
 
-        // Convert to object or keep as array based on backend expectation
-        // Backend expects 'answers' post data. serializeArray sends name/value pairs.
-        // Let's manually construct the data object to match PHP expectation
-        let postData = { answers: [] };
+        let postData = new FormData();
         $(this).find('input').each(function () {
-            postData.answers.push($(this).val());
+            postData.append('answers[]', $(this).val());
         });
 
-        $.ajax({
-            url: BASE_URL + '/group/' + GROUP_ID + '/join',
-            type: 'POST',
-            data: postData,
-            success: function (res) {
+        // Use sendRequest for CSRF
+        sendRequest(window.BASE_URL + '/group/' + window.GROUP_ID + '/join', postData)
+            .then(res => {
                 if (res.status === 'success') {
                     location.reload();
                 } else {
                     alert(res.message || 'Failed to submit answers');
                 }
-            }
-        });
+            });
     });
 }
 
@@ -85,20 +77,18 @@ function showRequirementsModal(questions) {
  * Leave group
  */
 function leaveGroup() {
-    if (!GROUP_ID) return;
+    if (!window.GROUP_ID) return;
 
     if (confirm('Are you sure you want to leave this group?')) {
-        $.ajax({
-            url: BASE_URL + '/group/' + GROUP_ID + '/leave',
-            type: 'POST',
-            success: function (res) {
+        // Use sendRequest for CSRF
+        sendRequest(window.BASE_URL + '/group/' + window.GROUP_ID + '/leave')
+            .then(res => {
                 if (res.status === 'success') {
-                    window.location.href = BASE_URL + '/group';
+                    window.location.href = window.BASE_URL + '/group';
                 } else {
                     alert(res.message || 'Failed to leave group');
                 }
-            }
-        });
+            });
     }
 }
 
@@ -132,7 +122,7 @@ function openGroupPostModal() {
         // Set group ID in the modal
         const groupInput = document.getElementById('modal-group-id');
         if (groupInput) {
-            groupInput.value = GROUP_ID;
+            groupInput.value = window.GROUP_ID;
         }
         openCreatePostModal();
     } else {

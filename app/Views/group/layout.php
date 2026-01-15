@@ -22,6 +22,16 @@
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        window.BASE_URL = '<?= rtrim(base_url(), '/') ?>';
+        window.GROUP_ID = '<?= $group['id'] ?? '' ?>';
+        window.APP_CONFIG = {
+            baseURL: window.BASE_URL,
+            userId: '<?= session()->get('user_id') ?>',
+            csrfTokenName: '<?= csrf_token() ?>',     
+            csrfHash: '<?= csrf_hash() ?>'
+        };
+    </script>
 </head>
 <body class="background">
 
@@ -59,6 +69,8 @@
 <script src="<?= base_url('JS/group.js') ?>"></script>
 <script src="<?= base_url('JS/navbar.js') ?>?v=<?= time() ?>"></script>
 
-
+<script>
+    lucide.createIcons();
+</script>
 </body>
 </html>

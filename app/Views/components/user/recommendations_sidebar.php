@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const item = this.closest('.recommendation-item');
             
             try {
-                const response = await fetch('/friend/add/' + userId, {
+                const response = await fetch('<?= base_url('friend/add/') ?>' + userId, {
                     method: 'GET',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'

@@ -26,7 +26,11 @@ class GroupController extends BaseController
 
         $db = \Config\Database::connect();
         $user = $db->table('users')->where('id', $this->user_id)->get()->getRowArray();
-        $avatarUrl = $user['avatar'] ?? base_url('ICON/avatar-default.png');
+        
+        $uAvatar = $user['avatar'] ?? '';
+        $avatarUrl = (strpos($uAvatar, 'http') === 0) 
+            ? $uAvatar 
+            : ($uAvatar ? base_url($uAvatar) : base_url('ICON/avatar-default.svg'));
 
         return view('group/index', [
             'user_id' => $this->user_id,
@@ -39,7 +43,11 @@ class GroupController extends BaseController
 
         $db = \Config\Database::connect();
         $user = $db->table('users')->where('id', $this->user_id)->get()->getRowArray();
-        $avatarUrl = $user['avatar'] ?? base_url('ICON/avatar-default.png');
+        
+        $uAvatar = $user['avatar'] ?? '';
+        $avatarUrl = (strpos($uAvatar, 'http') === 0) 
+            ? $uAvatar 
+            : ($uAvatar ? base_url($uAvatar) : base_url('ICON/avatar-default.png'));
 
         return view('group/create', [
             'user_id' => $this->user_id,
@@ -52,35 +60,13 @@ class GroupController extends BaseController
 
         $db = \Config\Database::connect();
         $user = $db->table('users')->where('id', $this->user_id)->get()->getRowArray();
-        $avatarUrl = $user['avatar'] ?? base_url('ICON/avatar-default.png');
-
-        $group = $this->group->find($groupId);
-        if (!$group) return redirect()->to('/group');
-
-        // Check if user is member
-        $groupMember = new GroupMember();
-        $is_member = $groupMember->isMember($groupId, $this->user_id);
         
-        // Check if user is admin
-        $membership = $db->table('group_members')
-            ->where(['group_id' => $groupId, 'user_id' => $this->user_id])
-            ->get()->getRowArray();
-        $is_admin = $membership && ($membership['role'] === 'admin' || $group['owner_id'] === $this->user_id);
-
-        // Get member count
-        $memberCount = $db->table('group_members')
-            ->where('group_id', $groupId)
-            ->countAllResults();
-
-        $group['member_count'] = $memberCount;
-
-        // Get posts (only if member or public group)
-        $posts = [];
-        if ($is_member || $group['privacy'] === 'public') {
-            $postModel = new \App\Models\Post();
-            // TODO: Get group posts
-        }
-
+        $uAvatar = $user['avatar'] ?? '';
+        $avatarUrl = (strpos($uAvatar, 'http') === 0) 
+            ? $uAvatar 
+            : ($uAvatar ? base_url($uAvatar) : base_url('ICON/avatar-default.png'));
+            
+        // ... (Redirects to feed usually)
         return redirect()->to("/group/$groupId/feed");
     }
 
@@ -106,7 +92,11 @@ class GroupController extends BaseController
             ->join('profiles', 'profiles.id = users.id')
             ->where('users.id', $this->user_id)
             ->get()->getRowArray();
-        $avatarUrl = $user['avatar'] ?? base_url('ICON/avatar-default.png');
+            
+        $uAvatar = $user['avatar'] ?? '';
+        $avatarUrl = (strpos($uAvatar, 'http') === 0) 
+            ? $uAvatar 
+            : ($uAvatar ? base_url($uAvatar) : base_url('ICON/avatar-default.png'));
 
         $group = $this->group->find($groupId);
         if (!$group) return redirect()->to('/group');
@@ -136,7 +126,7 @@ class GroupController extends BaseController
         if ($page === 'feed') {
             $postModel = new \App\Models\Post();
             $posts = $postModel->getPostsByGroup($groupId);
-            $data['posts'] = $postModel->attachMediaToPosts($posts);
+            $data['posts'] = $postModel->attachMediaToPosts($posts); // Assume attachMediaToPosts handles avatars correctly or PostComponent does (we checked PostItem)
         }
 
         return view("group/$page", $data);
@@ -176,8 +166,13 @@ class GroupController extends BaseController
 
             $group['member_count'] = $db->table('group_members')->where('group_id', $group['id'])->countAllResults();
             
-            if (empty($group['cover_photo'])) $group['cover_photo'] = base_url('ICON/background-default.jpg');
-            if (empty($group['avatar'])) $group['avatar'] = base_url('ICON/group-default.png');
+            // Fix Cover Photo URL
+            $cover = $group['cover_photo'] ?? '';
+            $group['cover_photo'] = (strpos($cover, 'http') === 0) ? $cover : ($cover ? base_url($cover) : base_url('ICON/background-default.jpg'));
+            
+            // Fix Avatar URL
+            $avatar = $group['avatar'] ?? '';
+            $group['avatar'] = (strpos($avatar, 'http') === 0) ? $avatar : ($avatar ? base_url($avatar) : base_url('ICON/group-default.png'));
             
             $groups[] = $group;
         }
@@ -199,6 +194,14 @@ class GroupController extends BaseController
 
             if (!$isMember) {
                 $group['member_count'] = $db->table('group_members')->where('group_id', $group['id'])->countAllResults();
+                
+                // Fix URLs for JSON response
+                $cover = $group['cover_photo'] ?? '';
+                $group['cover_photo'] = (strpos($cover, 'http') === 0) ? $cover : ($cover ? base_url($cover) : base_url('ICON/background-default.jpg'));
+                
+                $avatar = $group['avatar'] ?? '';
+                $group['avatar'] = (strpos($avatar, 'http') === 0) ? $avatar : ($avatar ? base_url($avatar) : base_url('ICON/group-default.png'));
+
                 $groups[] = $group;
             }
         }
@@ -214,10 +217,11 @@ class GroupController extends BaseController
         
         $result = [];
         foreach ($members as $member) {
+            $mAvatar = $member['avatar'] ?? '';
             $result[] = [
                 'user_id' => $member['user_id'],
                 'name' => $member['firstname'] . ' ' . $member['lastname'],
-                'avatar' => $member['avatar'] ?? base_url('ICON/avatar-default.svg'),
+                'avatar' => (strpos($mAvatar, 'http') === 0) ? $mAvatar : ($mAvatar ? base_url($mAvatar) : base_url('ICON/avatar-default.svg')),
                 'role' => $member['role']
             ];
         }
@@ -239,33 +243,22 @@ class GroupController extends BaseController
         }
 
         // Check privacy and requirements
-        // If private -> Pending
-        // If has questions -> Need answers (Front-end should handle asking)
-        // For simple logic now:
-        
-        // If questions exists and no answers provided? (Simplified: Allow join for now or handle later)
-        
         $role = ($group['privacy'] === 'public') ? 'member' : 'pending';
         
-        // Use Model's add method
         $memberModel->add($groupId, $this->user_id, $role);
         
-        // Notify Admins if pending
         if ($role === 'pending') {
             $admins = $memberModel->where('group_id', $groupId)->where('role', 'admin')->findAll();
-            // Also notify owner
             $ownerId = $group['owner_id'];
-            \App\Models\Notification::createNotification('new_join_request', $this->user_id, $ownerId, $groupId);
+            \App\Models\Notification::createNotification('new_join_request', $this->user_id, $ownerId, ['group_id' => $groupId]);
             
             foreach ($admins as $admin) {
                 if ($admin['user_id'] !== $ownerId) {
-                    \App\Models\Notification::createNotification('new_join_request', $this->user_id, $admin['user_id'], $groupId);
+                    \App\Models\Notification::createNotification('new_join_request', $this->user_id, $admin['user_id'], ['group_id' => $groupId]);
                 }
             }
             return $this->response->setJSON(['status' => 'success', 'message' => 'Request sent']);
-        } else {
-             // Notify Owner just for info? Optional.
-        }
+        } 
 
         return $this->response->setJSON(['status' => 'success', 'message' => 'Joined successfully']);
     }
@@ -285,4 +278,3 @@ class GroupController extends BaseController
     }
 
 }
-

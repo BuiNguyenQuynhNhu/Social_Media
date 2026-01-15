@@ -123,10 +123,32 @@ class Post extends Model
 
         $mongo = new MongoDB();
         $mediaCollection = $mongo->getCollection('post_media');
+        $commentCollection = $mongo->getCollection('comments');
+        
+        $db = \Config\Database::connect();
+        $currentUserId = session()->get('user_id');
 
         foreach ($posts as &$post) {
+            // Media
             $media = $mediaCollection->findOne(['entity_id' => $post['id']]);
             $post['media'] = $media ? json_decode(json_encode($media['items']), true) : []; 
+            
+            // Comment Count (Mongo)
+            $post['comment_count'] = $commentCollection->countDocuments(['post_id' => $post['id']]);
+            
+            // Like Count (SQL)
+            $post['like_count'] = $db->table('interations')->where('post_id', $post['id'])->where('type !=', 'unliked')->countAllResults();
+            
+            // My Reaction (SQL)
+            $myReact = null;
+            if ($currentUserId) {
+                $reactRow = $db->table('interations')
+                    ->where('post_id', $post['id'])
+                    ->where('user_id', $currentUserId)
+                    ->get()->getRowArray();
+                if ($reactRow) $myReact = $reactRow['type'];
+            }
+            $post['my_reaction'] = $myReact;
         }
 
         return $posts;

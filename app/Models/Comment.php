@@ -109,7 +109,7 @@ class Comment
             $u = $userModel->find($uid);
             $p = $profileModel->find($uid);
             
-            $avatar = $u['avatar'] ?? 'ICON/avatar-default.svg';
+            $avatar = ($u && isset($u['avatar'])) ? $u['avatar'] : 'ICON/avatar-default.svg';
             if(strpos($avatar, 'http') !== 0) $avatar = base_url($avatar);
 
             $users[$uid] = [
@@ -126,14 +126,20 @@ class Comment
         return $this->collection->find(['post_id' => $postId], ['sort' => ['created_at' => 1]])->toArray();
     }
 
-    public function find($commentId)
+    public function find($idOrFilter)
     {
-        return $this->collection->findOne(['_id' => new ObjectId($commentId)]);
+        if (is_array($idOrFilter)) {
+            return $this->collection->findOne($idOrFilter);
+        }
+        return $this->collection->findOne(['_id' => new ObjectId($idOrFilter)]);
     }
 
-    public function delete($commentId)
+    public function delete($idOrFilter)
     {
-        return $this->collection->deleteOne(['_id' => new ObjectId($commentId)]);
+        if (is_array($idOrFilter)) {
+            return $this->collection->deleteOne($idOrFilter);
+        }
+        return $this->collection->deleteOne(['_id' => new ObjectId($idOrFilter)]);
     }
 
     public function toggleLike($commentId, $userId)

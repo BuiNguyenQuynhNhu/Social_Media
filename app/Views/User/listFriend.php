@@ -8,21 +8,36 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('CSS/User/profile.css') ?>"> <!-- Use Profile CSS for layout -->
+    <link rel="stylesheet" href="<?= base_url('CSS/User/profile.css') ?>"> 
     <link rel="stylesheet" href="<?= base_url('CSS/overall.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/dashboard.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/post/post.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/post/comment.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/post/interaction.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/Friend/ProfileFriend.css') ?>">
-        
+    <script>
+        window.BASE_URL = '<?= rtrim(base_url(), '/') ?>';
+        window.APP_CONFIG = {
+            baseURL: window.BASE_URL,
+            userId: '<?= session()->get('user_id') ?>',
+            csrfTokenName: '<?= csrf_token() ?>',     
+            csrfHash: '<?= csrf_hash() ?>'
+        };
+    </script>
 </head>
 <body class="background">
 
 <?= view('components/user/navbar', ['avatarUrl' => $navbarAvatarUrl ?? $avatarUrl]) ?>
 
 <div class="profile-container">
-    <?= view('components/user/header') ?>
+    <!-- Pass data to header. List page might not have posts count logic readily available unless queried, default to [] -->
+    <?= view('components/user/header', [
+        'user' => $user,
+        'friends' => $list ?? [], // User's friend list
+        'posts' => [], // Post count might be 0 here or need separate query. For now empty.
+        'avatarUrl' => $avatarUrl,
+        'coverUrl' => str_starts_with($user['background'] ?? '', 'http') ? $user['background'] : base_url($user['background'] ?? 'ICON/background-default.jpg')
+    ]) ?>
 
     <div class="profile-body-layout">
         <div class="left-column">
@@ -47,9 +62,6 @@
                     </a>
                 <?php endif; ?>
             </div>
-
-            <!-- Intro Section (Optional, mimics profile) -->
-        
         </div>
 
         <div class="right-column">
@@ -76,7 +88,7 @@
                                     <?php elseif($activeTab == 'sent'): ?>
                                         Request sent: <?= isset($friendItem['created_at']) ? date('M d, Y', strtotime($friendItem['created_at'])) : 'Unknown' ?>
                                     <?php else: ?>
-                                        <!-- Friends Since: <?= isset($friendItem['updated_at']) ? date('M d, Y', strtotime($friendItem['updated_at'])) : '' ?> -->
+                                        <!-- Friends Since -->
                                     <?php endif; ?>
                                 </div>
                                 
@@ -109,7 +121,6 @@
 </div>
 
 <script>
-    const BASE_URL = "<?= base_url() ?>";
     lucide.createIcons();
     <?php if(session()->getFlashdata('success')): ?>
         alert('<?= session()->getFlashdata('success') ?>');

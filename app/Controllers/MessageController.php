@@ -20,7 +20,7 @@ class MessageController extends BaseController {
 
         $db = \Config\Database::connect();
         $user = $db->table('users')->where('id', $this->userId)->get()->getRowArray();
-        $avatarUrl = $user['avatar'] ?? base_url('images/default-avatar.png');
+        $avatarUrl = $user['avatar'] ?? base_url('ICON/avatar-default.svg');
 
         return view('message/index', [
             'user_id' => $this->userId,

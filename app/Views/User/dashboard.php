@@ -7,7 +7,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <script>
-        const APP_CONFIG = {
+        window.APP_CONFIG = {
             baseURL: '<?= base_url() ?>',
             userId: '<?= session()->get('user_id') ?>',
             myAvatar: '<?= $avatarUrl ?? base_url("ICON/avatar-default.svg") ?>',
@@ -58,11 +58,27 @@
 
         .sidebar-right {
             width: 280px;
-            position: sticky;
+            position: fixed;
             top: 80px;
-            height: fit-content;
+            right: max(15px, calc(50% - 600px + 15px + 600px + 30px)); /* Align relative to container max-width */
+            /* Simplified right alignment for now, or just right: 15px if fluid. 
+               Better: right: calc((100vw - 1200px) / 2 + 15px) if > 1200px? 
+               Let's use a simpler fixed position relative to viewport edge as per standard sidebar.
+            */
+            right: 20px;
+            height: calc(100vh - 90px);
+            overflow-y: auto;
             display: none;
+            scrollbar-width: thin;
         }
+        
+        /* Better calculation for centering if using max-width 1200px container */
+        @media (min-width: 1240px) {
+             .sidebar-right {
+                 right: calc((100vw - 1200px) / 2 + 15px);
+             }
+        }
+
         @media (min-width: 1100px) { .sidebar-right { display: block; } }
 
         .contact-title { color: #65676b; font-weight: 600; margin-bottom: 10px; }
@@ -83,7 +99,7 @@
 </head>
 <body class="background">
 
-    <?= view('templates/UserNavbar', ['avatarUrl' => $avatarUrl ?? base_url("ICON/avatar-default.svg")]) ?>
+    <?= view('components/user/navbar', ['avatarUrl' => $avatarUrl ?? base_url("ICON/avatar-default.svg")]) ?>
 
     <div class="dashboard-container">
         

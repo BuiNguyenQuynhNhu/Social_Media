@@ -163,13 +163,13 @@ $routes->group('admin', ['filter' => 'auth'], function($routes){
 $routes->group('post', ['filter' => 'auth'], function($routes){
     // $routes->get('/', 'PostController::index');
     $routes->post('create', 'PostController::create');
-    $routes->get('delete/(:num)', 'PostController::delete/$1');
-    $routes->get('reactors/(:num)', 'PostController::getReactors/$1');
+    $routes->get('delete/(:any)', 'PostController::delete/$1');
+    $routes->get('reactors/(:any)', 'PostController::getReactors/$1');
     
     $routes->post('react', 'PostController::react');         
     $routes->post('comment/add', 'PostController::addComment'); 
-    $routes->get('comments/(:num)', 'PostController::getComments/$1');
-    $routes->post('update/(:num)', 'PostController::update/$1'); 
+    $routes->get('comments/(:any)', 'PostController::getComments/$1');
+    $routes->post('update/(:any)', 'PostController::update/$1'); 
     $routes->post('comment/delete', 'PostController::deleteComment');
     $routes->post('comment/update', 'PostController::updateComment');
     $routes->get('get_posts_paging', 'PostController::getPostsPaging');

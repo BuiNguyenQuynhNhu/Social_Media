@@ -12,6 +12,7 @@
                        style="flex:1; border:none; background:transparent; outline:none; font-size:15px;"
                        placeholder="Write a comment..." 
                        onkeydown="if(event.key==='Enter') addComment(this, '<?= $post['id'] ?>')">
+                <input type="hidden" id="comment-parent-<?= $post['id'] ?>" value="">
                 
                 <label for="comment-file-<?= $post['id'] ?>" class="comment-icon-btn" style="cursor:pointer; color:#65676b; padding:4px;">
                     <i data-lucide="camera"></i>

@@ -18,7 +18,7 @@ class AdminController extends BaseController
         $type = session()->get('type');
         $this->id = session()->get('user_id');
 
-        if ($this->id || $type !== '1'){
+        if (!$this->id || $type !== '1'){
             return redirect()->to('login')->send();
         }
         
@@ -54,13 +54,23 @@ class AdminController extends BaseController
         return view('admin/listPost', $data);
     }
 
-    // public function listGroup(){
-    //     $model = new User;
-    //     $allUser = $model->list();
-    // }
+    public function listGroup(){
+        $model = new \App\Models\Group();
+        $data = [
+            'title' => 'Groups',
+            'groups' => $model->findAll(),
+            'admin' => $this->admin,
+        ];
+        return view('admin/listGroup', $data);
+    }
 
-    // public function listChat(){
-    //     $model = new User;
-    //     $allUser = $model->list();
-    // }
+    public function listChat(){
+        $model = new \App\Models\Chat();
+        $data = [
+            'title' => 'Chats',
+            'chats' => $model->findAll(),
+            'admin' => $this->admin,
+        ];
+        return view('admin/listChat', $data);
+    }
 }

@@ -15,7 +15,7 @@
         <div class="user-info-main">
             <img src="<?= $avatarUrl ?>" class="main-avatar">
             <div class="name-details">
-                <h1><?= esc($user['firstname'] . ' ' . $user['lastname']) ?></h1>
+                <h1><?= esc(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')) ?></h1>
                 <div class="profile-nav">
                     <a href="<?= base_url('user/profile/'.$user['id']) ?>" class="nav-tab <?= (strpos(uri_string(), 'profile') !== false && strpos(uri_string(), 'list_friend') === false) ? 'active' : '' ?>" style="text-decoration: none; color: inherit;">
                         <span><?= count($posts ?? []) ?> Posts</span>

@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\User;
-use App\Models\Friendship;
+use App\Models\FriendShip;
 
 class RecommenderController extends BaseController
 {
@@ -50,23 +50,38 @@ class RecommenderController extends BaseController
      * @param int $topK Number of recommendations (default: 10)
      * @return array
      */
-    public function getFriendRecommendations($userId, $topK = 10)
+    public function getFriendRecommendations($userId, $topK = 5)
     {
         try {
             $url = $this->apiBaseUrl . "/recommendations/friends/{$userId}?top_k={$topK}";
             
             $response = $this->makeApiRequest($url, 'GET');
             
-            if ($response && $response['success']) {
+            if ($response && $response['success'] && !empty($response['recommendations'])) {
                 return $response['recommendations'];
             }
-            
-            return [];
         } catch (\Exception $e) {
             error_log("Error getting friend recommendations: " . $e->getMessage());
-            return [];
         }
+
+        // Fallback: Return random users
+        $userModel = new User();
+        // Get generic list of users (e.g. latest or random)
+        $users = $userModel->orderBy('created_at', 'DESC')->findAll($topK * 2);
+        
+        $fallback = [];
+        foreach ($users as $u) {
+            if ($u['id'] == $userId) continue;
+            $fallback[] = [
+                'user_id' => $u['id'],
+                'score' => 0.1, // Low score
+                'reason' => 'Popular usage'
+            ];
+        }
+        return $fallback;
     }
+
+
     
     /**
      * Display friend recommendations page
@@ -235,7 +250,7 @@ class RecommenderController extends BaseController
             }
             
             // Fetch all friendships
-            $friendshipModel = new Friendship();
+            $friendshipModel = new FriendShip();
             $friendships = $friendshipModel->all();
             
             // Transform friendship data
@@ -323,33 +338,35 @@ class RecommenderController extends BaseController
     
     private function getPostCount($userId)
     {
-        // Query from your posts table
-        return 0; // Implement based on your database
+        $postModel = new \App\Models\Post();
+        return $postModel->countPostUser($userId);
     }
     
     private function getFriendCount($userId)
     {
-        $friendshipModel = new Friendship();
-        return $friendshipModel->where('user_id', $userId)
-                               ->where('status', 'accepted')
-                               ->count();
+        $friendshipModel = new FriendShip();
+        return $friendshipModel->where('(requester_id = "'.$userId.'" OR receiver_id = "'.$userId.'") AND status = "accepted"')->countAllResults();
     }
     
     private function getCommentCount($userId)
     {
-        // Query from your comments table
-        return 0; // Implement based on your database
+        try {
+            $mongo = new \App\Libraries\MongoDB();
+            $collection = $mongo->getCollection('comments');
+            return $collection->countDocuments(['user_id' => $userId]);
+        } catch (\Exception $e) {
+            return 0;
+        }
     }
     
     private function getLikeCount($userId)
     {
-        // Query from your likes table
-        return 0; // Implement based on your database
+        $db = \Config\Database::connect();
+        return $db->table('interations')->where('user_id', $userId)->countAllResults();
     }
     
     private function getUserInterests($userId)
     {
-        // Query from your user interests table
-        return []; // Implement based on your database
+        return []; 
     }
 }

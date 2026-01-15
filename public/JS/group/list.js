@@ -7,7 +7,7 @@
  * Load user's groups
  */
 function loadMyGroups() {
-    $.get(BASE_URL + '/group/my-groups', function (res) {
+    $.get(window.BASE_URL + '/group/my-groups', function (res) {
         if (res.status === 'success') {
             const container = $('#my-groups');
             container.empty();
@@ -34,7 +34,7 @@ function loadMyGroups() {
  * Load suggested groups
  */
 function loadSuggestedGroups() {
-    $.get(BASE_URL + '/group/suggested', function (res) {
+    $.get(window.BASE_URL + '/group/suggested', function (res) {
         if (res.status === 'success') {
             const container = $('#suggested');
             container.empty();
@@ -55,8 +55,8 @@ function renderGroupCard(group, container) {
     const privacyIcon = group.privacy === 'public' ? 'globe' : 'lock';
 
     container.append(`
-        <div class="group-card" onclick="window.location.href='${BASE_URL}/group/${group.id}'">
-            <div class="group-card-cover" style="background-image: url('${group.cover_photo || BASE_URL + '/ICON/background-default.jpg'}');"></div>
+        <div class="group-card" onclick="window.location.href='${window.BASE_URL}/group/${group.id}'">
+            <div class="group-card-cover" style="background-image: url('${group.cover_photo || window.BASE_URL + '/ICON/background-default.jpg'}');"></div>
             <div class="group-card-body">
                 <h3 class="group-card-name">${escapeHtml(group.name)}</h3>
                 <div class="group-card-info">
@@ -69,4 +69,9 @@ function renderGroupCard(group, container) {
             </div>
         </div>
     `);
+}
+
+function escapeHtml(text) {
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return text.replace(/[&<>"']/g, m => map[m]);
 }

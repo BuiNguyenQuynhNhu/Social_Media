@@ -52,9 +52,15 @@
     <!-- Create Post Modal is already included via user/create_post component -->
 
     <script>
-        const BASE_URL = "<?= rtrim(base_url(), '/') ?>";
+        window.BASE_URL = "<?= rtrim(base_url(), '/') ?>";
+        window.APP_CONFIG = {
+            baseURL: window.BASE_URL,
+            userId: '<?= session()->get('user_id') ?>',
+            csrfTokenName: '<?= csrf_token() ?>',     
+            csrfHash: '<?= csrf_hash() ?>'
+        };
         // Initialize Lucide Icons
-        lucide.createIcons();
+        if(window.lucide) lucide.createIcons();
     
         function openCreatePostModal() {
             document.getElementById('createPostModal').style.display = 'flex';
