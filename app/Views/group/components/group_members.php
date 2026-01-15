@@ -16,21 +16,11 @@
         </div>
 
         <div class="members-content">
-            <!-- Admins Section -->
-            <div class="members-section-block">
-                <h3>Admins & Moderators</h3>
-                <div class="members-grid" id="admin-members">
-                    <!-- Admin members loaded via JavaScript -->
-                </div>
-            </div>
-            
-            <hr class="divider">
-
-            <!-- All Members Section -->
+            <!-- All Members in One List -->
             <div class="members-section-block">
                 <h3>All Members</h3>
                 <div class="members-grid" id="all-members">
-                    <!-- All members loaded via JavaScript -->
+                    <!-- All members loaded via JavaScript (including admins, mods, and regular members) -->
                 </div>
             </div>
         </div>

@@ -206,13 +206,11 @@ class GroupController extends BaseController
     }
 
     public function getMembers($groupId) {
-        if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
-        $members = (new GroupMember())->getMembers($groupId); // This model method already does joins? Let's check model... yes
+        if (!$this->user_id) {
+            return $this->response->setJSON(['status' => 'error']);
+        }
         
-        // Wait, Model getMembers exists but returns array. Let's format it.
-        // Actually model getMembers returns raw array with joins.
-        // Let's stick to inline build or use model if it formats.
-        // Model getMembers lines 70-76 returns joined data.
+        $members = (new GroupMember())->getMembers($groupId);
         
         $result = [];
         foreach ($members as $member) {
@@ -223,7 +221,10 @@ class GroupController extends BaseController
                 'role' => $member['role']
             ];
         }
-        return $this->response->setJSON(['status' => 'success', 'data' => $result]);
+        
+        return $this->response
+            ->setContentType('application/json')
+            ->setJSON(['status' => 'success', 'data' => $result]);
     }
 }
 

@@ -107,5 +107,7 @@ class Filters extends BaseFilters
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        'toolbar' => ['except' => ['group/*/members/data']],
+    ];
 }

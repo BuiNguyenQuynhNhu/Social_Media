@@ -246,13 +246,15 @@ body {
     max-width: 1050px;
     /* Center column */
     margin: 0 auto;
-    padding: 0 32px 16px;
+    padding: 0 32px;
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
 }
 
-/* Group Main Info (Avatar + Title + Actions) */
+/* Group Main Info (Avatar + Title) */
 .group-main-info {
     display: flex;
     align-items: flex-end;
@@ -262,18 +264,17 @@ body {
     position: relative;
     z-index: 2;
     padding-bottom: 20px;
-    border-bottom: 1px solid #ced0d4;
-    flex-wrap: wrap;
-    /* responsive wrap */
+    flex: 1;
+    min-width: 0;
 }
 
-/* Avatar Border Fix */
+/* Avatar */
 .group-avatar {
-    width: 168px;
-    height: 168px;
-    border-radius: 50%;
+    width: 140px;
+    height: 140px;
+    border-radius: 16px;
     border: 4px solid white;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     object-fit: cover;
     background: white;
     flex-shrink: 0;
@@ -282,22 +283,25 @@ body {
 .group-title-section {
     flex: 1;
     min-width: 200px;
-    padding-bottom: 4px;
+    padding-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
 }
 
 .group-title-section h1 {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 700;
     color: #050505;
-    margin: 0 0 4px 0;
-    line-height: 1.1;
+    margin: 0 0 6px 0;
+    line-height: 1.2;
 }
 
 /* Group Meta Info */
 .group-meta {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
     font-size: 15px;
     color: #65676b;
     font-weight: 600;
@@ -307,13 +311,64 @@ body {
 .group-meta .member-count {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
 }
 
 .group-meta i {
+    width: 16px;
+    height: 16px;
+    color: #65676b;
+}
+
+.meta-separator {
+    color: #bcc0c4;
+}
+
+/* Group Actions (Right Side) */
+.group-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    padding-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.group-actions .btn-primary,
+.group-actions .btn-secondary {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.group-actions .btn-primary {
+    background: #1877f2;
+    color: white;
+}
+
+.group-actions .btn-primary:hover {
+    background: #166fe5;
+}
+
+.group-actions .btn-secondary {
+    background: #e4e6eb;
+    color: #050505;
+}
+
+.group-actions .btn-secondary:hover {
+    background: #d8dadf;
+}
+
+.group-actions i {
     width: 18px;
     height: 18px;
-    color: #65676b;
 }
 
 /* Group Tabs Bar - Integrated Look */
@@ -369,13 +424,11 @@ body {
 
 /* Group Content Area */
 .group-content-area {
-    max-width: 1050px;
+    max-width: 680px;
     margin: 20px auto;
     padding: 0 32px;
-    display: grid;
-    grid-template-columns: 2fr 1.2fr;
-    /* Better ratio */
-    gap: 24px;
+    display: flex;
+    justify-content: center;
 }
 
 /* Group Feed */
@@ -383,6 +436,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    width: 100%;
+    max-width: 680px;
 }
 
 /* Group Cards (About, Members) */

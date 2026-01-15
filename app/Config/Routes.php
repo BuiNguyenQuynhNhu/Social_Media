@@ -109,7 +109,10 @@ $routes->group('group', ['filter' => 'auth'], function($routes){
     $routes->get('create-view', 'GroupController::createView'); // View page
     $routes->get('my-groups', 'GroupController::myGroups');
     $routes->get('suggested', 'GroupController::suggested');
-
+    
+    // API route for getting members data (must come before view route)
+    $routes->get('(:any)/members/data', 'GroupController::getMembers/$1');
+    
     $routes->get('(:any)/feed', 'GroupController::feed/$1');
     $routes->get('(:any)/members', 'GroupController::membersView/$1');
     $routes->get('(:any)/about', 'GroupController::aboutView/$1');

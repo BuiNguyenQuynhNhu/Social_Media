@@ -9,24 +9,23 @@
 function loadGroupMembers() {
     if (!GROUP_ID) return;
 
-    $.get(BASE_URL + '/group/' + GROUP_ID + '/members', function (res) {
+    $.get(BASE_URL + '/group/' + GROUP_ID + '/members/data', function (res) {
         if (res.status === 'success') {
-            const adminContainer = $('#admin-members');
             const allContainer = $('#all-members');
-
-            adminContainer.empty();
             allContainer.empty();
 
-            const admins = res.data.filter(m => m.role === 'admin');
-            const members = res.data.filter(m => m.role !== 'admin');
-
-            admins.forEach(member => {
-                renderMemberItem(member, adminContainer, true);
+            // Sort members: owner first, then admins/mods, then regular members
+            const sortedMembers = res.data.sort((a, b) => {
+                const roleOrder = { 'owner': 0, 'admin': 1, 'moderator': 2, 'member': 3 };
+                return (roleOrder[a.role] || 3) - (roleOrder[b.role] || 3);
             });
 
-            members.forEach(member => {
-                renderMemberItem(member, allContainer, false);
+            sortedMembers.forEach(member => {
+                renderMemberItem(member, allContainer);
             });
+
+            // Update member count
+            $('#members-count-badge').text(`(${res.data.length})`);
 
             lucide.createIcons();
         }
@@ -34,14 +33,26 @@ function loadGroupMembers() {
 }
 
 /**
- * Render a member item
+ * Render a member item with role badge
  */
-function renderMemberItem(member, container, isAdmin) {
-    const roleBadge = isAdmin ? '<span class="role-badge admin">Admin</span>' : '';
+function renderMemberItem(member, container) {
+    let roleBadge = '';
+    let roleClass = '';
+
+    if (member.role === 'owner') {
+        roleBadge = '<span class="role-badge owner">Owner</span>';
+        roleClass = 'owner';
+    } else if (member.role === 'admin') {
+        roleBadge = '<span class="role-badge admin">Admin</span>';
+        roleClass = 'admin';
+    } else if (member.role === 'moderator') {
+        roleBadge = '<span class="role-badge moderator">Moderator</span>';
+        roleClass = 'moderator';
+    }
 
     container.append(`
-        <div class="member-item">
-            <img src="${member.avatar}" class="member-avatar" alt="${escapeHtml(member.name)}">
+        <div class="member-card ${roleClass}">
+            <img src="${member.avatar}" alt="${escapeHtml(member.name)}">
             <div class="member-info">
                 <div class="member-name">${escapeHtml(member.name)}</div>
                 ${roleBadge}
