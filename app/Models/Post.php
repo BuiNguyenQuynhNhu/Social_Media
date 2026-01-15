@@ -1,0 +1,198 @@
+<?php
+
+namespace App\Models;
+
+use CodeIgniter\Model;
+use Ramsey\Uuid\Uuid;
+use App\Libraries\MongoDB;
+use App\Libraries\Cloudinary;
+use App\Libraries\Media;
+class Post extends Model
+{
+    protected $table            = 'posts';
+    protected $primaryKey       = 'id';
+    protected $useAutoIncrement = false;
+    protected $returnType       = 'array';
+    protected $useSoftDeletes   = false;
+    protected $protectFields    = true;
+    protected $allowedFields    = ['id', 'content', 'created_at', 'privacy', 'id_user'];
+
+    protected bool $allowEmptyInserts = false;
+    protected bool $updateOnlyChanged = true;
+
+    protected array $casts = [];
+    protected array $castHandlers = [];
+
+    // Dates
+    protected $useTimestamps = false;
+    protected $dateFormat    = 'datetime';
+    protected $createdField  = 'created_at';
+    protected $updatedField  = 'updated_at';
+    protected $deletedField  = 'deleted_at';
+
+    // Validation
+    protected $validationRules      = [];
+    protected $validationMessages   = [];
+    protected $skipValidation       = false;
+    protected $cleanValidationRules = true;
+
+    // Callbacks
+    protected $allowCallbacks = true;
+    protected $beforeInsert   = [];
+    protected $afterInsert    = [];
+    protected $beforeUpdate   = [];
+    protected $afterUpdate    = [];
+    protected $beforeFind     = [];
+    protected $afterFind      = [];
+    protected $beforeDelete   = [];
+    protected $afterDelete    = [];
+
+
+    //functions
+    protected function generateUUID(){
+        return Uuid::uuid4()->toString();
+    }
+    public function create($data){
+        $data['id'] = $this->generateUUID();
+        $data['created_at'] = date('Y-m-d H:i:s');
+    
+        if ($this->insert($data)) {
+            return $data['id'];
+        }
+        return false;
+    }
+
+    public function getMedia(){
+
+    }
+
+    public function insertMedia($media){
+
+    }
+
+    public function getPostByUser($id){
+        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
+                    ->join('profiles', 'profiles.id = posts.id_user')
+                    ->join('users', 'users.id = posts.id_user')
+                    ->where('posts.id_user', $id)
+                    ->orderBy('posts.created_at', 'DESC')
+                    ->findAll();
+        return $this->attachMediaToPosts($posts);
+    }
+
+    public function countPostUser($id) {
+        return $this->where('id_user', $id)->countAllResults();
+    }
+
+    public function getFeed($userId) {
+        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
+            ->join('profiles', 'profiles.id = posts.id_user')
+            ->join('users', 'users.id = posts.id_user')
+            ->groupStart()
+                ->where('posts.id_user', $userId)
+                ->orWhere("posts.id_user IN (SELECT receiver_id FROM friendships WHERE requester_id = '$userId' AND status = 'accepted')", null, false)
+                ->orWhere("posts.id_user IN (SELECT requester_id FROM friendships WHERE receiver_id = '$userId' AND status = 'accepted')", null, false)
+            ->groupEnd()
+            ->orderBy('posts.created_at', 'DESC')
+            ->findAll();
+        return $this->attachMediaToPosts($posts);
+    }
+
+    public function list() {
+        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
+                    ->join('profiles', 'profiles.id= posts.id_user')
+                    ->join('users', 'users.id = posts.id_user')
+                    ->orderBy('posts.created_at', 'DESC')
+                    ->findAll();
+        return $this->attachMediaToPosts($posts);
+    }
+    public function getPostsByGroup($groupId) {
+        $posts = $this->select("posts.*, profiles.firstname, profiles.lastname, users.avatar, CONCAT(profiles.firstname, ' ', profiles.lastname) as author_name, users.avatar as author_avatar")
+            ->join('group_posts', 'group_posts.post_id = posts.id')
+            ->join('profiles', 'profiles.id = posts.id_user')
+            ->join('users', 'users.id = posts.id_user')
+            ->where('group_posts.group_id', $groupId)
+            ->where('group_posts.status', 'accepted')
+            ->orderBy('posts.created_at', 'DESC')
+            ->findAll();
+        return $this->attachMediaToPosts($posts);
+    }
+
+    public function attachMediaToPosts(array $posts) {
+        if (empty($posts)) return [];
+
+        $mongo = new MongoDB();
+        $mediaCollection = $mongo->getCollection('post_media');
+
+        foreach ($posts as &$post) {
+            $media = $mediaCollection->findOne(['entity_id' => $post['id']]);
+            $post['media'] = $media ? json_decode(json_encode($media['items']), true) : []; 
+        }
+
+        return $posts;
+    }
+
+    public function createPost($data, $files = null, $groupId = null) {
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        $postId = $this->create($data); // This uses the model's create method we defined earlier/inherited
+
+        if ($postId) {
+            // Handle Group Post
+            if (!empty($groupId)) {
+                $status = 'accepted';
+                
+                // Check group requirements
+                $groupModel = new \App\Models\Group();
+                $group = $groupModel->find($groupId);
+                if ($group && !empty($group['post_requirement']) && $group['post_requirement'] == 1) {
+                    $status = 'pending';
+                }
+
+                $db->table('group_posts')->insert([
+                    'id' => Uuid::uuid4()->toString(),
+                    'group_id' => $groupId,
+                    'post_id' => $postId,
+                    'status' => $status
+                ]);
+            }
+
+            // Handle media upload
+            if ($files && $files[0]->isValid()) {
+                try {
+                    $mediaService = new Media();
+                    $mediaItems = $mediaService->uploadMultiple($files, 'posts');
+                    $mediaService->storeMetadata($postId, $mediaItems, 'post_media');
+                } catch (\Exception $e) {
+                    log_message('error', 'Media upload failed: ' . $e->getMessage());
+                }
+            }
+            
+            $db->transComplete();
+            return $db->transStatus() ? $postId : false;
+        }
+        
+        $db->transRollback();
+        return false;
+    }
+
+    public function deleteWithMedia($postId) {
+        $mongo = new MongoDB();
+        $mediaCollection = $mongo->getCollection('post_media');
+        $mediaData = $mediaCollection->findOne(['post_id' => $postId]);
+
+        if ($mediaData) {
+            $cloudinary = new Cloudinary();
+            foreach ($mediaData['items'] as $item) {
+                // Check if public_id exists before trying to destroy
+                if (isset($item['public_id'])) {
+                    $cloudinary->destroy($item['public_id']);
+                }
+            }
+            $mediaCollection->deleteOne(['post_id' => $postId]);
+        }
+
+        return $this->delete($postId);
+    }
+}

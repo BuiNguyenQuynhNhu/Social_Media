@@ -1,12 +1,13 @@
         input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
         input:-webkit-autofill:active {
             -webkit-box-shadow: 0 0 0 30px white inset !important;
             -webkit-text-fill-color: #333 !important;
             transition: background-color 5000s ease-in-out 0s;
         }
 
+<<<<<<< HEAD
 .background {
     color: #1c1e21;
     background-color: #f0f2f5; 
@@ -135,3 +136,75 @@ input:-webkit-autofill:active {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+=======
+        .background {
+            background-color: #f0f2f5;
+        }
+
+        /* Base button styling */
+        .btn-blue {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            /* Spacing between icon and text */
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            /* Pill shape */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Hover effect */
+        .btn-blue:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+            /* Slight lift */
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Active/Click effect */
+        .btn-blue:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Lucide Icon sizing */
+        .btn-blue i {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.5px;
+        }
+
+        :root {
+            --fb-bg: #f0f2f5;
+            --fb-white: #ffffff;
+            --fb-blue: #1877f2;
+            --fb-gray-bg: #e4e6eb;
+            --fb-text-main: #050505;
+            --fb-text-sub: #65676b;
+            --fb-divider: #ced0d4;
+            --fb-green: #45bd62;
+            --fb-red: #f02849;
+        }
+
+        body {
+            background-color: var(--fb-bg);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--fb-text-main);
+            margin: 0;
+        }
+
+        .fb-card {
+            background: var(--fb-white);
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+>>>>>>> admin

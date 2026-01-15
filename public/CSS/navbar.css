@@ -4,8 +4,18 @@
     box-sizing: border-box;
 }
 
+/* Global Variables */
+:root {
+    --header-height: 70px;
+    --primary-color: #1877f2;
+    --bg-color: #f0f2f5;
+}
+
 body.background {
-    background: #e9f1fc;
+    background: var(--bg-color);
+    padding-top: var(--header-height);
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 /* NAVBAR */
@@ -13,14 +23,16 @@ body.background {
     display: flex;
     align-items: center;
     width: 100%;
-    max-width: 100%; /* Ensure it spans the whole bar */
+    max-width: 100%;
+    /* Ensure it spans the whole bar */
 }
 
 /* Create three columns */
 .nav-section {
     display: flex;
     align-items: center;
-    flex: 1; /* This is the secret to perfect centering */
+    flex: 1;
+    /* This is the secret to perfect centering */
 }
 
 .nav-section.left {
@@ -29,9 +41,12 @@ body.background {
 }
 
 .nav-section.center {
-    justify-content: center; /* Forces the nav-menu to the dead center */
-    flex: 0 0 auto; /* Ensures the menu doesn't stretch, just stays centered */
-    min-width: 300px; /* Adjust based on your menu width */
+    justify-content: center;
+    /* Forces the nav-menu to the dead center */
+    flex: 0 0 auto;
+    /* Ensures the menu doesn't stretch, just stays centered */
+    min-width: 300px;
+    /* Adjust based on your menu width */
 }
 
 .nav-section.right {
@@ -59,18 +74,27 @@ body.background {
 
 .nav-line {
     position: absolute;
-    bottom: -10px; /* Adjust based on your navbar height */
+    bottom: 0;
     height: 3px;
     background: #0051ff;
+    border-radius: 2px 2px 0 0;
     transition: all 0.3s cubic-bezier(.4, 0, .2, 1);
+    pointer-events: none;
+    z-index: 10;
+    /* Ensure it sits above items */
 }
+
 .navbar {
     background: whitesmoke;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     padding: 12px 30px;
-    position: sticky;
+    position: fixed;
+    /* Fixed to ensure it stays on top */
+    width: 100%;
     top: 0;
-    z-index: 100;
+    left: 0;
+    z-index: 9999;
+    height: var(--header-height);
 }
 
 .container {
@@ -89,26 +113,19 @@ body.background {
     transform: scale(1.08) rotate(-2deg);
 }
 
-.nav-item svg{
+.nav-item svg {
     width: 26px;
     height: 26px;
 }
 
-.nav-line {
-    position: absolute;
-    bottom: 0;
-    height: 3px;
-    background: #0051ff;
-    border-radius: 2px;
-    transition: width 0.5s cubic-bezier(.4, 0, .2, 1);
-}
+
 
 .nav-item:hover {
     color: #0051ff;
     transform: translateY(-4px);
 }
 
-.nav-item.active{
+.nav-item.active {
     color: #0051ff
 }
 
@@ -156,14 +173,16 @@ body.background {
 .nav-user {
     display: flex;
     align-items: center;
-    gap: 8px; /* Standard spacing for social platforms */
+    gap: 8px;
+    /* Standard spacing for social platforms */
 }
 
 /* CIRCULAR BUTTONS (Bell, Logout, etc.) */
 .icon-circle {
     width: 40px;
     height: 40px;
-    background-color: #e4e6eb; /* Soft gray matching search bar */
+    background-color: #e4e6eb;
+    /* Soft gray matching search bar */
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -175,7 +194,8 @@ body.background {
 }
 
 .icon-circle:hover {
-    background-color: #d8dadf; /* Darker gray on hover */
+    background-color: #d8dadf;
+    /* Darker gray on hover */
 }
 
 .icon-circle svg {
@@ -184,14 +204,14 @@ body.background {
 }
 
 /* NOTIFICATION DOT */
-.dot {
+.notif-dot {
     position: absolute;
     top: 2px;
     right: 2px;
     width: 10px;
     height: 10px;
-    background: #fa3e3e; /* Standard notification red */
-    border: 2px solid whitesmoke; /* Matches navbar bg to pop out */
+    background: #fa3e3e;
+    border: 2px solid whitesmoke;
     border-radius: 50%;
 }
 
@@ -222,7 +242,8 @@ body.background {
 }
 
 .icon-circle.logout:hover svg {
-    color: #fa3e3e; /* Red hint on logout hover */
+    color: #fa3e3e;
+    /* Red hint on logout hover */
 }
 
 /* NOTIFICATION */
@@ -238,19 +259,33 @@ body.background {
 
 /* ANIMATIONS */
 @keyframes shake {
-    0% { transform: rotate(0); }
-    25% { transform: rotate(10deg); }
-    50% { transform: rotate(-10deg); }
-    75% { transform: rotate(5deg); }
-    100% { transform: rotate(0); }
+    0% {
+        transform: rotate(0);
+    }
+
+    25% {
+        transform: rotate(10deg);
+    }
+
+    50% {
+        transform: rotate(-10deg);
+    }
+
+    75% {
+        transform: rotate(5deg);
+    }
+
+    100% {
+        transform: rotate(0);
+    }
 }
 
 
 .search-form {
-    --input-bg: #f0f2f5; 
+    --input-bg: #f0f2f5;
     --input-bg-hover: #e4e6eb;
     --text-color: #65676b;
-    
+
     width: 260px;
     height: 40px;
     transition: width 0.3s ease;
@@ -280,7 +315,8 @@ body.background {
     padding: 0 8px;
 }
 
-.search-btn, .reset {
+.search-btn,
+.reset {
     background: none;
     border: none;
     cursor: pointer;
@@ -289,7 +325,8 @@ body.background {
     align-items: center;
 }
 
-.search-btn svg, .reset svg {
+.search-btn svg,
+.reset svg {
     width: 18px;
     height: 18px;
 }
@@ -300,9 +337,10 @@ body.background {
     visibility: hidden;
 }
 
-.input:not(:placeholder-shown) ~ .reset {
+.input:not(:placeholder-shown)~.reset {
     opacity: 1;
     visibility: visible;
+<<<<<<< HEAD
 }
 
 .search-dropdown {
@@ -377,4 +415,6 @@ body.background {
 }
 .notif-item.unread { 
     background: #e7f3ff; 
+=======
+>>>>>>> admin
 }

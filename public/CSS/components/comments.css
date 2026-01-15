@@ -1,0 +1,210 @@
+/* ===========================================
+   COMMENT SYSTEM STYLES
+   =========================================== */
+
+.comments-section {
+    padding: 12px 16px;
+    background: var(--fb-bg, #f0f2f5);
+    display: none;
+}
+
+.comments-section.show {
+    display: block;
+}
+
+.comments-list {
+    margin-bottom: 12px;
+}
+
+/* Comment Item */
+.comment-wrapper {
+    margin-bottom: 12px;
+}
+
+.comment {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.comment .avatar-xs {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.comment-content-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.comment-bubble {
+    background: var(--fb-gray-bg, #f0f2f5);
+    padding: 8px 12px;
+    border-radius: 18px;
+    display: inline-block;
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+.comment-author {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--fb-text-main, #050505);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.comment-author:hover {
+    text-decoration: underline;
+}
+
+.comment-bubble p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--fb-text-main, #050505);
+}
+
+/* Comment Media */
+.comment-media-container {
+    max-width: 300px !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    border-radius: 12px;
+    margin-top: 8px;
+    background-color: var(--fb-gray-bg, #f0f2f5);
+    display: block !important;
+}
+
+.comment-media-container img,
+.comment-media-container video {
+    width: 100% !important;
+    max-width: 300px !important;
+    height: auto !important;
+    max-height: 200px !important;
+    display: block !important;
+    object-fit: cover !important;
+    border-radius: 8px;
+}
+
+/* Ensure media doesn't overflow comment bubble */
+.comment-content-wrapper {
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Additional safety constraint for any img inside comments */
+.comment img,
+.comment-bubble img,
+.comments-section img {
+    max-width: 300px !important;
+    max-height: 200px !important;
+    object-fit: cover !important;
+}
+
+/* Comment Actions */
+.comment-actions {
+    display: flex;
+    gap: 12px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.comment-actions span {
+    color: var(--fb-text-sub, #65676b);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.comment-actions span:hover {
+    color: var(--fb-text-main, #050505);
+    text-decoration: underline;
+}
+
+/* Reply Box */
+.reply-box {
+    display: none;
+    margin-top: 8px;
+    margin-left: 40px;
+}
+
+.comment-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--fb-gray-bg, #f0f2f5);
+    border-radius: 20px;
+    padding: 8px 12px;
+}
+
+.comment-input-wrapper input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.comment-input-wrapper button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--fb-blue, #1877f2);
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    border-radius: 50%;
+    transition: background 0.2s ease;
+}
+
+.comment-input-wrapper button:hover {
+    background: rgba(24, 119, 242, 0.1);
+}
+
+/* Replies Container */
+.replies-container {
+    margin-left: 40px;
+    margin-top: 8px;
+}
+
+/* Comment Input (Main) */
+.comment-input {
+    display: flex;
+    gap: 8px;
+    padding: 8px 16px;
+    border-top: 1px solid var(--fb-divider, #ced0d4);
+}
+
+.comment-input input {
+    flex: 1;
+    background: var(--fb-gray-bg, #f0f2f5);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 12px;
+    outline: none;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.comment-input input:focus {
+    background: #e4e6eb;
+}
+
+/* Preview */
+#comment-preview {
+    padding: 8px 16px;
+    display: none;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 20px;
+    color: var(--fb-text-sub, #65676b);
+    font-size: 14px;
+}

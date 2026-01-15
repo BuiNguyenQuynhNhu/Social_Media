@@ -103,6 +103,7 @@ class User extends Model
         return $this->update($id, ['avatar' => $file]);
     }
 
+<<<<<<< HEAD
     public function searchUsers($keyword)
     {
         if (empty($keyword)) return [];
@@ -118,5 +119,9 @@ class User extends Model
 
         $result = $builder->findAll();
         return $result;
+=======
+    public function list(){
+        return $this->findAll();
+>>>>>>> admin
     }
 }

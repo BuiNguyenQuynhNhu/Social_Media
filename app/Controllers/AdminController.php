@@ -4,16 +4,63 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
-use Model\Admin;
+use App\Models\Admin;
+use App\Models\User;
+use App\Models\Post;
 
 class AdminController extends BaseController
 {
+    protected $admin;
+    protected $id;
+
+    public function __construct(){
+        $this->admin = new Admin();
+        $type = session()->get('type');
+        $this->id = session()->get('user_id');
+
+        if ($this->id || $type !== '1'){
+            return redirect()->to('login')->send();
+        }
+        
+    }
     public function index()
     {
-        //
+        if (!$this->id)
+            return redirect()->to('login')->send();
+        $admin = $this->admin->find($this->id);
+        return view('admin/dashboard', $admin);
     }
 
     public function listUser(){
+        $Model = new User;
+        $data = [
+            'title' => 'Users',
+            'users' => $Model->list(),
+            'admin' => $this->admin,
+        ];
+        return view('admin/listUser', $data);
 
     }
+
+    public function listPost() {
+        $Model = new Post();
+        
+        $data = [
+            'title'     => 'Posts',
+            'posts'     => $Model->list(),
+            'admin' => $this->admin,
+        ];
+
+        return view('admin/listPost', $data);
+    }
+
+    // public function listGroup(){
+    //     $model = new User;
+    //     $allUser = $model->list();
+    // }
+
+    // public function listChat(){
+    //     $model = new User;
+    //     $allUser = $model->list();
+    // }
 }

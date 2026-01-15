@@ -203,5 +203,10 @@ class Database extends Config
         else{
             $this->defaultGroup = 'default';
         }
+
+        $this->default['hostname'] = env('database.default.hostname', 'localhost');
+        $this->default['username'] = env('database.default.username', '');
+        $this->default['password'] = env('database.default.password', '');
+        $this->default['database'] = env('database.default.database', '');
     }
 }
