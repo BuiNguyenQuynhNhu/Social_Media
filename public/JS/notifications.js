@@ -32,7 +32,8 @@ function createNotificationDropdown() {
 }
 
 function loadNotifications() {
-    fetch(`${BASE_URL}/notifications/`)
+    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL;
+    fetch(`${baseUrl}/notifications/`)
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
@@ -94,23 +95,25 @@ function getNotificationMessage(type, senderName, context) {
 
 function getNotificationLink(context) {
     const type = context.type;
+    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL; // fallback
 
     if (type === 'friend_request' || type === 'friend_accept') {
-        return `${BASE_URL}/friends`;
+        return `${baseUrl}/friends`;
     }
 
     if (type.includes('group') && context.group_id) {
         if (type === 'new_join_request') {
-            return `${BASE_URL}/group/${context.group_id}/manage/members`;
+            return `${baseUrl}/group/${context.group_id}/manage/members`;
         }
-        return `${BASE_URL}/group/${context.group_id}`;
+        return `${baseUrl}/group/${context.group_id}`;
     }
 
-    return `${BASE_URL}/user/dashboard`;
+    return `${baseUrl}/user/dashboard`;
 }
 
 function markAsRead(notifId) {
-    fetch(`${BASE_URL}/notifications/read/${notifId}`, {
+    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL;
+    fetch(`${baseUrl}/notifications/read/${notifId}`, {
         method: 'POST'
     })
         .then(response => response.json())
@@ -123,7 +126,8 @@ function markAsRead(notifId) {
 }
 
 function markAllRead() {
-    fetch(`${BASE_URL}/notifications/read-all`, {
+    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL;
+    fetch(`${baseUrl}/notifications/read-all`, {
         method: 'POST'
     })
         .then(response => response.json())
@@ -151,7 +155,8 @@ function updateNotificationDot(notifications) {
 }
 
 function checkUnreadNotifications() {
-    fetch(`${BASE_URL}/notifications/`)
+    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL;
+    fetch(`${baseUrl}/notifications/`)
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {

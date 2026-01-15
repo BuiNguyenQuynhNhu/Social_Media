@@ -13,9 +13,11 @@ function liveSearch(query) {
         return;
     }
 
+    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL;
+
     // Debounce search - wait 300ms after user stops typing
     searchTimeout = setTimeout(() => {
-        fetch(`${APP_CONFIG.baseURL}/search/live?q=${encodeURIComponent(query)}`)
+        fetch(`${baseUrl}/search/live?q=${encodeURIComponent(query)}`)
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
@@ -57,7 +59,6 @@ function renderSearchResults(results) {
             } else if (result.status === 'friend') {
                 actionBtn = `<span class="badge-friend" style="margin-left:auto; font-size:11px; color:#1877f2;">Friend</span>`;
             }
-            // Incoming handled as pending or distinct if needed
         }
 
         html += `
@@ -77,7 +78,6 @@ function renderSearchResults(results) {
     dropdown.innerHTML = html;
     dropdown.style.display = 'block';
 
-    // Re-initialize Lucide icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
@@ -100,7 +100,6 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-// Close search dropdown when clicking outside
 document.addEventListener('click', function (event) {
     const searchContainer = document.querySelector('.search-container');
     const dropdown = document.getElementById('search-dropdown');
@@ -115,12 +114,13 @@ window.sendFriendRequest = function (e, userId) {
     e.preventDefault();
     e.stopPropagation();
 
-    // Check if clicked button
     const btn = e.target;
     btn.innerHTML = 'Sending...';
     btn.disabled = true;
 
-    fetch(`${APP_CONFIG.baseURL}/friend/add/${userId}`)
+    const baseUrl = window.BASE_URL || APP_CONFIG.baseURL;
+
+    fetch(`${baseUrl}/friend/add/${userId}`)
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {

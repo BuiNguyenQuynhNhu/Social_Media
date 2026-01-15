@@ -47,7 +47,24 @@ class Chat extends Model
 
     public function create($data){
         $data['id'] = Uuid::uuid4()->toString();
-        return $this->insert($data);
+        if ($this->insert($data)) {
+            return $data['id'];
+        }
+        return false;
+    }
+
+    public function getPrivateChatId($user1, $user2) {
+        $db = \Config\Database::connect();
+        $builder = $db->table('chats');
+        $builder->select('chats.id');
+        $builder->join('chat_members as m1', 'm1.chat_id = chats.id');
+        $builder->join('chat_members as m2', 'm2.chat_id = chats.id');
+        $builder->where('chats.privacy', 0); // 0 = Private
+        $builder->where('m1.user_id', $user1);
+        $builder->where('m2.user_id', $user2);
+        
+        $row = $builder->get()->getRow();
+        return $row ? $row->id : null;
     }
 
     public function getInfo($id) {

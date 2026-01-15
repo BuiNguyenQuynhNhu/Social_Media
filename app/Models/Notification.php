@@ -3,9 +3,16 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use Ramsey\Uuid\Uuid;
 
 class Notification extends Model
 {
+    // ... (rest of props)
+
+    protected function generateUUID()
+    {
+        return Uuid::uuid4()->toString();
+    }
     protected $table            = 'notifications';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = false;

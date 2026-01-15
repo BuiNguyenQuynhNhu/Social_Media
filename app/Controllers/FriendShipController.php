@@ -211,6 +211,28 @@ class FriendShipController extends BaseController
                 $this->userId,
                 $friendship['requester_id']
             );
+
+            // Auto-create Chat
+            $chatModel = new \App\Models\Chat();
+            $chatMemberModel = new \App\Models\ChatMember();
+            
+            $existingChat = $chatModel->getPrivateChatId($this->userId, $friendship['requester_id']);
+            
+            if (!$existingChat) {
+                // Create new private chat
+                $newChatId = $chatModel->create([
+                    'name' => '', // specific name not needed for private chat usually
+                    'owner_id' => $this->userId,
+                    'privacy' => 0, // Private
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+                
+                if ($newChatId) {
+                    $chatMemberModel->add($newChatId, $this->userId, true); // Admin role?
+                    $chatMemberModel->add($newChatId, $friendship['requester_id'], false);
+                }
+            }
+
             return redirect()->back()->with('success', 'Friend request accepted.');
         }
         return redirect()->back()->with('error', 'Could not accept request.');

@@ -7,10 +7,10 @@
  * Join group
  */
 function joinGroup() {
-    if (!GROUP_ID) return;
+    if (!window.GROUP_ID) return;
 
     $.ajax({
-        url: BASE_URL + '/group/' + GROUP_ID + '/join',
+        url: window.BASE_URL + '/group/' + window.GROUP_ID + '/join',
         type: 'POST',
         success: function (res) {
             if (res.status === 'success') {

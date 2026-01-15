@@ -14,6 +14,7 @@
             csrfTokenName: '<?= csrf_token() ?>',     
             csrfHash: '<?= csrf_hash() ?>'
         };
+        window.BASE_URL = APP_CONFIG.baseURL.endsWith('/') ? APP_CONFIG.baseURL.slice(0, -1) : APP_CONFIG.baseURL;
     </script>
     <script src="<?= base_url('JS/post.js') ?>"></script>
 

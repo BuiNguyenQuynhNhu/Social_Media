@@ -4,9 +4,7 @@
 // Dependencies: list.js, members.js, actions.js, settings.js
 // =========================================
 
-const BASE_URL = document.querySelector('meta[name="base_url"]')?.content || '';
-const MY_ID = document.querySelector('meta[name="user_id"]')?.content || '';
-const GROUP_ID = document.querySelector('meta[name="group_id"]')?.content || '';
+// Globals handled by window.BASE_URL, window.GROUP_ID
 
 /**
  * Initialize group page
@@ -14,7 +12,7 @@ const GROUP_ID = document.querySelector('meta[name="group_id"]')?.content || '';
 $(document).ready(function () {
     lucide.createIcons();
 
-    if (GROUP_ID) {
+    if (window.GROUP_ID) {
         // Individual group page
         loadGroupMembers();
     } else {

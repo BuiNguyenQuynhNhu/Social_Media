@@ -126,6 +126,17 @@ class UserController extends BaseController
             ? $user['avatar'] 
             : ($user['avatar'] ? base_url($user['avatar']) : base_url('ICON/avatar-default.svg'));
 
+        // Handle Navbar Avatar (The Logged In User)
+        if ($this->id && $this->id != $targetId) {
+             $loggedInUser = $this->user->find($this->id);
+             $uAvatar = $loggedInUser['avatar'] ?? '';
+             $data['navbarAvatarUrl'] = (strpos($uAvatar, 'http') === 0) 
+                ? $uAvatar 
+                : ($uAvatar ? base_url($uAvatar) : base_url('ICON/avatar-default.svg'));
+        } else {
+             $data['navbarAvatarUrl'] = $data['avatarUrl'];
+        }
+
         $data['coverUrl'] = (strpos($profile['background'], 'http') === 0) 
             ? $profile['background'] 
             : (!empty($profile['background']) ? base_url($profile['background']) : base_url('ICON/background-default.jpg'));

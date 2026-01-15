@@ -19,6 +19,17 @@
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        window.BASE_URL = '<?= rtrim(base_url(), '/') ?>';
+        window.USER_ID = '<?= $user_id ?>';
+        window.GROUP_ID = '<?= $group['id'] ?? '' ?>';
+        
+        // APP_CONFIG for search.js compatibility if needed (though we use BASE_URL now)
+        const APP_CONFIG = {
+            baseURL: window.BASE_URL,
+            userId: window.USER_ID
+        };
+    </script>
 </head>
 <body class="background">
 
