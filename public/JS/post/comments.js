@@ -27,7 +27,7 @@ function addComment(input, postId) {
     }
 
     $.ajax({
-        url: BASE_URL + '/comment/add/' + postId,
+        url: window.BASE_URL + '/comment/add/' + postId,
         type: 'POST',
         data: formData,
         processData: false,
@@ -49,9 +49,9 @@ function addComment(input, postId) {
 }
 
 function loadComments(postId) {
-    if (!BASE_URL) return;
+    if (!window.BASE_URL) return;
 
-    $.get(BASE_URL + '/comment/get/' + postId, function (res) {
+    $.get(window.BASE_URL + '/comment/get/' + postId, function (res) {
         const container = $('#comments-' + postId + ' .comments-list');
         container.empty();
 
@@ -90,7 +90,7 @@ function renderComment(c, container) {
     const likeActive = c.is_liked ? 'style="color:#1877f2; font-weight:600;"' : '';
     const likeText = c.is_liked ? 'Liked' : 'Like';
     const deleteBtn = c.can_delete ? `<span onclick="deleteComment('${c.id}', '${c.post_id}')">Delete</span>` : '';
-    const profileUrl = BASE_URL + '/user/profile/' + c.user.id;
+    const profileUrl = window.BASE_URL + '/user/profile/' + c.user.id;
 
     const html = `
         <div class="comment-wrapper" id="comment-${c.id}">
@@ -157,7 +157,7 @@ function submitReply(postId, parentId) {
         return;
     }
 
-    $.post(BASE_URL + '/comment/add/' + postId, {
+    $.post(window.BASE_URL + '/comment/add/' + postId, {
         content: content,
         parent_id: parentId
     }, function (res) {
@@ -173,9 +173,9 @@ function submitReply(postId, parentId) {
 }
 
 function likeComment(commentId) {
-    if (!BASE_URL) return;
+    if (!window.BASE_URL) return;
 
-    $.post(BASE_URL + '/comment/like/' + commentId, function (res) {
+    $.post(window.BASE_URL + '/comment/like/' + commentId, function (res) {
         if (res.status === 'success') {
             const btn = $('#like-btn-' + commentId);
             if (res.action === 'liked') {
@@ -195,7 +195,7 @@ function deleteComment(commentId, postId) {
     if (!confirm('Delete this comment?')) return;
 
     $.ajax({
-        url: BASE_URL + '/comment/delete/' + commentId,
+        url: window.BASE_URL + '/comment/delete/' + commentId,
         type: 'DELETE',
         success: function (res) {
             if (res.status === 'success') {

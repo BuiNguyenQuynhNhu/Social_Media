@@ -51,6 +51,7 @@
 
     <!-- Create Post Modal is already included via user/create_post component -->
 
+    <script src="<?= base_url('JS/post/init.js') ?>"></script>
     <script>
         window.BASE_URL = "<?= rtrim(base_url(), '/') ?>";
         window.APP_CONFIG = {

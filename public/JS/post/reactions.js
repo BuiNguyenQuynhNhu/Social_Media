@@ -4,12 +4,12 @@
 // =========================================
 
 function sendReaction(postId, type) {
-    if (!BASE_URL) {
+    if (!window.BASE_URL) {
         console.error('BASE_URL is not defined');
         return;
     }
 
-    $.post(BASE_URL + '/interaction/react/' + postId, { type: type }, function (res) {
+    $.post(window.BASE_URL + '/interaction/react/' + postId, { type: type }, function (res) {
         if (res.status === 'success') {
             updateLikes(postId);
             updateReactionButton(postId, res.action, type);
@@ -45,9 +45,9 @@ function updateReactionButton(postId, action, type) {
 }
 
 function updateLikes(postId) {
-    if (!BASE_URL) return;
+    if (!window.BASE_URL) return;
 
-    $.get(BASE_URL + '/interaction/get_likes/' + postId, function (res) {
+    $.get(window.BASE_URL + '/interaction/get_likes/' + postId, function (res) {
         const count = res.total || 0;
         $('#likes-count-' + postId).text(count > 0 ? count : '');
 

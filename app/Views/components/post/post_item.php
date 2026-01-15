@@ -73,7 +73,7 @@
 
     <div class="post-actions">
         <div class="reaction-wrapper">
-            <button class="action-btn" id="btn-react-<?= $post['id'] ?>">
+            <button class="action-btn" id="btn-react-<?= $post['id'] ?>" onclick="sendReaction('<?= $post['id'] ?>', 'like')">
                 <i data-lucide="thumbs-up"></i>
                 <span id="reaction-btn-text-<?= $post['id'] ?>">Like</span>
             </button>
