@@ -159,6 +159,19 @@
     word-wrap: break-word;
 }
 
+/* Media messages get different styling */
+.message-group img,
+.message-group video {
+    max-width: 250px;
+    border-radius: 12px;
+    display: block;
+}
+
+.message-group.sent img,
+.message-group.sent video {
+    margin-left: auto;
+}
+
 .message-group.received .message-bubble {
     background: var(--fb-gray-bg, #f0f2f5);
     color: var(--fb-text-main, #050505);
@@ -185,10 +198,16 @@
 .chat-input-wrapper {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     background: var(--fb-gray-bg, #f0f2f5);
     border-radius: 20px;
-    padding: 8px 12px;
+    padding: 4px 8px;
+}
+
+.chat-input-wrapper label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .chat-input {
@@ -198,6 +217,7 @@
     outline: none;
     font-size: 15px;
     font-family: inherit;
+    padding: 6px 8px;
 }
 
 .chat-send-btn {
@@ -237,4 +257,35 @@
     width: 100px;
     height: 100px;
     margin-bottom: 16px;
+}
+
+/* Media Preview Styles */
+#media-preview {
+    background: var(--fb-gray-bg, #f0f2f5);
+    border-radius: 8px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#media-preview img,
+#media-preview video {
+    border-radius: 8px;
+}
+
+#media-preview button {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+#media-preview button:hover {
+    background: #f0f2f5;
+    border-color: #bbb;
 }

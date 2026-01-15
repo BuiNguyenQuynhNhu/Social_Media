@@ -43,6 +43,14 @@
 <script>
     const BASE_URL = '<?= rtrim(base_url(), '/') ?>';
     const USER_ID = '<?= $user_id ?>';
+    
+    window.APP_CONFIG = {
+        baseURL: BASE_URL,
+        userId: USER_ID,
+        csrfTokenName: '<?= csrf_token() ?>',
+        csrfHash: '<?= csrf_hash() ?>'
+    };
+    
     lucide.createIcons();
 </script>
 <script src="<?= base_url('JS/message.js') ?>"></script>

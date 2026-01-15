@@ -5,7 +5,27 @@
 let currentChatId = null;
 let conversations = [];
 
+// Helper function to get cookie value
+function getCookie(name) {
+    if (!name) return null;
+    let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    if (match) return decodeURIComponent(match[2]);
+    return null;
+}
+
 $(document).ready(function () {
+    // Setup CSRF for all AJAX requests
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                const token = getCookie('csrf_cookie_name') || (window.APP_CONFIG && window.APP_CONFIG.csrfHash);
+                if (token) {
+                    xhr.setRequestHeader('X-CSRF-TOKEN', token);
+                }
+            }
+        }
+    });
+
     loadConversations();
     setupEventListeners();
 
@@ -27,8 +47,8 @@ function loadConversations() {
         type: 'GET',
         success: function (response) {
             if (response.status === 'success') {
-                conversations = response.conversations;
-                renderConversations(response.conversations);
+                conversations = response.data || [];
+                renderConversations(conversations);
             }
         },
         error: function (xhr) {
@@ -57,7 +77,7 @@ function renderConversations(convos) {
                 <img src="${convo.avatar}" class="conversation-avatar" alt="${convo.name}">
                 <div class="conversation-info">
                     <div class="conversation-name">${escapeHtml(convo.name)}</div>
-                    <div class="conversation-preview">${escapeHtml(convo.last_message || 'No messages yet')}</div>
+                    <div class="conversation-preview">${escapeHtml(convo.last_message)}</div>
                 </div>
                 <div class="conversation-time">${timeAgo(convo.last_message_time)}</div>
             </div>
@@ -103,11 +123,11 @@ function openChat(friendId, friendName, friendAvatar) {
  */
 function loadMessages(friendId, scrollToBottom = false) {
     $.ajax({
-        url: `${BASE_URL}/message/chat/${friendId}`,
+        url: `${BASE_URL}/message/get/${friendId}`,
         type: 'GET',
         success: function (response) {
             if (response.status === 'success') {
-                renderMessages(response.messages);
+                renderMessages(response.data || []);
                 if (scrollToBottom) {
                     scrollChatToBottom();
                 }
@@ -136,13 +156,24 @@ function renderMessages(messages) {
     }
 
     messages.forEach(msg => {
-        const isSent = msg.sender_id == USER_ID;
+        const isSent = msg.is_mine;
         const messageClass = isSent ? 'sent' : 'received';
+
+        let mediaHtml = '';
+        if (msg.media) {
+            if (msg.media.type === 'image') {
+                mediaHtml = `<img src="${msg.media.url}" style="max-width: 250px; border-radius: 12px; display: block; margin-bottom: 4px;" alt="Image">`;
+            } else if (msg.media.type === 'video') {
+                mediaHtml = `<video src="${msg.media.url}" controls style="max-width: 250px; border-radius: 12px; display: block; margin-bottom: 4px;"></video>`;
+            }
+        }
+
+        const contentHtml = msg.content ? `<div class="message-bubble">${escapeHtml(msg.content)}</div>` : '';
 
         const $messageGroup = $(`
             <div class="message-group ${messageClass}">
-                ${!isSent ? `<img src="${msg.avatar}" class="message-avatar" alt="Avatar">` : ''}
-                <div class="message-bubble">${escapeHtml(msg.content)}</div>
+                ${mediaHtml}
+                ${contentHtml}
             </div>
         `);
 
@@ -160,19 +191,31 @@ function renderMessages(messages) {
  */
 function sendMessage() {
     const message = $('#message-input').val().trim();
+    const fileInput = document.getElementById('message-file-input');
+    const file = fileInput && fileInput.files.length > 0 ? fileInput.files[0] : null;
 
-    if (!message || !currentChatId) return;
+    if (!message && !file) return;
+    if (!currentChatId) return;
+
+    const formData = new FormData();
+    formData.append('content', message || '');
+    if (file) {
+        formData.append('media', file);
+    }
 
     $.ajax({
-        url: `${BASE_URL}/message/send`,
+        url: `${BASE_URL}/message/send/${currentChatId}`,
         type: 'POST',
-        data: {
-            receiver_id: currentChatId,
-            content: message
-        },
+        data: formData,
+        processData: false,
+        contentType: false,
         success: function (response) {
             if (response.status === 'success') {
                 $('#message-input').val('');
+                if (fileInput) {
+                    fileInput.value = '';
+                    $('#media-preview').hide().empty();
+                }
                 loadMessages(currentChatId, true);
                 loadConversations(); // Update conversation list
             } else {
@@ -202,7 +245,28 @@ function setupEventListeners() {
     // Message input - enable/disable send button
     $('#message-input').on('input', function () {
         const hasText = $(this).val().trim().length > 0;
-        $('#send-btn').prop('disabled', !hasText);
+        const hasFile = $('#message-file-input')[0] && $('#message-file-input')[0].files.length > 0;
+        $('#send-btn').prop('disabled', !hasText && !hasFile);
+    });
+
+    // Media file selection
+    $('#message-file-input').on('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const preview = $('#media-preview');
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                let html = '';
+                if (file.type.startsWith('image')) {
+                    html = `<img src="${e.target.result}" style="max-height: 100px; border-radius: 8px;">`;
+                } else if (file.type.startsWith('video')) {
+                    html = `<video src="${e.target.result}" style="max-height: 100px; border-radius: 8px;" controls></video>`;
+                }
+                preview.html(html + ' <button onclick="clearMediaPreview()" style="margin-left: 10px;">Remove</button>').show();
+                $('#send-btn').prop('disabled', false);
+            };
+            reader.readAsDataURL(file);
+        }
     });
 
     // Send message on button click
@@ -215,6 +279,13 @@ function setupEventListeners() {
             sendMessage();
         }
     });
+}
+
+function clearMediaPreview() {
+    $('#message-file-input').val('');
+    $('#media-preview').hide().empty();
+    const hasText = $('#message-input').val().trim().length > 0;
+    $('#send-btn').prop('disabled', !hasText);
 }
 
 /**

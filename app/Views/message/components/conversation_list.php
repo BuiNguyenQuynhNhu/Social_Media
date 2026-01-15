@@ -1,6 +1,6 @@
 <div class="conversation-list">
     <div class="conversation-header">
-        <h2>Chats</h2>
+        <h2>Messages</h2>
     </div>
     
     <div class="conversation-search">
