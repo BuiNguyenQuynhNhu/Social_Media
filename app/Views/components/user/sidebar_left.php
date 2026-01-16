@@ -4,7 +4,7 @@
             <img src="<?= $avatarUrl ?>" alt="Profile" class="avatar-small" style="width: 36px !important; height: 36px !important; border-radius: 50%; object-fit: cover;">
             <span><?= $user['firstname'] . ' ' . $user['lastname'] ?></span>
         </a>
-        <a href="<?= base_url('friend') ?>" class="menu-item">
+        <a href="<?= base_url('friends') ?>" class="menu-item">
             <i data-lucide="users"></i>
             <span>Friends</span>
         </a>

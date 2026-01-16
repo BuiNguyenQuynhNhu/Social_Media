@@ -24,21 +24,21 @@
         </div>
         
         <nav class="friends-nav">
-            <a href="#requests" class="friends-nav-item" onclick="document.getElementById('requests').scrollIntoView({behavior: 'smooth'})">
+            <a href="<?= base_url('friends/requests') ?>" class="friends-nav-item">
                 <div class="friends-nav-icon">
                     <i data-lucide="user-plus"></i>
                 </div>
                 <span>Friend Requests</span>
             </a>
             
-            <a href="#suggestions" class="friends-nav-item" onclick="document.getElementById('suggestions').scrollIntoView({behavior: 'smooth'})">
+            <a href="<?= base_url('friends/suggestions') ?>" class="friends-nav-item">
                 <div class="friends-nav-icon">
                     <i data-lucide="user-check"></i>
                 </div>
                 <span>Suggestions</span>
             </a>
             
-            <a href="#list" class="friends-nav-item" onclick="document.getElementById('list').scrollIntoView({behavior: 'smooth'})">
+            <a href="<?= base_url('friends/list') ?>" class="friends-nav-item">
                 <div class="friends-nav-icon">
                     <i data-lucide="users"></i>
                 </div>

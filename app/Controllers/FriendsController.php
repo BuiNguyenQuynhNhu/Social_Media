@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Controllers\RecommenderController;
+
 use App\Controllers\BaseController;
 use App\Models\FriendShip;
 use App\Models\User;
@@ -35,13 +37,38 @@ class FriendsController extends BaseController
         $data = $this->getUserData();
         $data['title'] = 'Friends';
         $data['requests'] = $this->friendModel->listReceive($this->userId);
-        $data['suggestions'] = []; // Implement logic later
+        
+        // Fetch Suggestions from Recommender
+        $recommender = new RecommenderController();
+        $recommendations = $recommender->getFriendRecommendations($this->userId);
+        
+        // Enrich recommendations with user profile data
+        $suggestions = [];
+        if (!empty($recommendations)) {
+            $userModel = new User();
+            foreach ($recommendations as $rec) {
+                // Determine user ID (handle both API response format and fallback format)
+                $recUserId = is_array($rec) ? ($rec['user_id'] ?? $rec['id'] ?? null) : $rec;
+                
+                if ($recUserId && $recUserId != $this->userId) {
+                    $user = $userModel->select('users.id, users.avatar, profiles.firstname, profiles.lastname')
+                                    ->join('profiles', 'profiles.id = users.id')
+                                    ->where('users.id', $recUserId)
+                                    ->first();
+                    if ($user) {
+                        $suggestions[] = $user;
+                    }
+                }
+            }
+        }
+        $data['suggestions'] = $suggestions;
+
         $data['friends'] = $this->friendModel->listFriend($this->userId);
         
         // Pass all data to a combined view
         return view('friends/layout', [
-            'content' => view('friends/combined', $data), // We will create this
-            'active_tab' => 'all', // Not strictly needed for scroll spy but good for default
+            'content' => view('friends/combined', $data), 
+            'active_tab' => 'all', 
             'avatarUrl' => $data['avatarUrl']
         ]);
     }

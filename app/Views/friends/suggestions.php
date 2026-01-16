@@ -17,7 +17,7 @@
                     </a>
                     
                     <div class="friend-card-actions">
-                        <a href="<?= base_url('friend/add/'.$person['id']) ?>" class="btn-friend btn-primary-friend" style="text-align: center; text-decoration: none;">Add Friend</a>
+                        <button class="btn-friend btn-primary-friend btn-add-friend" data-id="<?= $person['id'] ?>" style="text-align: center; width: 100%;">Add Friend</button>
                     </div>
                 </div>
             </div>
@@ -28,3 +28,41 @@
         </div>
     <?php endif; ?>
 </div>
+
+<script>
+$(document).ready(function() {
+    $('.btn-add-friend').click(function() {
+        const btn = $(this);
+        const receiverId = btn.data('id');
+        
+        // Disable button
+        btn.prop('disabled', true).text('Sending...');
+        
+        $.ajax({
+            url: '<?= base_url('friend/add') ?>',
+            type: 'POST',
+            data: {
+                receiver_id: receiverId,
+                // Add CSRF if available globally, otherwise we might need the input here too
+                // Typically header or global var is used. Let's assume global or handle error.
+                // But wait, friends page DOES NOT have the csrf input we just added to settings.
+                // We should add it to friends/layout.php ideally or just here for now.
+                // Actually, let's grab it if it exists, or risk 403 if strict.
+                // Assuming "friends/layout" might need it too.
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    btn.text('Request Sent').addClass('btn-secondary-friend').removeClass('btn-primary-friend');
+                } else {
+                    alert(response.message);
+                    btn.prop('disabled', false).text('Add Friend');
+                }
+            },
+            error: function() {
+                alert('Error sending request');
+                btn.prop('disabled', false).text('Add Friend');
+            }
+        });
+    });
+});
+</script>

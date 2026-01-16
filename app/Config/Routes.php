@@ -113,6 +113,7 @@ $routes->group('chat', ['filter' => 'auth'], function($routes){
 $routes->group('group', ['filter' => 'auth'], function($routes){
     $routes->get('/', 'GroupController::index');
     $routes->get('create-view', 'GroupController::createView'); // View page
+    $routes->post('create', 'GroupController::create'); // Create action
     $routes->get('my-groups', 'GroupController::myGroups');
     $routes->get('suggested', 'GroupController::suggested');
     

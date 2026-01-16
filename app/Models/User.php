@@ -77,13 +77,26 @@ class User extends Model
         $db = \Config\Database::connect();
         $uuid = $this->generateUUID();
         $profileModel = new Profile;
+
+        $user['id'] = $uuid;
+        $profile['id'] = $uuid;
+
         $db->transStart();
-            $user['id'] = $uuid;
-            $profile['id'] = $uuid;
-        if ($this->insert($user) === false || $profileModel->insert($profile) === false) {
-                        $db->transRollback();
-                        return ['status' => false, 'message' => 'Registration failed (Database Error)'];
-            }
+
+        if ($this->insert($user) === false) {
+            $db->transRollback();
+            $errors = $this->errors();
+            $message = implode(', ', $errors) ?: 'Registration failed (User Error)';
+            return ['status' => false, 'message' => $message];
+        }
+
+        if ($profileModel->insert($profile) === false) {
+            $db->transRollback();
+            $errors = $profileModel->errors();
+            $message = implode(', ', $errors) ?: 'Registration failed (Profile Error)';
+            return ['status' => false, 'message' => $message];
+        }
+
         $db->transComplete();
         return ['status' => true, 'id' => $uuid];
     }

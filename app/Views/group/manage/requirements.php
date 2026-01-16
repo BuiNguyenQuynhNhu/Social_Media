@@ -6,6 +6,7 @@
         <h2>Participation Questions</h2>
     </div>
     <div class="card-body">
+        <input type="hidden" class="csrf-token" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>">
         <p class="text-muted" style="margin-bottom: 20px;">Ask new members questions when they join. Admin approval is required if questions are set.</p>
         
         <!-- VIEW MODE -->
@@ -160,7 +161,13 @@
     }
 
     function saveRequirements() {
-        $.post(BASE_URL + '/group/' + GROUP_ID + '/requirements', { questions: questions }, function(res) {
+        const csrfName = $('.csrf-token').attr('name');
+        const csrfHash = $('.csrf-token').val();
+        
+        let data = { questions: questions };
+        data[csrfName] = csrfHash;
+
+        $.post(BASE_URL + '/group/' + GROUP_ID + '/requirements', data, function(res) {
             if (res.status === 'success') {
                 alert('Saved!');
                 cancelEdit(); // Go back to view

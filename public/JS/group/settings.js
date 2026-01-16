@@ -38,6 +38,11 @@ function updateGroupInfo() {
     if (avatarFile) formData.append('avatar', avatarFile);
     if (coverFile) formData.append('cover_photo', coverFile);
 
+    // Add CSRF Token
+    const csrfName = $('.csrf-token').attr('name');
+    const csrfHash = $('.csrf-token').val();
+    formData.append(csrfName, csrfHash);
+
     $.ajax({
         url: BASE_URL + '/group/' + GROUP_ID + '/update',
         type: 'POST',

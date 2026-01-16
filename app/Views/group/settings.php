@@ -20,7 +20,7 @@
 <body class="background">
 
 <?= view('components/user/navbar', ['avatarUrl' => $avatarUrl]) ?>
-
+<input type="hidden" class="csrf-token" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>">
 <div class="group-settings-wrapper">
 <div class="settings-card">
     <div class="settings-header">

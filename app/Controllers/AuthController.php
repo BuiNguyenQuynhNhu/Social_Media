@@ -34,6 +34,11 @@ class AuthController extends BaseController
             'email' => $this->request->getPost('email'),
             'password' => $this->request->getPost('password'),
         ];
+        $repassword = $this->request->getPost('repassword');
+
+        if ($userData['password'] !== $repassword) {
+            return redirect()->back()->withInput()->with('error_register', 'Passwords do not match');
+        }
 
         $profileData = [
             'firstname' => $this->request->getPost('firstname'),
