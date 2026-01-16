@@ -36,7 +36,6 @@
     <div class="admin-container">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h1>Manage Chats</h1>
-            <a href="<?= base_url('admin/dashboard') ?>" class="action-btn" style="background:#ddd; color:#000;">Back to Dashboard</a>
         </div>
         
         <table>
