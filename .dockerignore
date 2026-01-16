@@ -1,0 +1,9 @@
+vendor/
+writable/
+node_modules/
+.git/
+.env
+.idea/
+.vscode/
+Recommender/__pycache__/
+Recommender/models/*.pt
