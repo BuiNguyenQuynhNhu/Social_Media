@@ -50,7 +50,7 @@ The easiest way to run the project is using Docker. This ensures all dependencie
 ### Installation
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/nhub9889/Social_Media.git
    cd Social_Media
    ```
 
@@ -66,7 +66,7 @@ The easiest way to run the project is using Docker. This ensures all dependencie
 
 4. **Access the Application**:
    - **Main App**: [http://localhost:8080](http://localhost:8080)
-   - **PhpMyAdmin**: [http://localhost:8081](http://localhost:8081) (Configured for MySQL management)
+   - **PhpMyAdmin**: [http://localhost:8081](http://localhost:8081)
    - **Recommender API**: [http://localhost:5000/health](http://localhost:5000/health)
 
 ---
@@ -109,17 +109,6 @@ If you prefer to run services manually (e.g., XAMPP/WAMP), ensure you have:
 Dockerfile           # Apache/PHP Image Config
 docker-compose.yml   # Multi-container orchestration
 ```
-
-## 🔐 Credentials (Default)
-
-| Service | Username | Password |
-|---------|----------|----------|
-| **MySQL** | `user` | `userpassword` |
-| **MySQL (Root)** | `root` | `rootpassword` |
-| **MongoDB** | `root` | `3141592653Az` |
-| **Admin User** | *(See database or register first user)* | *(Set during registration)* |
-
-> **Note**: To make a user an Admin, set their `type` to `1` in the `users` table.
 
 ## 🤝 Contributing
 1. Fork the repository.
