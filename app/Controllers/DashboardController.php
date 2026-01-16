@@ -31,11 +31,27 @@ class DashboardController extends BaseController
         $friendModel = new FriendshipModel();
         $friends = $friendModel->getAllFriends($currentUserId);
 
+        // Get recent conversations - simplified approach
+        $friendshipModel = new \App\Models\FriendShip();
+        $allFriends = $friendshipModel->listFriend($currentUserId);
+        
+        $recentChats = [];
+        foreach (array_slice($allFriends, 0, 5) as $friend) {
+            $recentChats[] = [
+                'friend_id' => $friend['id'],
+                'name' => $friend['firstname'] . ' ' . $friend['lastname'],
+                'avatar' => $friend['avatar'] ? base_url($friend['avatar']) : base_url('ICON/avatar-default.svg'),
+                'last_message' => 'Send a message',
+                'last_message_time' => null
+            ];
+        }
+
         $data = [
             'user'      => $currentUser, 
             'avatarUrl' => $finalAvatar,
             'posts'     => $posts,
-            'friends'   => $friends
+            'friends'   => $friends,
+            'recentChats' => $recentChats
         ];
 
         return view('User/dashboard', $data);

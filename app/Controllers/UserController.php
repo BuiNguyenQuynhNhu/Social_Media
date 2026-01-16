@@ -269,4 +269,22 @@ class UserController extends BaseController
         return $this->response->setJSON($results);
     }
 
+    public function appealView()
+    {
+        if (!$this->id) return redirect()->to('/login');
+        
+        $data = [
+            'notification_id' => $this->request->getGet('notification_id'),
+            // Fetch navbar data
+            'user' => array_merge($this->user->find($this->id), $this->profile->where('id', $this->id)->first()),
+            'avatarUrl' => base_url('ICON/avatar-default.svg') // simplified for now or copy logic
+        ];
+        
+        // Ensure proper avatar for navbar
+        $uAvatar = $data['user']['avatar'] ?? '';
+        $data['avatarUrl'] = (strpos($uAvatar, 'http') === 0) ? $uAvatar : ($uAvatar ? base_url($uAvatar) : base_url('ICON/avatar-default.svg'));
+
+        return view('appeal', $data);
+    }
+
 }

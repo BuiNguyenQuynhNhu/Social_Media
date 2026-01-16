@@ -48,19 +48,33 @@
 
 <?= $this->section('scripts') ?>
 <script>
+    function getCsrfToken() {
+        return window.APP_CONFIG ? window.APP_CONFIG.csrfHash : '';
+    }
+
     function approvePost(postId) {
-        $.post(BASE_URL + '/group/approve_post/' + postId, function(res){
-            if(res.status === 'success') {
-                $(`#pending-post-${postId}`).fadeOut();
+        $.ajax({
+            url: BASE_URL + '/group/approve_post/' + postId,
+            type: 'POST',
+            headers: { 'X-CSRF-TOKEN': getCsrfToken() },
+            success: function(res) {
+                if(res.status === 'success') {
+                    $(`#pending-post-${postId}`).fadeOut();
+                }
             }
         });
     }
 
     function rejectPost(postId) {
         if(!confirm('Reject and delete this post?')) return;
-        $.post(BASE_URL + '/group/reject_post/' + postId, function(res){
-            if(res.status === 'success') {
-                $(`#pending-post-${postId}`).fadeOut();
+        $.ajax({
+            url: BASE_URL + '/group/reject_post/' + postId,
+            type: 'POST',
+            headers: { 'X-CSRF-TOKEN': getCsrfToken() },
+            success: function(res) {
+                if(res.status === 'success') {
+                    $(`#pending-post-${postId}`).fadeOut();
+                }
             }
         });
     }

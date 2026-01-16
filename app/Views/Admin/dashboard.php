@@ -38,23 +38,28 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <i data-lucide="users" size="32" color="#1877f2"></i>
-                <div class="stat-value">Users</div>
+                <div class="stat-value"><?= $stats['users'] ?? 'Users' ?></div>
                 <div class="stat-label"><a href="<?= base_url('admin/list_user') ?>">Manage Users</a></div>
             </div>
             <div class="stat-card">
                 <i data-lucide="file-text" size="32" color="#1877f2"></i>
-                <div class="stat-value">Posts</div>
+                <div class="stat-value"><?= $stats['posts'] ?? 'Posts' ?></div>
                 <div class="stat-label"><a href="<?= base_url('admin/list_post') ?>">Manage Posts</a></div>
             </div>
             <div class="stat-card">
                 <i data-lucide="users-2" size="32" color="#1877f2"></i>
-                <div class="stat-value">Groups</div>
+                <div class="stat-value"><?= $stats['groups'] ?? 'Groups' ?></div>
                 <div class="stat-label"><a href="<?= base_url('admin/list_group') ?>">Manage Groups</a></div>
             </div>
             <div class="stat-card">
                 <i data-lucide="message-circle" size="32" color="#1877f2"></i>
-                <div class="stat-value">Chats</div>
+                <div class="stat-value"><?= $stats['chats'] ?? 'Chats' ?></div>
                 <div class="stat-label"><a href="<?= base_url('admin/list_chat') ?>">Manage Chats</a></div>
+            </div>
+            <div class="stat-card" style="border: 2px solid #dc3545;">
+                <i data-lucide="gavel" size="32" color="#dc3545"></i>
+                <div class="stat-value" style="color:#dc3545;">Appeals</div>
+                <div class="stat-label"><a href="<?= base_url('admin/appeals') ?>" style="color:#dc3545;">Review Ban Appeals</a></div>
             </div>
         </div>
     </div>

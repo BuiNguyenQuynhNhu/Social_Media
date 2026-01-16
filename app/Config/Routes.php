@@ -31,7 +31,7 @@ $routes->group('message', ['filter' => 'auth'], function($routes){
 $routes->group('notifications', ['filter' => 'auth'], function($routes){
     $routes->get('/', 'NotificationController::index');
     $routes->post('read/(:any)', 'NotificationController::markRead/$1');
-    $routes->post('read-all', 'NotificationController::markAllRead');
+
 });
 
 
@@ -158,7 +158,25 @@ $routes->group('admin', ['filter' => 'auth'], function($routes){
     $routes->get('list_post', 'AdminController::listPost');
     $routes->get('list_group', 'AdminController::listGroup');
     $routes->get('list_chat', 'AdminController::listChat');
+    
+    // Admin Actions
+    $routes->post('ban_user/(:any)', 'AdminController::banUser/$1');
+    $routes->post('unban_user/(:any)', 'AdminController::unbanUser/$1');
+    $routes->post('warn_user/(:any)', 'AdminController::warnUser/$1');
+    $routes->post('delete_post/(:any)', 'AdminController::deletePost/$1');
+    $routes->post('delete_group/(:any)', 'AdminController::deleteGroup/$1');
+    
+    // Ban Appeal System
+    $routes->get('appeals', 'AdminController::listAppeals');
+    $routes->post('accept_appeal/(:any)', 'AdminController::acceptAppeal/$1');
+    $routes->post('reject_appeal/(:any)', 'AdminController::rejectAppeal/$1');
+    $routes->post('check_expired_bans', 'AdminController::checkExpiredBans');
+    $routes->get('check_triggers', 'AdminController::checkTriggers');
 });
+
+// User Appeal Route (for banned users)
+$routes->get('appeal/view', 'UserController::appealView');
+$routes->post('appeal/submit', 'AdminController::submitAppeal');
 
 $routes->group('post', ['filter' => 'auth'], function($routes){
     // $routes->get('/', 'PostController::index');
@@ -188,7 +206,4 @@ $routes->get('dashboard', 'DashboardController::index');
 
 
 
-$routes->get('notifications/get', 'NotificationController::getLatest');
-$routes->post('notifications/read', 'NotificationController::markRead');
 
-$routes->post('notifications/read-item/(:any)', 'NotificationController::markItemRead/$1');

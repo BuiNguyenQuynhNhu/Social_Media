@@ -70,34 +70,60 @@
 </div>
 
 <script>
+// Get CSRF token
+function getCsrfToken() {
+    return window.APP_CONFIG ? window.APP_CONFIG.csrfHash : '';
+}
+
 function approveMember(userId) {
-    $.post(BASE_URL + '/group/' + GROUP_ID + '/approve_member/' + userId, function(res) {
-        if (res.status === 'success') location.reload();
-        else alert(res.message || 'Failed');
+    $.ajax({
+        url: BASE_URL + '/group/' + GROUP_ID + '/approve_member/' + userId,
+        type: 'POST',
+        headers: { 'X-CSRF-TOKEN': getCsrfToken() },
+        success: function(res) {
+            if (res.status === 'success') location.reload();
+            else alert(res.message || 'Failed');
+        }
     });
 }
 
 function rejectMember(userId) {
     if (!confirm('Reject this request?')) return;
-    $.post(BASE_URL + '/group/' + GROUP_ID + '/reject_member/' + userId, function(res) {
-        if (res.status === 'success') location.reload();
-        else alert(res.message || 'Failed');
+    $.ajax({
+        url: BASE_URL + '/group/' + GROUP_ID + '/reject_member/' + userId,
+        type: 'POST',
+        headers: { 'X-CSRF-TOKEN': getCsrfToken() },
+        success: function(res) {
+            if (res.status === 'success') location.reload();
+            else alert(res.message || 'Failed');
+        }
     });
 }
 
 function kickMember(userId) {
     if (!confirm('Remove this member from the group?')) return;
-    $.post(BASE_URL + '/group/' + GROUP_ID + '/kick/' + userId, function(res) {
-        if (res.status === 'success') location.reload();
-        else alert(res.message || 'Failed');
+    $.ajax({
+        url: BASE_URL + '/group/' + GROUP_ID + '/kick/' + userId,
+        type: 'POST',
+        headers: { 'X-CSRF-TOKEN': getCsrfToken() },
+        success: function(res) {
+            if (res.status === 'success') location.reload();
+            else alert(res.message || 'Failed');
+        }
     });
 }
 
 function promoteMember(userId) {
     if (!confirm('Promote this member to Admin?')) return;
-    $.post(BASE_URL + '/group/' + GROUP_ID + '/promote/' + userId, function(res) {
-         if (res.status === 'success') location.reload();
-         else alert(res.message || 'Failed');
+    $.ajax({
+        url: BASE_URL + '/group/' + GROUP_ID + '/promote/' + userId,
+        type: 'POST',
+        headers: { 'X-CSRF-TOKEN': getCsrfToken() },
+        success: function(res) {
+             if (res.status === 'success') location.reload();
+             else alert(res.message || 'Failed');
+        }
     });
 }
+</script>
 <?= $this->endSection() ?>

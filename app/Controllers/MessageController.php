@@ -76,6 +76,78 @@ class MessageController extends BaseController {
 
         return $this->response->setJSON(['status' => 'success', 'data' => $conversations]);
     }
+
+    public function getRecentConversations($userId, $limit = 5) {
+        try {
+            $db = \Config\Database::connect();
+            
+            // Get all accepted friendships
+            $friends = $this->friend->where('status', 'accepted')
+                ->groupStart()
+                    ->where('requester_id', $userId)
+                    ->orWhere('receiver_id', $userId)
+                ->groupEnd()
+                ->orderBy('created_at', 'DESC')
+                ->limit($limit)
+                ->findAll();
+
+            log_message('debug', 'Found ' . count($friends) . ' friendships for user ' . $userId);
+
+            $conversations = [];
+            foreach ($friends as $friendship) {
+                $friendId = ($friendship['requester_id'] == $userId) 
+                    ? $friendship['receiver_id'] 
+                    : $friendship['requester_id'];
+
+                // Get friend info
+                $friendUser = $db->table('users')->where('id', $friendId)->get()->getRowArray();
+                $friendProfile = $db->table('profiles')->where('id', $friendId)->get()->getRowArray();
+
+                if (!$friendUser || !$friendProfile) {
+                    log_message('error', "Missing user or profile data for friend_id: $friendId");
+                    continue;
+                }
+
+                // Get nickname
+                $nickname = null;
+                if ($friendship['requester_id'] == $userId && !empty($friendship['nickname1'])) {
+                    $nickname = $friendship['nickname1'];
+                } elseif ($friendship['receiver_id'] == $userId && !empty($friendship['nickname2'])) {
+                    $nickname = $friendship['nickname2'];
+                }
+
+                $name = $nickname ?? ($friendProfile['firstname'] . ' ' . $friendProfile['lastname']);
+                
+                $avatarPath = $friendUser['avatar'] ?? 'ICON/avatar-default.svg';
+                $avatarUrl = str_starts_with($avatarPath, 'http') ? $avatarPath : base_url($avatarPath);
+
+                // Get last message
+                try {
+                    $lastMessages = $this->msg->get($userId, $friendId);
+                    $lastMessage = !empty($lastMessages) ? end($lastMessages)['content'] : 'Start a conversation';
+                    $lastMessageTime = !empty($lastMessages) ? end($lastMessages)['created_at'] : ($friendship['created_at'] ?? date('Y-m-d H:i:s'));
+                } catch (\Exception $e) {
+                    log_message('error', 'Error getting messages: ' . $e->getMessage());
+                    $lastMessage = 'Start a conversation';
+                    $lastMessageTime = $friendship['created_at'] ?? date('Y-m-d H:i:s');
+                }
+
+                $conversations[] = [
+                    'friend_id' => $friendId,
+                    'name' => $name,
+                    'avatar' => $avatarUrl,
+                    'last_message' => $lastMessage,
+                    'last_message_time' => $lastMessageTime
+                ];
+            }
+
+            log_message('debug', 'Returning ' . count($conversations) . ' conversations');
+            return $conversations;
+        } catch (\Exception $e) {
+            log_message('error', 'Error in getRecentConversations: ' . $e->getMessage());
+            return [];
+        }
+    }
     public function get($receiverId) {
         if (!$this->userId) return $this->response->setJSON(['status' => 'error']);
 

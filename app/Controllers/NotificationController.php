@@ -18,35 +18,14 @@ class NotificationController extends BaseController
         if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
 
         try {
-            $notifications = $this->notification
-                ->where('receiver_id', $this->user_id)
-                ->orderBy('created_at', 'DESC')
-                ->findAll(20); // Limit 20
-
-            // Enrich with user data if needed (requester info)
-            $db = \Config\Database::connect();
-            $enriched = [];
+            // Use the Model's method which handles joining, avatar logic, and time formatting
+            $data = $this->notification->getForUser($this->user_id);
             
-            foreach ($notifications as $n) {
-                // ... (rest of the loop)
-                $sender = $db->table('users')
-                    ->select('users.avatar, profiles.firstname, profiles.lastname')
-                    ->join('profiles', 'profiles.id = users.id')
-                    ->where('users.id', $n['requester_id'])
-                    ->get()->getRowArray();
-                    
-                $n['sender_name'] = $sender ? $sender['firstname'] . ' ' . $sender['lastname'] : 'Unknown';
-                $n['sender_avatar'] = (isset($sender['avatar']) && strpos($sender['avatar'], 'http') === 0) 
-                ? $sender['avatar'] 
-                : (isset($sender['avatar']) ? base_url($sender['avatar']) : base_url('ICON/avatar-default.svg'));
-                
-                // Format time (simplified, ideally usage relative time helper)
-                $n['time_ago'] = $this->timeAgo($n['created_at']);
-                
-                $enriched[] = $n;
-            }
-
-            return $this->response->setJSON(['status' => 'success', 'data' => $enriched]);
+            return $this->response->setJSON([
+                'status' => 'success', 
+                'data' => $data,
+                'debug_user_id' => $this->user_id
+            ]);
         } catch (\Exception $e) {
             return $this->response->setJSON(['status' => 'error', 'message' => $e->getMessage()]);
         }
@@ -55,28 +34,23 @@ class NotificationController extends BaseController
     public function markRead($id) {
         if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
         
-        $this->notification->update($id, ['status' => 'read']);
-        return $this->response->setJSON(['status' => 'success']);
-    }
-
-    public function markAllRead() {
-        if (!$this->user_id) return $this->response->setJSON(['status' => 'error']);
-
-        $this->notification->where('receiver_id', $this->user_id)
-                           ->set(['status' => 'read'])
-                           ->update();
-                           
-        return $this->response->setJSON(['status' => 'success']);
-    }
-
-    private function timeAgo($datetime) {
-        $time = strtotime($datetime);
-        $current = time();
-        $diff = $current - $time;
+        $action = $this->request->getPost('action');
+        $status = 'responded'; // Default generic read state (corrected from responsed)
         
-        if ($diff < 60) return 'Just now';
-        if ($diff < 3600) return floor($diff / 60) . 'm ago';
-        if ($diff < 86400) return floor($diff / 3600) . 'h ago';
-        return date('M d', $time);
+        if ($action === 'confirm' || $action === 'approve') {
+            $status = 'approved';
+        } elseif ($action === 'delete' || $action === 'reject') {
+            $status = 'cancelled';
+        } elseif ($action === 'read') {
+            $status = 'responded';
+        }
+        
+        $success = $this->notification->updateStatus($id, $status);
+        
+        return $this->response->setJSON([
+            'status' => 'success',
+            'updated' => $success,
+            'new_status' => $status
+        ]);
     }
 }

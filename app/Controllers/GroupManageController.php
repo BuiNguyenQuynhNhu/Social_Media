@@ -165,14 +165,28 @@ class GroupManageController extends BaseController
         if ($group['owner_id'] == $userId) return $this->response->setJSON(['status' => 'error', 'message' => 'Cannot kick owner']);
 
         (new GroupMember())->kick($groupId, $userId);
+        
+        // Notify the kicked user
+        \App\Models\Notification::createNotification('group_kicked', $this->user_id, $userId, [
+            'group_id' => $groupId,
+            'group_name' => $group['name']
+        ]);
+        
         return $this->response->setJSON(['status' => 'success']);
     }
 
     public function promote($groupId, $userId) {
-        $group = $this->checkAccess($groupId, ['owner']); // Only owner can promote to admin usually?
+        $group = $this->checkAccess($groupId, ['owner']);
         if (!$group || $group['owner_id'] !== $this->user_id) return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
 
         (new GroupMember())->promote($groupId, $userId);
+        
+        // Notify the promoted user
+        \App\Models\Notification::createNotification('group_promoted', $this->user_id, $userId, [
+            'group_id' => $groupId,
+            'group_name' => $group['name']
+        ]);
+        
         return $this->response->setJSON(['status' => 'success']);
     }
 
@@ -199,12 +213,22 @@ class GroupManageController extends BaseController
         $groupPost = $db->table('group_posts')->where('post_id', $postId)->get()->getRowArray();
         if (!$groupPost) return $this->response->setJSON(['status' => 'error']);
         
-        if (!$this->checkAccess($groupPost['group_id'])) return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
+        $group = $this->checkAccess($groupPost['group_id']);
+        if (!$group) return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
 
+        // Get post author before deleting
+        $post = (new Post())->find($postId);
+        
         $db->table('group_posts')->where('post_id', $postId)->delete();
         (new Post())->deleteWithMedia($postId);
         
-        // Notify Author? (Optional, maybe "Your post was declined")
+        // Notify the post author
+        if ($post) {
+            \App\Models\Notification::createNotification('post_rejected', $this->user_id, $post['id_user'], [
+                'group_id' => $groupPost['group_id'],
+                'group_name' => $group['name']
+            ]);
+        }
         
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -224,10 +248,17 @@ class GroupManageController extends BaseController
     }
 
     public function rejectMember($groupId, $userId) {
-        if (!$this->checkAccess($groupId)) return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
+        $group = $this->checkAccess($groupId);
+        if (!$group) return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
         
         $memberModel = new GroupMember();
         $memberModel->where(['group_id' => $groupId, 'user_id' => $userId])->delete();
+        
+        // Notify rejected user
+        \App\Models\Notification::createNotification('group_reject', $this->user_id, $userId, [
+            'group_id' => $groupId,
+            'group_name' => $group['name']
+        ]);
         
         return $this->response->setJSON(['status' => 'success']);
     }

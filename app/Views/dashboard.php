@@ -9,9 +9,19 @@
     <link rel="stylesheet" href="<?= base_url('CSS/post/post.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/post/comment.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/post/interaction.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('CSS/notifications.css') ?>">
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        window.BASE_URL = "<?= rtrim(base_url(), '/') ?>";
+        window.APP_CONFIG = {
+            baseURL: window.BASE_URL,
+            userId: '<?= session()->get('user_id') ?>',
+            csrfTokenName: '<?= csrf_token() ?>',     
+            csrfHash: '<?= csrf_hash() ?>'
+        };
+    </script>
 </head>
 <body class="background">
 
@@ -53,13 +63,7 @@
 
     <script src="<?= base_url('JS/post/init.js') ?>"></script>
     <script>
-        window.BASE_URL = "<?= rtrim(base_url(), '/') ?>";
-        window.APP_CONFIG = {
-            baseURL: window.BASE_URL,
-            userId: '<?= session()->get('user_id') ?>',
-            csrfTokenName: '<?= csrf_token() ?>',     
-            csrfHash: '<?= csrf_hash() ?>'
-        };
+
         // Initialize Lucide Icons
         if(window.lucide) lucide.createIcons();
     

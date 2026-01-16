@@ -9,6 +9,8 @@ use MongoDB\BSON\ObjectId;
 use App\Models\Comment;
 use App\Models\User;
 use App\Models\Profile;
+use App\Models\Notification;
+use App\Models\Post;
 
 class CommentController extends BaseController
 {
@@ -90,6 +92,16 @@ class CommentController extends BaseController
         $result = $this->comment->add($data);
 
         if ($result) {
+            // Notify post owner
+            $postModel = new Post();
+            $post = $postModel->find($postId);
+            if ($post && $post['id_user'] !== $this->userId) {
+                 Notification::createNotification('comment_add', $this->userId, $post['id_user'], [
+                    'post_id' => $postId,
+                    'comment_preview' => substr($content ?? 'Sent a media', 0, 50)
+                ]);
+            }
+
             return $this->response->setJSON([
                 'status' => 'success',
                 'data'   => $this->_prepareResponseData($result)

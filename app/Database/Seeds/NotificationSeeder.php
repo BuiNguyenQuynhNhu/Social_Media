@@ -8,36 +8,36 @@ class NotificationSeeder extends Seeder
 {
     public function run()
     {
-        $userIds = $this->db->table('users')->select('id')->get()->getResultArray();
+        $userModel = new \App\Models\User();
+        $users = $userModel->findAll();
+        $userIds = array_column($users, 'id');
         
-        // Lấy danh sách ID của post và comment để làm reference_id
-        $postIds = $this->db->table('posts')->select('id')->get()->getResultArray();
-        
+        $postModel = new \App\Models\Post();
+        $posts = $postModel->findAll(50); // Get latest 50 posts
+        $postIds = array_column($posts, 'id');
+
         if (count($userIds) < 2) return;
 
-        for ($i = 0; $i < 10; $i++) {
-            $owner = $userIds[array_rand($userIds)]['id'];
+        $notificationModel = new \App\Models\Notification();
+
+        for ($i = 0; $i < 15; $i++) {
+            $owner = $userIds[array_rand($userIds)];
             
-            // Actor phải khác Owner
+            // Actor must be different from Owner
             do {
-                $actor = $userIds[array_rand($userIds)]['id'];
+                $actor = $userIds[array_rand($userIds)];
             } while ($actor === $owner);
 
-            $type = ($i % 2 == 0) ? 'post_like' : 'friend_request';
+            $type = ($i % 3 == 0) ? 'post_like' : (($i % 3 == 1) ? 'friend_request' : 'comment_add');
             
-            $refId = null;
-            if ($type == 'post_like' && !empty($postIds)) {
-                $refId = $postIds[array_rand($postIds)]['id'];
+            $context = [];
+            if (($type == 'post_like' || $type == 'comment_add') && !empty($postIds)) {
+                $postId = $postIds[array_rand($postIds)];
+                $context['post_id'] = $postId;
+                $context['preview'] = ($type == 'comment_add') ? 'Nice post!' : '';
             }
 
-            $this->db->table('notifications')->insert([
-                'user_id'      => $owner,
-                'actor_id'     => $actor,
-                'type'         => $type,
-                'reference_id' => $refId, // ID bài viết hoặc NULL tùy loại
-                'is_read'      => 0,
-                'created_at'   => date('Y-m-d H:i:s'),
-            ]);
+            \App\Models\Notification::createNotification($type, $actor, $owner, $context);
         }
     }
 }

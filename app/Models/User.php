@@ -122,6 +122,8 @@ class User extends Model
     }
 
     public function list(){
-        return $this->findAll();
+        return $this->select('users.*, profiles.firstname, profiles.lastname')
+                    ->join('profiles', 'profiles.id = users.id', 'left')
+                    ->findAll();
     }
 }

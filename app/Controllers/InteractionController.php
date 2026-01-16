@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\Interation;
+use App\Models\Notification;
+use App\Models\Post;
 use Ramsey\Uuid\Uuid;
 
 class InteractionController extends BaseController
@@ -54,6 +56,17 @@ class InteractionController extends BaseController
             'post_id' => $postId,
             'type'    => $type
         ]);
+
+        if ($type === 'like' || $type === 'love' || $type === 'wow') {
+            $postModel = new Post();
+            $post = $postModel->find($postId);
+            if ($post && $post['id_user'] !== $this->userId) {
+                Notification::createNotification('post_reaction', $this->userId, $post['id_user'], [
+                    'post_id' => $postId,
+                    'reaction_type' => $type
+                ]);
+            }
+        }
 
         return $this->response->setJSON(['status' => 'success', 'action' => 'reacted', 'type' => $type]);
     }
