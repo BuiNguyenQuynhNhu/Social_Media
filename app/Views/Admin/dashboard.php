@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     
+    <link rel="icon" href="<?= base_url('ICON/logo.png') ?>">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="<?= base_url('CSS/admin.css') ?>">

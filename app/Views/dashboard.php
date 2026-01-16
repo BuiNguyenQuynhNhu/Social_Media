@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Post | Social Media</title>
+    <link rel="icon" href="<?= base_url('ICON/logo.png') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/navbar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/dashboard.css') ?>">
     <link rel="stylesheet" href="<?= base_url('CSS/post/post.css') ?>">
