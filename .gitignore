@@ -1,5 +1,45 @@
-.env
-.zip
-.7zip
-.vscode
+# Dependencies
+/vendor/
+/node_modules/
 
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Laravel generated files
+/public/storage
+/storage/*.key
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+
+# Laravel runtime files
+/bootstrap/cache/*.php
+
+# Build assets
+/public/build/
+/public/hot
+
+# Testing and coverage
+/phpunit.xml
+.phpunit.result.cache
+/coverage/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Operating system
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
