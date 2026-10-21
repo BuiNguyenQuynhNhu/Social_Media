@@ -12,43 +12,43 @@
 
 /* Reusable thin scrollbar utility */
 @layer utilities {
-  .scrollbar {
+  .fb-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #d1d5db transparent;
   }
-  .scrollbar::-webkit-scrollbar {
+  .fb-scrollbar::-webkit-scrollbar {
     width: 4px;
   }
-  .scrollbar::-webkit-scrollbar-track {
+  .fb-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
-  .scrollbar::-webkit-scrollbar-thumb {
+  .fb-scrollbar::-webkit-scrollbar-thumb {
     background-color: #d1d5db;
     border-radius: 9999px;
   }
-  .scrollbar::-webkit-scrollbar-thumb:hover {
+  .fb-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: #9ca3af;
   }
 }
 
 @media (prefers-color-scheme: dark) {
-  .scrollbar {
+  .fb-scrollbar {
     scrollbar-color: #525252 transparent;
   }
-  .scrollbar::-webkit-scrollbar-thumb {
+  .fb-scrollbar::-webkit-scrollbar-thumb {
     background-color: #525252;
   }
-  .scrollbar::-webkit-scrollbar-thumb:hover {
+  .fb-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: #737373;
   }
 }
 
-.dark .scrollbar {
+.dark .fb-scrollbar {
   scrollbar-color: #525252 transparent;
 }
-.dark .scrollbar::-webkit-scrollbar-thumb {
+.dark .fb-scrollbar::-webkit-scrollbar-thumb {
   background-color: #525252;
 }
-.dark .scrollbar::-webkit-scrollbar-thumb:hover {
+.dark .fb-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #737373;
 }
