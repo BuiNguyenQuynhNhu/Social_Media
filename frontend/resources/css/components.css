@@ -1,0 +1,86 @@
+.ui-card {
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+}
+
+.ui-avatar {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.ui-icon-button {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: 9999px;
+  background: #e4e6eb;
+  color: #1c1e21;
+  transition: background-color 150ms ease;
+}
+
+.ui-icon-button:hover {
+  background: #d8dadf;
+}
+
+.ui-input {
+  width: 100%;
+  border: 1px solid #ccd0d5;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: #1c1e21;
+  outline: none;
+}
+
+.ui-input:focus {
+  border-color: #0866ff;
+  box-shadow: 0 0 0 1px #0866ff;
+}
+
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-weight: 600;
+  transition: background-color 150ms ease;
+}
+
+.ui-button--primary {
+  background: #0866ff;
+  color: #fff;
+}
+
+.ui-button--primary:hover {
+  background: #075ce5;
+}
+
+.ui-button--soft {
+  background: #e7f3ff;
+  color: #0866ff;
+}
+
+.ui-button--soft:hover {
+  background: #dbeafe;
+}
+
+.ui-button--block {
+  width: 100%;
+}
+
+.ui-muted {
+  color: #65676b;
+}

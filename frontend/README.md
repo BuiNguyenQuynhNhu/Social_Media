@@ -8,7 +8,7 @@
 </p>
 
 ## Facebook UI/UX clone - Laravel
-Build a Facebook-inspired social media web application by using the following [this repository](https://github.com/saifulshihab/facebook-clone). The goal is recreate the original Facebook-style while implementing the entire application using PHP and the Laravel framework with Blade templates.
+Build a Facebook-inspired social media web application. The goal is recreate the original Facebook-style while implementing the entire application using PHP and the Laravel framework with Blade templates.
 
 ## License
 

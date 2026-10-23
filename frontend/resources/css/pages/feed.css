@@ -1,0 +1,218 @@
+.feed-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding: 1.25rem 0.75rem;
+}
+
+.feed-sidebar {
+  display: none;
+}
+
+.feed-column {
+  display: grid;
+  width: 100%;
+  max-width: 42.5rem;
+  gap: 1rem;
+  margin-inline: auto;
+}
+
+.feed-card {
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+}
+
+.feed-composer {
+  padding: 1rem;
+}
+
+.feed-composer__row,
+.feed-post__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.feed-composer__input {
+  min-width: 0;
+  min-height: 2.75rem;
+  flex: 1;
+  resize: vertical;
+  border: 0;
+  border-radius: 9999px;
+  background: #f0f2f5;
+  padding: 0.75rem 1rem;
+  color: #1c1e21;
+  outline: none;
+}
+
+.feed-composer__input:hover {
+  background: #e9ebee;
+}
+
+.feed-composer__input:focus {
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.feed-composer__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  border-top: 1px solid #e4e6eb;
+  padding-top: 0.75rem;
+}
+
+.feed-stories {
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+}
+
+.feed-post__header {
+  padding: 1rem 1rem 0;
+}
+
+.feed-post__body {
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.5rem;
+  overflow-wrap: anywhere;
+}
+
+.feed-post__stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-inline: 1rem;
+  border-bottom: 1px solid #e4e6eb;
+  padding-block: 0.5rem;
+  color: #65676b;
+  font-size: 0.875rem;
+}
+
+.feed-post__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.feed-post__action {
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  padding: 0.5rem 0.25rem;
+  color: #65676b;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.feed-post__action:hover {
+  background: #f0f2f5;
+}
+
+.feed-post__action[aria-pressed="true"] {
+  color: #0866ff;
+}
+
+.feed-post__comments {
+  border-top: 1px solid #e4e6eb;
+  padding: 0.75rem 1rem;
+}
+
+.feed-comment {
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 1rem;
+  background: #f0f2f5;
+  padding: 0.5rem 0.75rem;
+  color: #1c1e21;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.feed-comment-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feed-comment-form__input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  border-radius: 9999px;
+  background: #f0f2f5;
+  padding: 0.625rem 1rem;
+  outline: none;
+}
+
+.feed-comment-form__input:focus {
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.story-card {
+  isolation: isolate;
+}
+
+.story-card::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(0 0 0 / 5%) 30%, rgb(0 0 0 / 60%));
+  content: "";
+}
+
+.story-photo-1 {
+  background-image: url("https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=420&q=80");
+}
+
+.story-photo-2 {
+  background-image: url("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=420&q=80");
+}
+
+.story-photo-3 {
+  background-image: url("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=420&q=80");
+}
+
+.story-photo-4 {
+  background-image: url("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=420&q=80");
+}
+
+.post-photo {
+  display: block;
+  width: 100%;
+  max-height: 560px;
+  object-fit: cover;
+}
+
+@media (max-width: 767px) {
+  .story-card {
+    min-width: 112px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .feed-layout {
+    grid-template-columns: minmax(0, 42.5rem) minmax(14rem, 1fr);
+    padding-inline: 1.25rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .feed-layout {
+    grid-template-columns: minmax(220px, 1fr) minmax(0, 42.5rem) minmax(220px, 1fr);
+  }
+
+  .feed-sidebar {
+    display: block;
+  }
+}
